@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "portalgun",
+  "version": "${version}",
+  "name": "Portal Gun",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "tk.meowmc.portalgun.client.PortalgunClient"
+    ],
+    "main": [
+      "tk.meowmc.portalgun.Portalgun"
+    ]
+  },
+  "mixins": [
+    "portalgun.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.8.0",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "accessWidener" : "portalgun.accesswidener"
+}

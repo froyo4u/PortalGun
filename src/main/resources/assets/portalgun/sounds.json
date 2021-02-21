@@ -1,0 +1,9 @@
+    {
+      "portal_shoot": {
+	      "subtitle": "subtitles.portalgun.portal_shoot",
+
+        "sounds": [
+          "portalgun:portal_shoot"
+        ]
+      }
+	}
