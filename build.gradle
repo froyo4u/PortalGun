@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.6-SNAPSHOT'
     id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
 allprojects {
@@ -37,13 +38,22 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+    // https://mvnrepository.com/artifact/com.googlecode.efficient-java-matrix-library/ejml
     implementation group: 'com.googlecode.efficient-java-matrix-library', name: 'ejml', version: '0.25'
+    include "com.googlecode.efficient-java-matrix-library:ejml:0.25"
 
     modImplementation "com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.ip_version}"
     include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
+}
+
+shadowJar {
+    dependencies {
+        exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
+        exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
+    }
 }
 
 processResources {
