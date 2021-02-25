@@ -8,6 +8,7 @@
   "contact": {},
   "license": "MIT",
   "environment": "*",
+  "icon": "assets/portalgun/icon.png",
   "entrypoints": {
     "client": [
       "tk.meowmc.portalgun.client.PortalgunClient"
