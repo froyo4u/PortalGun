@@ -2,5 +2,7 @@
   "item.portalgun.portal_gun": "Aperture Science Handheld Duel-Portal Device",
   "subtitles.portalgun.portal1_shoot": "Shot primary Portal",
   "subtitles.portalgun.portal2_shoot": "Shot secondary Portal",
-  "subtitles.portalgun.portal_open": "Portal opened"
+  "subtitles.portalgun.portal_open": "Portal opened",
+  "key.portalgun.clearportals": "Clear Portals",
+  "category.portalgun": "Portal Gun"
 }
