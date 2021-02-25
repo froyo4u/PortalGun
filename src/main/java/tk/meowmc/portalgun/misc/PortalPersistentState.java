@@ -3,6 +3,7 @@ package tk.meowmc.portalgun.misc;
 import com.qouteall.immersive_portals.Helper;
 import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.portal.Portal;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.CompoundTag;
@@ -23,9 +24,11 @@ public class PortalPersistentState extends PersistentState {
         super(key);
     }
 
+    MinecraftClient client = MinecraftClient.getInstance();
+
     @Override
     public void fromTag(CompoundTag tag) {
-        ServerWorld currWorld = McHelper.getServerWorld(World.OVERWORLD);
+        ServerWorld currWorld = McHelper.getServerWorld(client.world.getRegistryKey());
         this.portals = getPortalsFromTag(tag, currWorld);
     }
 

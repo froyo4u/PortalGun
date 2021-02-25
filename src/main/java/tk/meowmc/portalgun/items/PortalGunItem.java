@@ -45,13 +45,14 @@ public class PortalGunItem extends Item {
 
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
     MinecraftClient client = MinecraftClient.getInstance();
+    public static MinecraftClient clientStatic = MinecraftClient.getInstance();
     HitResult hit;
     FixedMatrix3x3_64F planeMatrix;
     FixedMatrix3x3_64F planeMatrixInverse;
     Direction direction;
     Vec3d positionCorrectionVec;
-    Portal newPortal1;
-    Portal newPortal2;
+    public static Portal newPortal1;
+    public static Portal newPortal2;
     Portal portal1;
     Portal portal2;
 
@@ -142,7 +143,7 @@ public class PortalGunItem extends Item {
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY()+2, blockPos.getZ());
 
-        portal.dimensionTo = newPortal2.world.getRegistryKey();
+        portal.dimensionTo = client.world.getRegistryKey();
         portal.setDestination(destPos);
         updatePortalRotation(portal, direction);
 
@@ -307,10 +308,9 @@ public class PortalGunItem extends Item {
         portal.cullableYEnd = 0;
     }
 
-
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        user.getItemCooldownManager().set(this, 6);
+        user.getItemCooldownManager().set(this, 4);
         Entity entity = this.client.getCameraEntity();
         this.hit = entity.raycast(50.0D, 0.0F, false);
 
@@ -336,7 +336,6 @@ public class PortalGunItem extends Item {
             int delay = (int) (0.5*distance);
 
 
-            if (user.fishHook == null) {
                 if (!world.isClient && !user.isSneaking()) {
                     world.playSound(null,
                             user.getX(),
@@ -552,6 +551,7 @@ public class PortalGunItem extends Item {
                             portal1Extension.adjustPositionAfterTeleport = false;
                         }
 
+                        newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
 
                         if (McHelper.getServer().getThread() == Thread.currentThread()) {
                             portal1 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
@@ -802,7 +802,6 @@ public class PortalGunItem extends Item {
                 savePerstistentState(portalPersistentState);
 
             }
-        }
 
         return TypedActionResult.success(itemStack, world.isClient());
     }
