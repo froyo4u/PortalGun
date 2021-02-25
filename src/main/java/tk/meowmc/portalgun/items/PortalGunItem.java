@@ -142,7 +142,7 @@ public class PortalGunItem extends Item {
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY()+2, blockPos.getZ());
 
-        portal.dimensionTo = client.world.getRegistryKey();
+        portal.dimensionTo = newPortal2.world.getRegistryKey();
         portal.setDestination(destPos);
         updatePortalRotation(portal, direction);
 
@@ -194,7 +194,7 @@ public class PortalGunItem extends Item {
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destpos = newPortal1.getPos();
 
-        portal.dimensionTo = client.world.getRegistryKey();
+        portal.dimensionTo = newPortal1.world.getRegistryKey();
         portal.setDestination(newPortal1.getPos());
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
         updatePortalRotation(portal, direction);
