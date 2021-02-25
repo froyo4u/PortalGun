@@ -3,7 +3,7 @@
   "id": "portalgun",
   "version": "${version}",
   "name": "Portal Gun",
-  "description": "",
+  "description": "A Portal Gun mod using Immersive Portals",
   "authors": [],
   "contact": {},
   "license": "MIT",
