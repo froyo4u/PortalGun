@@ -108,3 +108,8 @@ publishing {
         // mavenLocal()
     }
 }
+
+task additionalCopy(type:Copy){
+    from file("${project.buildDir}/libs/$archivesBaseName-${version}.jar")
+    into file("${project.buildDir}/to_upload")
+}
