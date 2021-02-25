@@ -5,7 +5,9 @@
   "name": "Portal Gun",
   "description": "A Portal Gun mod using Immersive Portals",
   "authors": [],
-  "contact": {},
+  "contact": {
+    "Github": "https://github.com/MeowMC/PortalGun"
+  },
   "license": "MIT",
   "environment": "*",
   "icon": "assets/portalgun/icon.png",
