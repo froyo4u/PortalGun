@@ -45,7 +45,6 @@ public class PortalGunItem extends Item {
 
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
     MinecraftClient client = MinecraftClient.getInstance();
-    static MinecraftClient clientStatic = MinecraftClient.getInstance();
     HitResult hit;
     FixedMatrix3x3_64F planeMatrix;
     FixedMatrix3x3_64F planeMatrixInverse;
@@ -260,7 +259,7 @@ public class PortalGunItem extends Item {
             String key = user.getUuidAsString() + "-portalGunPortal0";
             Portal portal = persistentState.getPortals().get(key);
             if (portal != null) {
-                Entity portalEntity = McHelper.getServerWorld(user.world.getRegistryKey()).getEntity(portal.getUuid());
+                Entity portalEntity = McHelper.getServerWorld(portal.world.getRegistryKey()).getEntity(portal.getUuid());
                 if (portalEntity != null) {
                     portalEntity.kill();
                     Portalgun.log(Level.INFO, String.format("Removed %s", portal));
@@ -274,7 +273,7 @@ public class PortalGunItem extends Item {
             String key = user.getUuidAsString() + "-portalGunPortal1";
             Portal portal = persistentState.getPortals().get(key);
             if (portal != null){
-                Entity portalEntity = McHelper.getServerWorld(user.world.getRegistryKey()).getEntity(portal.getUuid());
+                Entity portalEntity = McHelper.getServerWorld(portal.world.getRegistryKey()).getEntity(portal.getUuid());
                 if (portalEntity != null){
                     portalEntity.kill();
                     Portalgun.log(Level.INFO, String.format("Removed %s", portalEntity));
