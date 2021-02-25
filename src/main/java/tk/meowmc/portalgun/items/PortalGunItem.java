@@ -311,7 +311,7 @@ public class PortalGunItem extends Item {
 
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        user.getItemCooldownManager().set(this, 4);
+        user.getItemCooldownManager().set(this, 6);
         Entity entity = this.client.getCameraEntity();
         this.hit = entity.raycast(50.0D, 0.0F, false);
 
