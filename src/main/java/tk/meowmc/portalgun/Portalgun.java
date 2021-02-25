@@ -23,7 +23,7 @@ public class Portalgun implements ModInitializer {
     public static final String MOD_NAME = "PortalGun Mod";
 
 
-    public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1));
+    public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1).fireproof());
 
 
     public static final Identifier PORTAL1_SHOOT = new Identifier("portalgun:portal1_shoot");

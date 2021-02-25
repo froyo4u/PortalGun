@@ -1,6 +1,7 @@
 package tk.meowmc.portalgun.client;
 
 import com.qouteall.immersive_portals.McHelper;
+import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.network.McRemoteProcedureCall;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
+import tk.meowmc.portalgun.misc.TaskList;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
@@ -22,6 +24,15 @@ public class PortalgunClient implements ClientModInitializer {
                     McHelper.executeOnServerThread(() -> {
                         McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal1");
                         McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal2");
+                    });
+                }
+
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+                if (client.mouse.wasLeftButtonClicked()) {
+                    McHelper.executeOnServerThread(() -> {
+                        McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
                     });
                 }
         });
