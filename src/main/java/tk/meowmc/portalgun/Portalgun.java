@@ -37,7 +37,7 @@ public class Portalgun implements ModInitializer {
     @Override
     public void onInitialize() {
         log(Level.INFO, "Initializing");
-        Registry.register(Registry.ITEM, new Identifier(MODID, "portalgun"), PORTALGUN);
+        Registry.register(Registry.ITEM, new Identifier(MODID, "portal_gun"), PORTALGUN);
         Registry.register(Registry.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL_OPEN, PORTAL_OPEN_EVENT);
