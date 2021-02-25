@@ -21,5 +21,13 @@
 		  "portalgun:portal_open2",
 		  "portalgun:portal_open3"
         ]
+      },
+	  "portal_close": {
+	      "subtitle": "subtitles.portalgun.portal_close",
+
+        "sounds": [
+          "portalgun:portal_close1",
+		  "portalgun:portal_close2"
+        ]
       }
 	}

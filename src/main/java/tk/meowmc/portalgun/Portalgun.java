@@ -34,6 +34,9 @@ public class Portalgun implements ModInitializer {
 
     public static final Identifier PORTAL_OPEN = new Identifier("portalgun:portal_open");
     public static SoundEvent PORTAL_OPEN_EVENT = new SoundEvent(PORTAL_OPEN);
+
+    public static final Identifier PORTAL_CLOSE = new Identifier("portalgun:portal_close");
+    public static SoundEvent PORTAL_CLOSE_EVENT = new SoundEvent(PORTAL_CLOSE);
     @Override
     public void onInitialize() {
         log(Level.INFO, "Initializing");
@@ -41,6 +44,7 @@ public class Portalgun implements ModInitializer {
         Registry.register(Registry.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL_OPEN, PORTAL_OPEN_EVENT);
+        Registry.register(Registry.SOUND_EVENT, PORTAL_CLOSE, PORTAL_CLOSE_EVENT);
     }
 
     public static void log(Level level, String message){
