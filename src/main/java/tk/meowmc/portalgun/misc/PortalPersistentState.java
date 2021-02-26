@@ -66,16 +66,19 @@ public class PortalPersistentState extends PersistentState {
     public CompoundTag toTag(CompoundTag tag) {
         ListTag portalsListTag = new ListTag();
 
-        for(String key : portals.keySet()) {
+        for (String key : portals.keySet()) {
             Portal portal = portals.get(key);
             CompoundTag portalTag = new CompoundTag();
-            portal.toTag(portalTag);
-            portalTag.putString("entity_type", EntityType.getId(portal.getType()).toString());
-            portalTag.putString("key", key);
-            portalsListTag.add(portalTag);
+            if (portal != null) {
+                portal.toTag(portalTag);
+                portalTag.putString("entity_type", EntityType.getId(portal.getType()).toString());
+                portalTag.putString("key", key);
+                portalsListTag.add(portalTag);
+                tag.put("portals", portalsListTag);
+            } else if (portals == null) {
+                tag.putString("useruuid", client.player.getUuidAsString());
+            }
         }
-        tag.put("portals", portalsListTag);
-
-        return tag;
+            return tag;
     }
 }

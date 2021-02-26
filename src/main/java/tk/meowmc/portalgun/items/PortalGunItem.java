@@ -60,6 +60,8 @@ public class PortalGunItem extends Item {
     public static Portal newPortal2;
     Portal portal1;
     Portal portal2;
+    public static boolean waitPortal1 = false;
+    public static boolean waitPortal2 = false;
 
 
     public static Vec3d getDirectionVec(Direction direction) {
@@ -338,8 +340,12 @@ public class PortalGunItem extends Item {
 
             int delay = (int) (0.5 * distance);
 
+            ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
+                waitPortal1 = false;
+            })));
 
-            if (!world.isClient) {
+
+            if (!world.isClient && !waitPortal1) {
                 world.playSound(null,
                         user.getX(),
                         user.getY(),
@@ -348,6 +354,8 @@ public class PortalGunItem extends Item {
                         SoundCategory.NEUTRAL,
                         1.0F,
                         1F);
+
+                waitPortal1 = true;
 
                 ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                     newPortal1 = Settings1(direction, blockPos);
@@ -540,7 +548,7 @@ public class PortalGunItem extends Item {
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                         portal2 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
-                        if (portal1 != null && portal2 != null) {
+                        if (portal1 != null && portal2 != null && !waitPortal2) {
                             removeOldPortal1(user, portalPersistentState, user.world);
                             removeOldPortal2(user, portalPersistentState, user.world);
                             world.playSound(null,
@@ -553,8 +561,9 @@ public class PortalGunItem extends Item {
                                     1F);
                             McHelper.spawnServerEntity(newPortal1);
                             McHelper.spawnServerEntity(newPortal2);
-
                         }
+                        waitPortal1 = false;
+                        waitPortal2 = false;
                     }
 
                 })));
@@ -570,7 +579,7 @@ public class PortalGunItem extends Item {
 
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        user.getItemCooldownManager().set(this, 5);
+        user.getItemCooldownManager().set(this, 4);
         Entity entity = this.client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
 
@@ -595,248 +604,12 @@ public class PortalGunItem extends Item {
 
             int delay = (int) (0.5*distance);
 
+            ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
+                waitPortal2 = false;
+            })));
 
-                /* if (!world.isClient && !user.isSneaking()) {
-                    world.playSound(null,
-                            user.getX(),
-                            user.getY(),
-                            user.getZ(),
-                            Portalgun.PORTAL1_SHOOT_EVENT,
-                            SoundCategory.NEUTRAL,
-                            1.0F,
-                            1F);
-
-                    ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-                    newPortal1 = Settings1(direction, blockPos);
-                    newPortal1.setDestination(newPortal2.getPos());
-
-                    Vec3d portal2AxisW = newPortal2.axisW;
-                    Vec3d portal2AxisH = newPortal2.axisH;
-
-
-                    newPortal2 = Settings2(direction, blockPos);
-                    newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
-                    newPortal2.setDestination(newPortal1.getPos());
-                    newPortal2.axisW = portal2AxisW;
-                    newPortal2.axisH = portal2AxisH;
-
-                        PortalExtension portal1Extension = PortalExtension.get(newPortal1);
-                        PortalExtension portal2Extension = PortalExtension.get(newPortal2);
-
-                        DQuaternion portal2OorentationInverse = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).getConjugated();
-                        DQuaternion orientationCombined1 = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).hamiltonProduct(portal2OorentationInverse);
-
-                        DQuaternion portal1OorentationInverse = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).getConjugated();
-                        DQuaternion orientationCombined2 = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).hamiltonProduct(portal1OorentationInverse);
-
-                        Quaternion orientationPortal1 = orientationCombined1.toMcQuaternion();
-                        Quaternion orientationPortal2 = orientationCombined2.toMcQuaternion();
-
-                        newPortal1.rotation = orientationPortal1;
-                        newPortal2.rotation = orientationPortal2;
-
-                        if (newPortal1.rotation.getW() == 1 && newPortal2.rotation.getW() == 1 || newPortal1.rotation.getW() == 1.8746996965264928E-33d && newPortal2.rotation.getW() == 1.8746996965264928E-33d){
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 1, orientationPortal1.getZ(), 0);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 1, orientationPortal2.getZ(), 0);
-                        }
-                        if (newPortal1.rotation.getW() == 3.0616171314629196E-17d && newPortal2.rotation.getW() == 3.0616171314629196E-17d){
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), 0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), -0.7071067690849304f);
-                        }
-                        if (newPortal1.rotation.getW() == 0.7071067690849304d && newPortal2.rotation.getW() == -0.7071067690849304d) {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), -0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), 0.7071067690849304f);
-                        } else if (newPortal1.rotation.getW() == -0.7071067690849304d && newPortal2.rotation.getW() == 0.7071067690849304d) {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), 0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), -0.7071067690849304f);
-                        }
-                        if (newPortal1.rotation.getW() == 4.329780301713277E-17d && newPortal2.rotation.getW() == 4.329780301713277E-17d || newPortal1.rotation.getW() == 2.220446049250313E-16d && newPortal2.rotation.getW() == 2.220446049250313E-16d || newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
-                            newPortal1.rotation = null;
-                            newPortal2.rotation = null;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-                        }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1 || newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1 )
-                        {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), -0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), 0.7071067690849304f);
-                        } else if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), orientationPortal1.getY(), 0.7071067690849304f, 0.7071067690849304f);
-                        }
-
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), 0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), -0.7071067690849304f);
-                        }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(orientationPortal1.getX(), 0.7071067690849304f, orientationPortal1.getZ(), 0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(orientationPortal2.getX(), 0.7071067690849304f, orientationPortal2.getZ(), -0.7071067690849304f);
-                        }
-
-
-                    switch (direction) {
-                        case WEST:
-                            newPortal2.setDestination(new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ() + 0.5));
-                            break;
-                        case EAST:
-                            newPortal2.setDestination(new Vec3d(blockPos.getX() + 1, blockPos.getY(), blockPos.getZ() + 0.5));
-                            break;
-                        case SOUTH:
-                        case UP:
-                            newPortal2.setDestination(new Vec3d(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ() + 1));
-                            break;
-                        case DOWN:
-                        case NORTH:
-                            newPortal2.setDestination(new Vec3d(blockPos.getX() + 0.5, blockPos.getY(), blockPos.getZ()));
-                            break;
-                    }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = null;
-                            newPortal2.rotation = null;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-                        }
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
-                            newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                        }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
-                            newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z - 0.999));
-                        }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(0, 0, 1, 0);
-                            newPortal2.rotation = new Quaternion(0, 0, 1, 0);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-                        }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = new Quaternion(0, 0, 1, 0);
-                            newPortal2.rotation = new Quaternion(0, 0, 1, 0);
-                        }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , 0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(0, 0.7071067094802856f, -0.7071067094802856f, 0);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z - 0.999));
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                        }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1)
-                        {
-                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , 0.7071067690849304f);
-                            newPortal1.rotation = new Quaternion(0, 0.7071067094802856f, -0.7071067094802856f, 0);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y, newPortal2.getDestPos().z + 0.001));
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                        }
-
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , -0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(0, 0.7071067094802856f, 0.7071067094802856f, 0);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z));
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                        }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , -0.7071067690849304f);
-                            newPortal1.rotation = new Quaternion(0, 0.7071067094802856f, 0.7071067094802856f, 0);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y, newPortal2.getDestPos().z - 0.001));
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                        }
-
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(0.5f, -0.5f, -0.5f, 0.5f);
-                            newPortal2.rotation = new Quaternion(0.5f, -0.5f, -0.5f, -0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x + 0.001, newPortal2.getDestPos().y, newPortal2.getDestPos().z));
-                        }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(0.5f, -0.5f, -0.5f, 0.5f);
-                            newPortal1.rotation = new Quaternion(0.5f, -0.5f, -0.5f, -0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.002, newPortal2.getDestPos().z - 0.999));
-                        }
-
-
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, -0.5f);
-                            newPortal2.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, 0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = false;
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x - 0.001, newPortal2.getDestPos().y, newPortal2.getDestPos().z));
-                        }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1)
-                        {
-                            newPortal2.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, -0.5f);
-                            newPortal1.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, 0.5f);
-                            portal2Extension.adjustPositionAfterTeleport = false;
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x - 0.001, newPortal2.getDestPos().y - 0.001, newPortal2.getDestPos().z));
-                        }
-
-
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(0.7071067690849304f, 0, 0 , -0.7071067690849304f);
-                            newPortal2.rotation = new Quaternion(-0.7071067094802856f, 0, 0, -0.7071067094802856f);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y - 0.001, newPortal2.getDestPos().z));
-                            portal1Extension.adjustPositionAfterTeleport = true;
-                            portal2Extension.adjustPositionAfterTeleport = false;
-                        }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(0.7071067690849304f, 0, 0 , -0.7071067690849304f);
-                            newPortal1.rotation = new Quaternion(-0.7071067094802856f, 0, 0, -0.7071067094802856f);
-                            newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + -0.001, newPortal2.getDestPos().z));
-                            portal2Extension.adjustPositionAfterTeleport = true;
-                            portal1Extension.adjustPositionAfterTeleport = false;
-                        }
-
-                        newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
-
-                        if (McHelper.getServer().getThread() == Thread.currentThread()) {
-                            portal1 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
-                            portal2 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
-                            if (portal1 != null && portal2 != null) {
-                                removeOldPortal1(user, portalPersistentState, user.world);
-                                removeOldPortal2(user, portalPersistentState, user.world);
-                                world.playSound(null,
-                                        newPortal1.getX(),
-                                        newPortal1.getY(),
-                                        newPortal1.getZ(),
-                                        Portalgun.PORTAL_OPEN_EVENT,
-                                        SoundCategory.NEUTRAL,
-                                        1.0F,
-                                        1F);
-                                McHelper.spawnServerEntity(newPortal1);
-                                McHelper.spawnServerEntity(newPortal2);
-
-                            }
-                        }
-
-                    })));
-
-                } else */ if (!world.isClient /* && user.isSneaking() */) {
-                    world.playSound(null,
+            if (!world.isClient && !waitPortal2) {
+                world.playSound(null,
                             user.getX(),
                             user.getY(),
                             user.getZ(),
@@ -845,6 +618,7 @@ public class PortalGunItem extends Item {
                             1.0F,
                             1F);
 
+                waitPortal2 = true;
 
                     ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                     Vec3d portal1AxisW = newPortal1.axisW;
@@ -1034,7 +808,7 @@ public class PortalGunItem extends Item {
                         if (McHelper.getServer().getThread() == Thread.currentThread()) {
                             portal1 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                             portal2 = portalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
-                            if (portal1 != null && portal2 != null) {
+                            if (portal1 != null && portal2 != null && !waitPortal1) {
                                 removeOldPortal1(user, portalPersistentState, user.world);
                                 removeOldPortal2(user, portalPersistentState, user.world);
                                 world.playSound(null,
@@ -1048,6 +822,8 @@ public class PortalGunItem extends Item {
                                 McHelper.spawnServerEntity(newPortal2);
                                 McHelper.spawnServerEntity(newPortal1);
                             }
+                            waitPortal2 = false;
+                            waitPortal1 = false;
                         }
                     })));
 

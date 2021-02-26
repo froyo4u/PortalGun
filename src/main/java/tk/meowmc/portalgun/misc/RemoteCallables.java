@@ -47,23 +47,30 @@ public class RemoteCallables {
                     1F);
             persistentState.getPortals().remove(key);
             persistentState.markDirty();
+
         }
     }
-
 
     public static void portal1Place(ServerPlayerEntity user) {
         PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
         ItemStack itemStack = user.getStackInHand(user.getActiveHand());
-        if (itemStack.getItem() == Portalgun.PORTALGUN) {
-            if (newPortal1.isAlive()) {
-                if (user.handSwingTicks == -1 && newPortal1.age >= 3) {
+        boolean portalGunActive = itemStack.getItem() == Portalgun.PORTALGUN;
+            if (newPortal1 != null && portalGunActive) {
+                if (user.handSwingTicks == -1 && newPortal1.age >= 2 && newPortal1.isAlive()) {
                     gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                } else if (user.handSwingTicks == -1 && !newPortal1.isAlive()) {
+                    gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                    newPortal1.removed = false;
                 }
-            } else if (!newPortal1.isAlive() && user.handSwingTicks == -1) {
+            } else if (newPortal1 == null && portalGunActive) {
                 gunItem.portal1Spawn(user.world, user, user.getActiveHand());
-                newPortal1.removed = false;
             }
-        }
+    }
+
+    public static void resetWaits(ServerPlayerEntity user)
+    {
+        waitPortal1 = false;
+        waitPortal2 = false;
     }
 
 }
