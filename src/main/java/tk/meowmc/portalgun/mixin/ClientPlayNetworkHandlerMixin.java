@@ -1,6 +1,9 @@
 package tk.meowmc.portalgun.mixin;
 
 import com.qouteall.immersive_portals.McHelper;
+import com.qouteall.immersive_portals.network.McRemoteProcedureCall;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
@@ -18,6 +21,7 @@ import java.util.UUID;
 import static tk.meowmc.portalgun.items.PortalGunItem.KEY;
 
 @Mixin(ClientPlayNetworkHandler.class)
+@Environment(EnvType.CLIENT)
 public class ClientPlayNetworkHandlerMixin {
     @Shadow
     private MinecraftClient client;
@@ -29,6 +33,9 @@ public class ClientPlayNetworkHandlerMixin {
         UUID uuid = client.player.getUuid();
         PortalPersistentState portalPersistentState = McHelper.getServerWorld(client.world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
         portalPersistentState.portals = portalPersistentState.getPortals();
+        McHelper.executeOnServerThread(() -> {
+            McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
+        });
     }
 
 }
