@@ -32,7 +32,7 @@ public class RemoteCallables {
     }
 
     public static void removeOldPortal2(ServerPlayerEntity user) {
-        PortalPersistentState persistentState = McHelper.getServerWorld(clientStatic.world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
+        PortalPersistentState persistentState = McHelper.getServerWorld(user.world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
         String key = user.getUuidAsString() + "-portalGunPortal1";
         if (newPortal2.isAlive()) {
             newPortal2.kill();
