@@ -8,7 +8,7 @@
   "contact": {
     "Github": "https://github.com/MeowMC/PortalGun"
   },
-  "license": "MIT",
+  "license": "Apache License 2.0",
   "environment": "*",
   "icon": "assets/portalgun/icon.png",
   "entrypoints": {
