@@ -698,90 +698,77 @@ public class PortalGunItem extends Item {
                                     break;
                             }
 
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
                             newPortal1.rotation = null;
                             newPortal2.rotation = null;
                         }
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
+                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
                             newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
                             newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1)
-                        {
+                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
                             newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
                             newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1)
-                        {
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
                             newPortal1.rotation = new Quaternion(0, 0, 1, 0);
                             newPortal2.rotation = new Quaternion(0, 0, 1, 0);
                         }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
                             newPortal1.rotation = new Quaternion(0, 0, 1, 0);
                             newPortal2.rotation = new Quaternion(0, 0, 1, 0);
                         }
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , 0.7071067690849304f);
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == 1) {
+                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0, 0.7071067690849304f);
                             newPortal2.rotation = new Quaternion(0, 0.7071067094802856f, -0.7071067094802856f, 0);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1)
-                        {
-                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , 0.7071067690849304f);
+                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1) {
+                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0, 0.7071067690849304f);
                             newPortal1.rotation = new Quaternion(0, 0.7071067094802856f, -0.7071067094802856f, 0);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
 
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , -0.7071067690849304f);
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
+                            newPortal1.rotation = new Quaternion(-0.7071067690849304f, 0, 0, -0.7071067690849304f);
                             newPortal2.rotation = new Quaternion(0, 0.7071067094802856f, 0.7071067094802856f, 0);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0 , -0.7071067690849304f);
+                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
+                            newPortal2.rotation = new Quaternion(-0.7071067690849304f, 0, 0, -0.7071067690849304f);
                             newPortal1.rotation = new Quaternion(0, 0.7071067094802856f, 0.7071067094802856f, 0);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
 
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
-                            newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
-                            newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
-                            portal1Extension.adjustPositionAfterTeleport = false;
+                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
+                            newPortal1.rotation = new Quaternion(0.5f, -0.5f, -0.5f, 0.5f);
+                            newPortal2.rotation = new Quaternion(0.5f, -0.5f, -0.5f, -0.5f);
+                            portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1)
-                        {
-                            newPortal2.rotation = new Quaternion(0.5f, 0.5f, -0.5f, -0.5f);
-                            newPortal1.rotation = new Quaternion(0.5f, 0.5f, -0.5f, 0.5f);
-                            portal2Extension.adjustPositionAfterTeleport = false;
+                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
+                            newPortal2.rotation = new Quaternion(0.5f, -0.5f, -0.5f, 0.5f);
+                            newPortal1.rotation = new Quaternion(0.5f, -0.5f, -0.5f, -0.5f);
                             portal1Extension.adjustPositionAfterTeleport = true;
+                            portal2Extension.adjustPositionAfterTeleport = true;
                         }
 
 
-                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1)
-                        {
+                        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
                             newPortal1.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, -0.5f);
                             newPortal2.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, 0.5f);
                             portal1Extension.adjustPositionAfterTeleport = false;
                             portal2Extension.adjustPositionAfterTeleport = true;
                         }
-                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1)
-                        {
+                        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1) {
                             newPortal2.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, -0.5f);
                             newPortal1.rotation = new Quaternion(-0.5f, 0.5f, 0.5f, 0.5f);
                             portal2Extension.adjustPositionAfterTeleport = false;
@@ -789,16 +776,14 @@ public class PortalGunItem extends Item {
                         }
 
 
-                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1)
-                        {
-                            newPortal1.rotation = new Quaternion(0.7071067690849304f, 0, 0 , -0.7071067690849304f);
+                        if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
+                            newPortal1.rotation = new Quaternion(0.7071067690849304f, 0, 0, -0.7071067690849304f);
                             newPortal2.rotation = new Quaternion(-0.7071067094802856f, 0, 0, -0.7071067094802856f);
                             portal1Extension.adjustPositionAfterTeleport = true;
                             portal2Extension.adjustPositionAfterTeleport = false;
                         }
-                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1)
-                        {
-                            newPortal2.rotation = new Quaternion(0.7071067690849304f, 0, 0 , -0.7071067690849304f);
+                        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
+                            newPortal2.rotation = new Quaternion(0.7071067690849304f, 0, 0, -0.7071067690849304f);
                             newPortal1.rotation = new Quaternion(-0.7071067094802856f, 0, 0, -0.7071067094802856f);
                             portal2Extension.adjustPositionAfterTeleport = true;
                             portal1Extension.adjustPositionAfterTeleport = false;
