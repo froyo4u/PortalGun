@@ -17,7 +17,7 @@ import tk.meowmc.portalgun.Portalgun;
 
 @Mixin(ClientPlayNetworkHandler.class)
 @Environment(EnvType.CLIENT)
-public class ClientPlayNetworkHandlerMixin {
+public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow
     private MinecraftClient client;
 

@@ -24,7 +24,6 @@ public class PortalgunClient implements ClientModInitializer {
                     McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal2");
                 });
             }
-
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
