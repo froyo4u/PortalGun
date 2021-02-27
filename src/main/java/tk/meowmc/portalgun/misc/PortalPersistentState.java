@@ -15,33 +15,25 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class PortalPersistentState extends PersistentState {
-
-    public HashMap<String, Portal> portals = new HashMap<>();
+    public static Map<String, Portal> portals = new HashMap<>();
+    MinecraftClient client = MinecraftClient.getInstance();
 
     public PortalPersistentState(String key) {
         super(key);
     }
 
-    MinecraftClient client = MinecraftClient.getInstance();
-
-    @Override
-    public void fromTag(CompoundTag tag) {
-        ServerWorld currWorld = McHelper.getServerWorld(client.world.getRegistryKey());
-        this.portals = getPortalsFromTag(tag, currWorld);
-    }
-
-    public HashMap<String, Portal> getPortals() {
+    public static Map<String, Portal> getPortals() {
         return portals;
     }
 
-
-    private static HashMap<String, Portal> getPortalsFromTag(CompoundTag tag, World currWorld) {
+    private Map<String, Portal> getPortalsFromTag(CompoundTag tag, World currWorld) {
         ListTag listTag = tag.getList("portals", 10);
-        HashMap<String, Portal> newData = new HashMap<>();
+        Map<String, Portal> newData = new HashMap<>();
 
-        for(int i = 0; i < listTag.size(); ++i) {
+        for (int i = 0; i < listTag.size(); ++i) {
             CompoundTag compoundTag = listTag.getCompound(i);
             Portal e = readPortalFromTag(currWorld, compoundTag);
             if (e != null) {
@@ -54,12 +46,18 @@ public class PortalPersistentState extends PersistentState {
         return newData;
     }
 
-    private static Portal readPortalFromTag(World currWorld, CompoundTag compoundTag) {
+    private Portal readPortalFromTag(World currWorld, CompoundTag compoundTag) {
         Identifier entityId = new Identifier(compoundTag.getString("entity_type"));
         EntityType<?> entityType = (EntityType) Registry.ENTITY_TYPE.get(entityId);
         Entity e = entityType.create(currWorld);
         e.fromTag(compoundTag);
-        return (Portal)e;
+        return (Portal) e;
+    }
+
+    @Override
+    public void fromTag(CompoundTag tag) {
+        ServerWorld currWorld = McHelper.getServerWorld(client.world.getRegistryKey());
+        portals = getPortalsFromTag(tag, currWorld);
     }
 
     @Override
@@ -79,6 +77,8 @@ public class PortalPersistentState extends PersistentState {
                 tag.putString("useruuid", client.player.getUuidAsString());
             }
         }
-            return tag;
+        return tag;
     }
+
+
 }

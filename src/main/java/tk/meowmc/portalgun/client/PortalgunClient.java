@@ -18,21 +18,21 @@ public class PortalgunClient implements ClientModInitializer {
     public void onInitializeClient() {
         KeyBinding clearPortals = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.portalgun.clearportals", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-                while (clearPortals.wasPressed()) {
-                    McHelper.executeOnServerThread(() -> {
-                        McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal1");
-                        McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal2");
-                    });
-                }
+            while (clearPortals.wasPressed()) {
+                McHelper.executeOnServerThread(() -> {
+                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal1");
+                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal2");
+                });
+            }
 
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-                if (client.options.keyAttack.isPressed()) {
-                    McHelper.executeOnServerThread(() -> {
-                        McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
-                    });
-                }
+            if (client.options.keyAttack.isPressed()) {
+                McHelper.executeOnServerThread(() -> {
+                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
+                });
+            }
         });
     }
 }

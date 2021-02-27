@@ -14,11 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.misc.PortalPersistentState;
-
-import java.util.UUID;
-
-import static tk.meowmc.portalgun.items.PortalGunItem.KEY;
 
 @Mixin(ClientPlayNetworkHandler.class)
 @Environment(EnvType.CLIENT)
@@ -26,16 +21,13 @@ public class ClientPlayNetworkHandlerMixin {
     @Shadow
     private MinecraftClient client;
 
-
     @Inject(method = "onGameJoin", at = @At("TAIL"))
-    private void afterGameJoin(GameJoinS2CPacket packet, CallbackInfo ci){
+    private void afterGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         Portalgun.log(Level.INFO, "After Game Join!");
-        UUID uuid = client.player.getUuid();
-        PortalPersistentState portalPersistentState = McHelper.getServerWorld(client.world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
-        portalPersistentState.portals = portalPersistentState.getPortals();
         McHelper.executeOnServerThread(() -> {
             McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
         });
+
     }
 
 }

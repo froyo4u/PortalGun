@@ -27,8 +27,9 @@ public class RemoteCallables {
                     1.0F,
                     1F);
         }
-        persistentState.getPortals().remove(key);
+        PortalPersistentState.getPortals().remove(key);
         persistentState.markDirty();
+        waitPortal = false;
     }
 
     public static void removeOldPortal2(ServerPlayerEntity user) {
@@ -45,9 +46,9 @@ public class RemoteCallables {
                     SoundCategory.NEUTRAL,
                     1.0F,
                     1F);
-            persistentState.getPortals().remove(key);
+            PortalPersistentState.getPortals().remove(key);
             persistentState.markDirty();
-
+            waitPortal = false;
         }
     }
 
@@ -55,22 +56,20 @@ public class RemoteCallables {
         PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
         ItemStack itemStack = user.getStackInHand(user.getActiveHand());
         boolean portalGunActive = itemStack.getItem() == Portalgun.PORTALGUN;
-            if (newPortal1 != null && portalGunActive) {
-                if (user.handSwingTicks == -1 && newPortal1.age >= 2 && newPortal1.isAlive()) {
-                    gunItem.portal1Spawn(user.world, user, user.getActiveHand());
-                } else if (user.handSwingTicks == -1 && !newPortal1.isAlive()) {
-                    gunItem.portal1Spawn(user.world, user, user.getActiveHand());
-                    newPortal1.removed = false;
-                }
-            } else if (newPortal1 == null && portalGunActive) {
+        if (newPortal1 != null && portalGunActive) {
+            if (user.handSwingTicks == -1 && newPortal1.age >= 2 && newPortal1.isAlive()) {
                 gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+            } else if (user.handSwingTicks == -1 && !newPortal1.isAlive()) {
+                gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                newPortal1.removed = false;
             }
+        } else if (newPortal1 == null && portalGunActive) {
+            gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+        }
     }
 
-    public static void resetWaits(ServerPlayerEntity user)
-    {
-        waitPortal1 = false;
-        waitPortal2 = false;
+    public static void resetWaits(ServerPlayerEntity user) {
+        waitPortal = false;
     }
 
 }
