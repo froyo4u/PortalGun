@@ -27,6 +27,7 @@ import tk.meowmc.portalgun.misc.PortalPersistentState;
 import tk.meowmc.portalgun.misc.TaskList;
 
 import static net.minecraft.util.hit.HitResult.Type.BLOCK;
+import static net.minecraft.util.hit.HitResult.Type.MISS;
 
 public class PortalGunItem extends Item {
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
@@ -198,7 +199,9 @@ public class PortalGunItem extends Item {
         Entity entity = this.client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
 
-        if (hit.getType() == BLOCK) {
+        if (hit.getType() == MISS)
+            return TypedActionResult.fail(itemStack);
+        else if (hit.getType() == BLOCK) {
             Direction direction = ((BlockHitResult) hit).getSide();
 
             PortalPersistentState portalPersistentState = McHelper.getServerWorld(world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
@@ -266,7 +269,7 @@ public class PortalGunItem extends Item {
 
                 ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
 
-                    PortalMethods.portal2Mtehods(user, hit);
+                    PortalMethods.portal2Methods(user, hit);
 
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
@@ -300,7 +303,7 @@ public class PortalGunItem extends Item {
 
         }
 
-        return TypedActionResult.success(itemStack, world.isClient());
+        return TypedActionResult.pass(itemStack);
     }
 
 }
