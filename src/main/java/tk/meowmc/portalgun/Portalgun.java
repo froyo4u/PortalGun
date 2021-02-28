@@ -29,13 +29,17 @@ public class Portalgun implements ModInitializer {
     public static SoundEvent PORTAL_CLOSE_EVENT = new SoundEvent(PORTAL_CLOSE);
     MinecraftClient client = MinecraftClient.getInstance();
 
-    public static void log(Level level, String message) {
+    public static void logString(Level level, String message) {
+        LOGGER.log(level, "[" + MOD_NAME + "] " + message);
+    }
+
+    public static void logInt(Level level, int message) {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message);
     }
 
     @Override
     public void onInitialize() {
-        log(Level.INFO, "Initializing");
+        logString(Level.INFO, "Initializing");
         Registry.register(Registry.ITEM, new Identifier(MODID, "portal_gun"), PORTALGUN);
         Registry.register(Registry.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);

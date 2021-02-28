@@ -23,7 +23,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void afterGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
-        Portalgun.log(Level.INFO, "After Game Join!");
+        Portalgun.logString(Level.INFO, "After Game Join!");
         McHelper.executeOnServerThread(() -> {
             McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
         });
