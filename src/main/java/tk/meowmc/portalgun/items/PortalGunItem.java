@@ -254,6 +254,8 @@ public class PortalGunItem extends Item {
 
             int delay = (int) (0.5 * distance);
 
+            client.attackCooldown = 10;
+            client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
 
             if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir()) {
 
