@@ -35,6 +35,7 @@ public class PortalMethods {
     static double annoyingNumber5 = 2.220446049250313E-16;
     static double annoyingNumber6 = 1.8746996965264928E-33;
 
+    @SuppressWarnings("ReturnOfNull")
     public static Vec3d getDirectionVec(Direction direction) {
         switch (direction) {
             case UP:
@@ -422,7 +423,7 @@ public class PortalMethods {
         }
     }
 
-    public static void portal2Mtehods(LivingEntity user, HitResult hit) {
+    public static void portal2Methods(LivingEntity user, HitResult hit) {
 
         Direction direction = ((BlockHitResult) hit).getSide();
 
