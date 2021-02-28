@@ -1,14 +1,38 @@
 package tk.meowmc.portalgun.mixin;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.HitResult;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import tk.meowmc.portalgun.misc.AnimationMethods;
+import tk.meowmc.portalgun.misc.MinecraftClientMethods;
+
+import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
 
 @Mixin(value = MinecraftClient.class, priority = 1500)
 public abstract class MinecraftClientMixin {
+
+    @Shadow
+    public ClientWorld world;
+    @Shadow
+    public HitResult crosshairTarget;
+    @Shadow
+    @Nullable
+    public ClientPlayerEntity player;
+    @Shadow
+    public int attackCooldown;
+
+    public MinecraftClientMixin() {
+    }
+
+    @Shadow
+    protected abstract void doItemPick();
 
     @Inject(
             method = {"handleBlockBreaking"},
@@ -18,9 +42,12 @@ public abstract class MinecraftClientMixin {
             )},
             cancellable = true
     )
-    private void onHandleBlockBreaking(boolean bl, CallbackInfo ci) {
-        AnimationMethods.doBlockBreaking(bl);
-        ci.cancel();
+    private void onHandleBlockBreaking(boolean isKeyPressed, CallbackInfo ci) {
+        if (MinecraftClientMethods.isPointingToPortal()) {
+            MinecraftClientMethods.myHandleBlockBreaking(isKeyPressed);
+            ci.cancel();
+        }
+
     }
 
     @Inject(
@@ -29,8 +56,13 @@ public abstract class MinecraftClientMixin {
             cancellable = true
     )
     private void onDoAttack(CallbackInfo ci) {
-        AnimationMethods.doAttack();
+        if (this.attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN)) {
+            MinecraftClientMethods.myAttackBlock();
+        } else {
+            MinecraftClientMethods.doAttack();
+        }
         ci.cancel();
+
     }
 
     @Inject(
@@ -41,8 +73,12 @@ public abstract class MinecraftClientMixin {
             )},
             cancellable = true
     )
-    private void doItemUse(CallbackInfo ci) {
-        AnimationMethods.doItemUse();
+    private void onDoItemUse(CallbackInfo ci) {
+        if (MinecraftClientMethods.isPointingToPortal()) {
+            MinecraftClientMethods.myItemUse(Hand.MAIN_HAND);
+            ci.cancel();
+        }
+
     }
 
 }

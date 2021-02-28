@@ -255,8 +255,6 @@ public class PortalMethods {
         Vec3d portal2AxisH = newPortal2.axisH;
 
 
-
-
         newPortal2 = Settings2(direction, blockPos);
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
