@@ -100,6 +100,7 @@ public class PortalGunItem extends Item {
             BlockPos space2BlockPos = blockPos.add(0, -1, 0);
             BlockPos space3BlockPos = blockPos.add(0, -1, -1);
 
+
             switch (direction) {
                 case UP:
                     space1BlockPos = blockPos.add(0, 1, 0);
