@@ -59,7 +59,12 @@ shadowJar {
         exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
     }
 }
-
+afterEvaluate {
+    remapJar {
+        input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+        archiveName = "${archivesBaseName}-${version}-mc${project.minecraft_version}-fabric.jar"
+    }
+}
 processResources {
     inputs.property "version", project.version
 
@@ -114,6 +119,6 @@ publishing {
 }
 
 task additionalCopy(type:Copy){
-    from file("${project.buildDir}/libs/$archivesBaseName-${version}.jar")
+    from file("${project.buildDir}/libs/$archivesBaseName-${version}-mc${project.minecraft_version}-fabric.jar")
     into file("${project.buildDir}/to_upload")
 }
