@@ -147,7 +147,7 @@ public class PortalGunItem extends Item {
                 waitPortal = false;
             })));
 
-            if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir()) {
+            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque()) {
                 world.playSound(null,
                         user.getX(),
                         user.getY(),
@@ -257,7 +257,9 @@ public class PortalGunItem extends Item {
             client.attackCooldown = 10;
             client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
 
-            if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir()) {
+            // if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir())
+
+            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque()) {
 
                 world.playSound(null,
                         user.getX(),
