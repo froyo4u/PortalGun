@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.ejml.data.FixedMatrix3x3_64F;
 
 import java.util.stream.Collectors;
@@ -242,10 +243,14 @@ public class PortalMethods {
         setPlaneInformation(hit);
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
+        World portal2World = McHelper.getServerWorld(World.OVERWORLD);
 
         newPortal1 = Settings1(direction, blockPos);
         newPortal1.setDestination(newPortal2.getPos());
 
+        if (newPortal2 != null) {
+            portal2World = newPortal2.getOriginWorld();
+        }
         Vec3d portal2AxisW = newPortal2.axisW;
         Vec3d portal2AxisH = newPortal2.axisH;
 
@@ -253,6 +258,8 @@ public class PortalMethods {
         newPortal2 = Settings2(direction, blockPos);
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
+        newPortal2.setWorld(portal2World);
+
         newPortal2.axisW = portal2AxisW;
         newPortal2.axisH = portal2AxisH;
 
@@ -432,14 +439,22 @@ public class PortalMethods {
         setPlaneInformation(hit);
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
+        World portal1World = McHelper.getServerWorld(World.OVERWORLD);
 
+        if (newPortal1 != null) {
+            portal1World = newPortal1.getOriginWorld();
+        }
         Vec3d portal1AxisW = newPortal1.axisW;
         Vec3d portal1AxisH = newPortal1.axisH;
         newPortal2 = Settings2(direction, blockPos);
 
+
         newPortal1 = Settings1(direction, blockPos);
+
+
         newPortal1.updatePosition(newPortal2.getDestPos().getX(), newPortal2.getDestPos().getY(), newPortal2.getDestPos().getZ());
         newPortal1.setDestination(new Vec3d(newPortal2.getX(), newPortal2.getY(), newPortal2.getZ()));
+        newPortal1.setWorld(portal1World);
         newPortal1.axisW = portal1AxisW;
         newPortal1.axisH = portal1AxisH;
 
