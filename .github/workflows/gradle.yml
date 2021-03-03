@@ -34,3 +34,13 @@ jobs:
         files: 'build/to_upload/*'
         # secrets.GITHUB_TOKEN
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Cache
+      uses: actions/cache@v2.1.4
+      with:
+        path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+      key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      restore-keys: |
+        ${{ runner.os }}-gradle-
