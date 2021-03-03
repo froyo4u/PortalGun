@@ -85,7 +85,6 @@ public class PortalGunItem extends Item {
 
     public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        user.getItemCooldownManager().set(this, 4);
         Entity entity = this.client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
 
@@ -146,6 +145,9 @@ public class PortalGunItem extends Item {
             ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                 waitPortal = false;
             })));
+
+            if (!user.getItemCooldownManager().isCoolingDown(this))
+                user.getItemCooldownManager().set(this, 4);
 
             if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque()) {
                 world.playSound(null,

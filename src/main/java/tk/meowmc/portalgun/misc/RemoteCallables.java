@@ -70,20 +70,20 @@ public class RemoteCallables {
         if (delay && newPortal1 != null && portalGunActive) {
             if (newPortal1.age >= 2 && newPortal1.isAlive()) {
                 gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                client.attackCooldown = 10;
+                client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
             } else if (!newPortal1.isAlive()) {
                 gunItem.portal1Spawn(user.world, user, user.getActiveHand());
                 newPortal1.removed = false;
+                client.attackCooldown = 10;
+                client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
             }
-
-            client.attackCooldown = 10;
-            client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
 
         } else if (delay && newPortal1 == null && portalGunActive) {
             gunItem.portal1Spawn(user.world, user, user.getActiveHand());
             client.attackCooldown = 10;
             client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
         }
-        delay = false;
     }
 
     public static void resetWaits(ServerPlayerEntity user) {
