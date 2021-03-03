@@ -11,7 +11,7 @@ on:
 jobs:
   build:
 
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -19,8 +19,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       
     - name: Build with Gradle
@@ -34,13 +32,3 @@ jobs:
         files: 'build/to_upload/*'
         # secrets.GITHUB_TOKEN
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Cache
-      uses: actions/cache@v2.1.4
-      with:
-        path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
