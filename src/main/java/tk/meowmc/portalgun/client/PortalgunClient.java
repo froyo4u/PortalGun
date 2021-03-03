@@ -31,10 +31,7 @@ public class PortalgunClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.options.keyAttack.isPressed()) {
-                if (tickCounter % 4 != 0) {
-                    delay = false;
-                } else if (tickCounter % 4 == 0)
-                    delay = true;
+                delay = tickCounter % 4 == 0;
 
                 // Portalgun.logInt(Level.INFO, tickCounter);
                 if (delay) {
