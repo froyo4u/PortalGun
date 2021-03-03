@@ -8,6 +8,10 @@ plugins {
         mavenCentral()
         mavenLocal()
         maven {
+            url 'https://maven.fabricmc.net/'
+            name 'Fabric'
+        }
+        maven {
             name = 'JitPack'
             url = 'https://jitpack.io'
         }
@@ -41,6 +45,8 @@ dependencies {
 
     modImplementation "com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.ip_version}"
     include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT'
+
+    modCompileOnly 'com.github.Virtuoel:Pehkui:1.17-SNAPSHOT'
 
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
