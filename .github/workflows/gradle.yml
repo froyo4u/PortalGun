@@ -21,7 +21,7 @@ jobs:
 
       
     - name: Build with Gradle
-      run: gradle build additionalCopy
+      run: gradlew build additionalCopy
       env:
         BUILD_RELEASE: ${{ github.event.prerelease == false }}
     
