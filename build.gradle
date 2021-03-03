@@ -51,7 +51,7 @@ allprojects {
         // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
         // You may need to force-disable transitiveness on them.
     }
-}
+
     shadowJar {
         dependencies {
             exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
@@ -76,6 +76,7 @@ allprojects {
             exclude "fabric.mod.json"
         }
     }
+}
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
 // this fixes some edge cases with special characters not displaying correctly
