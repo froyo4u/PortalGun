@@ -4,6 +4,7 @@ import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.portal.Portal;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -42,6 +43,9 @@ public class PortalGunItem extends Item {
     Vec3d positionCorrectionVec;
     Portal portal1;
     Portal portal2;
+    public static BlockState space1BlockState;
+    public static BlockState space2BlockState;
+    public static BlockState space3BlockState;
 
     public PortalGunItem(Settings settings) {
         super(settings);
@@ -128,9 +132,9 @@ public class PortalGunItem extends Item {
                     break;
             }
 
-            BlockState space1BlockState = user.world.getBlockState(space1BlockPos);
-            BlockState space2BlockState = user.world.getBlockState(space2BlockPos);
-            BlockState space3BlockState = user.world.getBlockState(space3BlockPos);
+            space1BlockState = user.world.getBlockState(space1BlockPos);
+            space2BlockState = user.world.getBlockState(space2BlockPos);
+            space3BlockState = user.world.getBlockState(space3BlockPos);
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
@@ -149,7 +153,7 @@ public class PortalGunItem extends Item {
             if (!user.getItemCooldownManager().isCoolingDown(this))
                 user.getItemCooldownManager().set(this, 4);
 
-            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque()) {
+            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque() || space2BlockState.getBlock().is(Blocks.SNOW)) {
                 world.playSound(null,
                         user.getX(),
                         user.getY(),
@@ -166,6 +170,7 @@ public class PortalGunItem extends Item {
                     PortalMethods.portal1Methods(user, hit);
 
                     newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
+
 
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
@@ -243,9 +248,9 @@ public class PortalGunItem extends Item {
                     break;
             }
 
-            BlockState space1BlockState = user.world.getBlockState(space1BlockPos);
-            BlockState space2BlockState = user.world.getBlockState(space2BlockPos);
-            BlockState space3BlockState = user.world.getBlockState(space3BlockPos);
+            space1BlockState = user.world.getBlockState(space1BlockPos);
+            space2BlockState = user.world.getBlockState(space2BlockPos);
+            space3BlockState = user.world.getBlockState(space3BlockPos);
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
             double distanceZ = blockPos.getZ() - user.getZ();
@@ -261,7 +266,7 @@ public class PortalGunItem extends Item {
 
             // if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir())
 
-            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque()) {
+            if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque() || space2BlockState.getBlock().is(Blocks.SNOW)) {
 
                 world.playSound(null,
                         user.getX(),
