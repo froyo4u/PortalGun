@@ -45,7 +45,9 @@ allprojects {
         implementation group: 'com.googlecode.efficient-java-matrix-library', name: 'ejml', version: '0.25'
         include "com.googlecode.efficient-java-matrix-library:ejml:0.25"
 
-        modImplementation('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT')
+        modImplementation('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT') {
+            transitive = false
+        }
         include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT'
 
         // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
