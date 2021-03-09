@@ -6,6 +6,7 @@ import com.qouteall.immersive_portals.portal.GeometryPortalShape;
 import com.qouteall.immersive_portals.portal.Portal;
 import com.qouteall.immersive_portals.portal.PortalExtension;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.hit.BlockHitResult;
@@ -16,6 +17,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.ejml.data.FixedMatrix3x3_64F;
+import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,7 +39,7 @@ public class PortalMethods {
     static double annoyingNumber6 = 1.8746996965264928E-33;
 
     @SuppressWarnings("ReturnOfNull")
-    public static Vec3d getDirectionVec(Direction direction) {
+    public static Vec3d getDirectionVec(Direction direction)    {
         switch (direction) {
             case UP:
                 return new Vec3d(0, -1, 0);
@@ -235,6 +237,11 @@ public class PortalMethods {
         return new DQuaternion(x, y, z, w).toMcQuaternion();
     }
 
+    public static void setRotations(double x1, double y1, double z1, double w1, double x2, double y2, double z2, double w2) {
+        newPortal1.rotation = convertQuaternion(x1, y1, z1, w1);
+        newPortal2.rotation = convertQuaternion(x2, y2, z2, w2);
+    }
+
     public static void portal1Methods(LivingEntity user, HitResult hit) {
         Direction direction = ((BlockHitResult) hit).getSide();
 
@@ -267,46 +274,47 @@ public class PortalMethods {
         PortalExtension portal2Extension = PortalExtension.get(newPortal2);
 
 
-        Quaternion orientationPortal1 = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).getConjugated()).toMcQuaternion();
-        Quaternion orientationPortal2 = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).getConjugated()).toMcQuaternion();
+        Quaternion p1Rot = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).getConjugated()).toMcQuaternion();
+        Quaternion p2Rot = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).getConjugated()).toMcQuaternion();
 
-        newPortal1.rotation = orientationPortal1;
-        newPortal2.rotation = orientationPortal2;
+        newPortal1.rotation = p1Rot;
+        newPortal2.rotation = p2Rot;
+
+        DQuaternion conTest1 = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH);
+        DQuaternion conTest2 = conTest1.hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH));
+        DQuaternion conTest3 = conTest2.getConjugated();
+
 
         if (newPortal1.rotation.getW() == 1 && newPortal2.rotation.getW() == 1 || newPortal1.rotation.getW() == annoyingNumber6 && newPortal2.rotation.getW() == annoyingNumber6) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), 1, orientationPortal1.getZ(), 0);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), 1, orientationPortal2.getZ(), 0);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), 1, p1Rot.getZ(), 0);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), 1, p2Rot.getZ(), 0);
+            // setRotations(p1Rot.getX(), 1, p1Rot.getZ(), 0, p2Rot.getX(), 1, p2Rot.getZ(), 0);
+        } else if (newPortal1.rotation.getW() == annoyingNumber2 && newPortal2.rotation.getW() == annoyingNumber2) {
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
+            // setRotations(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1, p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
         }
-        if (newPortal1.rotation.getW() == annoyingNumber2 && newPortal2.rotation.getW() == annoyingNumber2) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
-        }
+
         if (newPortal1.rotation.getW() == annoyingNumber1 && newPortal2.rotation.getW() == -annoyingNumber1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), -annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), -annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), annoyingNumber1);
         } else if (newPortal1.rotation.getW() == -annoyingNumber1 && newPortal2.rotation.getW() == annoyingNumber1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
         }
+
         if (newPortal1.rotation.getW() == annoyingNumber4 && newPortal2.rotation.getW() == annoyingNumber4 || newPortal1.rotation.getW() == annoyingNumber5 && newPortal2.rotation.getW() == annoyingNumber5 || newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = null;
             newPortal2.rotation = null;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-        }
-        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1 || newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), -annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), annoyingNumber1);
+        } else if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1 || newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), -annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), annoyingNumber1);
         } else if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), orientationPortal1.getY(), annoyingNumber1, annoyingNumber1);
-        }
-
-        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
-        }
-        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), p1Rot.getY(), annoyingNumber1, annoyingNumber1);
+        } else if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1 || newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
         }
 
         switch (direction) {
@@ -330,43 +338,43 @@ public class PortalMethods {
             newPortal1.rotation = null;
             newPortal2.rotation = null;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-        }
+        } else
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, -0.5f);
             newPortal2.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, 0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, -0.5f);
             newPortal1.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, 0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z - 0.999));
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(0, 0, 1, 0);
             newPortal2.rotation = convertQuaternion(0, 0, 1, 0);
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1, newPortal2.getDestPos().z - 1));
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = convertQuaternion(0, 0, 1, 0);
             newPortal2.rotation = convertQuaternion(0, 0, 1, 0);
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = convertQuaternion(-annoyingNumber1, 0, 0, annoyingNumber1);
             newPortal2.rotation = convertQuaternion(0, annoyingNumber3, -annoyingNumber3, 0);
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z - 0.999));
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1) {
-            newPortal2.rotation = convertQuaternion(-annoyingNumber1, 0, 0, annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(0, -annoyingNumber1, annoyingNumber1, 0);
             newPortal1.rotation = convertQuaternion(0, annoyingNumber3, -annoyingNumber3, 0);
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y, newPortal2.getDestPos().z + 0.001));
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(-annoyingNumber1, 0, 0, -annoyingNumber1);
@@ -374,14 +382,14 @@ public class PortalMethods {
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.001, newPortal2.getDestPos().z));
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
-            newPortal2.rotation = convertQuaternion(-annoyingNumber1, 0, 0, -annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(annoyingNumber2, -annoyingNumber1, -annoyingNumber1, annoyingNumber2);
             newPortal1.rotation = convertQuaternion(0, annoyingNumber3, annoyingNumber3, 0);
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y, newPortal2.getDestPos().z - 0.001));
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, 0.5f);
@@ -389,14 +397,14 @@ public class PortalMethods {
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x + 0.001, newPortal2.getDestPos().y, newPortal2.getDestPos().z));
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, 0.5f);
             newPortal1.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, -0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y + 1.002, newPortal2.getDestPos().z - 0.999));
-        }
+        } else
 
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, -0.5f);
@@ -404,14 +412,14 @@ public class PortalMethods {
             portal1Extension.adjustPositionAfterTeleport = false;
             portal2Extension.adjustPositionAfterTeleport = true;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x - 0.001, newPortal2.getDestPos().y, newPortal2.getDestPos().z));
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1) {
             newPortal2.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, -0.5f);
             newPortal1.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, 0.5f);
             portal2Extension.adjustPositionAfterTeleport = false;
             portal1Extension.adjustPositionAfterTeleport = true;
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x - 0.001, newPortal2.getDestPos().y - 0.001, newPortal2.getDestPos().z));
-        }
+        } else
 
 
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
@@ -420,7 +428,7 @@ public class PortalMethods {
             newPortal2.setDestination(new Vec3d(newPortal2.getDestPos().x, newPortal2.getDestPos().y - 0.001, newPortal2.getDestPos().z));
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = false;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(annoyingNumber1, 0, 0, -annoyingNumber1);
             newPortal1.rotation = convertQuaternion(-annoyingNumber3, 0, 0, -annoyingNumber3);
@@ -428,6 +436,13 @@ public class PortalMethods {
             portal2Extension.adjustPositionAfterTeleport = true;
             portal1Extension.adjustPositionAfterTeleport = false;
         }
+
+        if (space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP)
+        {
+            newPortal1.updatePosition(newPortal1.getX(), newPortal1.getY()-0.875, newPortal1.getZ());
+            newPortal2.setDestination(newPortal2.getDestPos().add(0, -0.875, 0));
+        }
+
     }
 
     public static void portal2Methods(LivingEntity user, HitResult hit) {
@@ -461,46 +476,55 @@ public class PortalMethods {
         PortalExtension portal1Extension = PortalExtension.get(newPortal1);
         PortalExtension portal2Extension = PortalExtension.get(newPortal2);
 
-        Quaternion orientationPortal1 = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).getConjugated()).toMcQuaternion();
-        Quaternion orientationPortal2 = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).getConjugated()).toMcQuaternion();
+        Quaternion p1Rot = PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).getConjugated()).toMcQuaternion();
+        Quaternion p2Rot = PortalManipulation.getPortalOrientationQuaternion(newPortal2.axisW, newPortal2.axisH).hamiltonProduct(PortalManipulation.getPortalOrientationQuaternion(newPortal1.axisW, newPortal1.axisH).getConjugated()).toMcQuaternion();
 
-        newPortal1.rotation = orientationPortal1;
-        newPortal2.rotation = orientationPortal2;
+        newPortal1.rotation = p1Rot;
+        newPortal2.rotation = p2Rot;
+
+        if (PortalGunItem.space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP)
+        {
+            newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY()-0.875, newPortal2.getZ());
+        }
 
         if (newPortal1.rotation.getW() == 1 && newPortal2.rotation.getW() == 1 || newPortal1.rotation.getW() == annoyingNumber6 && newPortal2.rotation.getW() == annoyingNumber6) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), 1, orientationPortal1.getZ(), 0);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), 1, orientationPortal2.getZ(), 0);
-        }
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), 1, p1Rot.getZ(), 0);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), 1, p2Rot.getZ(), 0);
+        } else
         if (newPortal1.rotation.getW() == annoyingNumber2 && newPortal2.rotation.getW() == annoyingNumber2) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
         }
+
+
         if (newPortal1.rotation.getW() == annoyingNumber1 && newPortal2.rotation.getW() == -annoyingNumber1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), -annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), -annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), annoyingNumber1);
         } else if (newPortal1.rotation.getW() == -annoyingNumber1 && newPortal2.rotation.getW() == annoyingNumber1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
         }
+
+
         if (newPortal1.rotation.getW() == annoyingNumber4 && newPortal2.rotation.getW() == annoyingNumber4 || newPortal1.rotation.getW() == annoyingNumber5 && newPortal2.rotation.getW() == annoyingNumber5 || newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 || newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = null;
             newPortal2.rotation = null;
-        }
-        if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1 || newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), -annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), annoyingNumber1);
-        }
+        } else
+        if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), -annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), annoyingNumber1);
+        } else
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
-        }
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), annoyingNumber1, orientationPortal1.getZ(), annoyingNumber1);
-            newPortal2.rotation = convertQuaternion(orientationPortal2.getX(), annoyingNumber1, orientationPortal2.getZ(), -annoyingNumber1);
-        }
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), annoyingNumber1, p1Rot.getZ(), annoyingNumber1);
+            newPortal2.rotation = convertQuaternion(p2Rot.getX(), annoyingNumber1, p2Rot.getZ(), -annoyingNumber1);
+        } else
 
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
-            newPortal1.rotation = convertQuaternion(orientationPortal1.getX(), orientationPortal1.getY(), annoyingNumber1, annoyingNumber1);
+            newPortal1.rotation = convertQuaternion(p1Rot.getX(), p1Rot.getY(), annoyingNumber1, annoyingNumber1);
         }
 
         newPortal1.setDestination(new Vec3d(newPortal2.getX(), newPortal2.getY(), newPortal2.getZ()));
@@ -510,59 +534,59 @@ public class PortalMethods {
             newPortal2.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, 0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, -0.5f);
             newPortal1.rotation = convertQuaternion(0.5f, 0.5f, -0.5f, 0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(0, 0, 1, 0);
             newPortal2.rotation = convertQuaternion(0, 0, 1, 0);
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = convertQuaternion(0, 0, 1, 0);
             newPortal2.rotation = convertQuaternion(0, 0, 1, 0);
-        }
+        } else
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == 1) {
             newPortal1.rotation = convertQuaternion(-annoyingNumber1, 0, 0, annoyingNumber1);
             newPortal2.rotation = convertQuaternion(0, annoyingNumber3, -annoyingNumber3, 0);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1) {
             newPortal2.rotation = convertQuaternion(-annoyingNumber1, 0, 0, annoyingNumber1);
             newPortal1.rotation = convertQuaternion(0, annoyingNumber3, -annoyingNumber3, 0);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(-annoyingNumber1, 0, 0, -annoyingNumber1);
             newPortal2.rotation = convertQuaternion(0, annoyingNumber3, annoyingNumber3, 0);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(-annoyingNumber1, 0, 0, -annoyingNumber1);
             newPortal1.rotation = convertQuaternion(0, annoyingNumber3, annoyingNumber3, 0);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == -1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1) {
             newPortal1.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, 0.5f);
             newPortal2.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, -0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == -1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, 0.5f);
             newPortal1.rotation = convertQuaternion(0.5f, -0.5f, -0.5f, -0.5f);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
 
         if (newPortal1.axisH.y == 1 && newPortal1.axisW.z == 1 && newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1) {
@@ -570,13 +594,13 @@ public class PortalMethods {
             newPortal2.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, 0.5f);
             portal1Extension.adjustPositionAfterTeleport = false;
             portal2Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
         if (newPortal2.axisH.y == 1 && newPortal2.axisW.z == 1 && newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1) {
             newPortal2.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, -0.5f);
             newPortal1.rotation = convertQuaternion(-0.5f, 0.5f, 0.5f, 0.5f);
             portal2Extension.adjustPositionAfterTeleport = false;
             portal1Extension.adjustPositionAfterTeleport = true;
-        }
+        } else
 
 
         if (newPortal1.axisH.z == 1 && newPortal1.axisW.x == 1 && newPortal2.axisH.y == 1 && newPortal2.axisW.x == -1) {
@@ -584,13 +608,23 @@ public class PortalMethods {
             newPortal2.rotation = convertQuaternion(-annoyingNumber3, 0, 0, -annoyingNumber3);
             portal1Extension.adjustPositionAfterTeleport = true;
             portal2Extension.adjustPositionAfterTeleport = false;
-        }
+        } else
         if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == 1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1) {
             newPortal2.rotation = convertQuaternion(annoyingNumber1, 0, 0, -annoyingNumber1);
             newPortal1.rotation = convertQuaternion(-annoyingNumber3, 0, 0, -annoyingNumber3);
             portal2Extension.adjustPositionAfterTeleport = true;
             portal1Extension.adjustPositionAfterTeleport = false;
         }
+
+        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == -1 /* dmwiamdwadwa */) {
+            newPortal1.rotation = convertQuaternion(0, annoyingNumber3, annoyingNumber3, 0);
+            newPortal2.rotation = convertQuaternion(annoyingNumber2, -annoyingNumber1, -annoyingNumber1, annoyingNumber2);
+        } else
+        if (newPortal2.axisH.z == 1 && newPortal2.axisW.x == -1 && newPortal1.axisH.y == 1 && newPortal1.axisW.x == 1 /* dmwiamdwadwa */) {
+            newPortal1.rotation = convertQuaternion(0, annoyingNumber3, -annoyingNumber3, 0);
+            newPortal2.rotation = convertQuaternion(0, -annoyingNumber1, annoyingNumber1, 0);
+        }
+
     }
 
 }
