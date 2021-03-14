@@ -20,6 +20,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.ejml.data.FixedMatrix3x3_64F;
 import tk.meowmc.portalgun.Portalgun;
@@ -51,28 +52,20 @@ public class PortalGunItem extends Item {
         super(settings);
     }
 
-    public static void removeOldPortal1(LivingEntity user, PortalPersistentState persistentState, World world) {
-        String key = user.getUuidAsString() + "-portalGunPortal0";
-        Portal portal = PortalPersistentState.getPortals().get(key);
-        if (portal != null) {
-            Entity portalEntity = McHelper.getServerWorld(portal.world.getRegistryKey()).getEntity(portal.getUuid());
-            if (portalEntity != null) {
-                portalEntity.kill();
+    public static void removeOldPortals(LivingEntity user, PortalPersistentState persistentState, World world) {
+        String key1 = user.getUuidAsString() + "-portalGunPortal0";
+        String key2 = user.getUuidAsString() + "-portalGunPortal1";
+        Portal portal1 = PortalPersistentState.getPortals().get(key1);
+        Portal portal2 = PortalPersistentState.getPortals().get(key2);
+        if (portal1 != null && portal2 != null) {
+            Entity portal1Entity = McHelper.getServerWorld(portal1.world.getRegistryKey()).getEntity(portal1.getUuid());
+            Entity portal2Entity = McHelper.getServerWorld(portal2.world.getRegistryKey()).getEntity(portal2.getUuid());
+            if (portal1Entity != null && portal2Entity != null) {
+                portal1Entity.kill();
+                portal2Entity.kill();
             }
-            PortalPersistentState.getPortals().replace(key, newPortal1);
-            persistentState.markDirty();
-        }
-    }
-
-    public static void removeOldPortal2(LivingEntity user, PortalPersistentState persistentState, World world) {
-        String key = user.getUuidAsString() + "-portalGunPortal1";
-        Portal portal = PortalPersistentState.getPortals().get(key);
-        if (portal != null) {
-            Entity portalEntity = McHelper.getServerWorld(portal.world.getRegistryKey()).getEntity(portal.getUuid());
-            if (portalEntity != null) {
-                portalEntity.kill();
-            }
-            PortalPersistentState.getPortals().replace(key, newPortal2);
+            PortalPersistentState.getPortals().replace(key1, newPortal1);
+            PortalPersistentState.getPortals().replace(key2, newPortal2);
             persistentState.markDirty();
         }
     }
@@ -140,10 +133,9 @@ public class PortalGunItem extends Item {
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
             double distanceZ = blockPos.getZ() - user.getZ();
 
-            Vec3d distanceCombined = new Vec3d(distanceX, distanceY, distanceZ);
+            Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
 
-            double distance = distanceCombined.length();
-
+            double distance = distanceVec.length();
             int delay = (int) (0.5 * distance);
 
             ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
@@ -171,13 +163,13 @@ public class PortalGunItem extends Item {
 
                     newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
 
+                    removeOldPortals(user, portalPersistentState, user.world);
+
 
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                         portal2 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
                         if (portal1 != null && portal2 != null) {
-                            removeOldPortal1(user, portalPersistentState, user.world);
-                            removeOldPortal2(user, portalPersistentState, user.world);
                             world.playSound(null,
                                     newPortal1.getX(),
                                     newPortal1.getY(),
@@ -255,16 +247,14 @@ public class PortalGunItem extends Item {
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
             double distanceZ = blockPos.getZ() - user.getZ();
 
-            Vec3d distanceCombined = new Vec3d(distanceX, distanceY, distanceZ);
+            Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
 
-            double distance = distanceCombined.length();
+            double distance = distanceVec.length();
 
             int delay = (int) (0.5 * distance);
 
             client.attackCooldown = 10;
             client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
-
-            // if (!world.isClient && !waitPortal && !space2BlockState.isAir() && space1BlockState.isAir() && space3BlockState.isAir())
 
             if (!world.isClient && !waitPortal && space2BlockState.isOpaque() && !space1BlockState.isOpaque() && !space3BlockState.isOpaque() || space2BlockState.getBlock().is(Blocks.SNOW)) {
 
@@ -283,12 +273,12 @@ public class PortalGunItem extends Item {
 
                     PortalMethods.portal2Methods(user, hit);
 
+                    removeOldPortals(user, portalPersistentState, world);
+
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                         portal2 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
                         if (portal1 != null && portal2 != null) {
-                            removeOldPortal1(user, portalPersistentState, world);
-                            removeOldPortal2(user, portalPersistentState, world);
                             world.playSound(null,
                                     newPortal2.getX(),
                                     newPortal2.getY(),
