@@ -113,12 +113,14 @@ public class PortalMethods {
 
     public static Portal Settings1(Direction direction, BlockPos blockPos) {
         Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
-        PortalExtension portalExtension = PortalExtension.get(portal);
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY() + 2, blockPos.getZ());
+        PortalExtension portal1Extension = PortalExtension.get(newPortal1);
+        PortalExtension portal2Extension = PortalExtension.get(newPortal2);
 
         portal.setDestination(destPos);
-        portal.dimensionTo = client.world.getRegistryKey();
+        portal.dimensionTo = newPortal2.world.getRegistryKey();
+        portal1Extension.adjustPositionAfterTeleport = false;
 
         switch (direction) {
             case SOUTH:
@@ -135,11 +137,13 @@ public class PortalMethods {
                 break;
             case UP:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y + 1.005, portalPosition.z);
-                portalExtension.adjustPositionAfterTeleport = true;
+                portal1Extension.adjustPositionAfterTeleport = true;
+                portal2Extension.adjustPositionAfterTeleport = true;
                 break;
             case DOWN:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y - 0.005, portalPosition.z);
-                portalExtension.adjustPositionAfterTeleport = true;
+                portal1Extension.adjustPositionAfterTeleport = true;
+                portal2Extension.adjustPositionAfterTeleport = true;
                 break;
         }
 
@@ -156,19 +160,20 @@ public class PortalMethods {
         portal.height = 2;
         makeRoundPortal(portal);
         portal.portalTag = "portalgun_portal1";
-        portalExtension.adjustPositionAfterTeleport = false;
         return portal;
     }
 
     public static Portal Settings2(Direction direction, BlockPos blockPos) {
         Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
-        PortalExtension portalExtension = PortalExtension.get(portal);
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destpos = newPortal1.getPos();
+        PortalExtension portal1Extension = PortalExtension.get(newPortal1);
+        PortalExtension portal2Extension = PortalExtension.get(newPortal2);
 
         portal.dimensionTo = newPortal1.world.getRegistryKey();
         portal.setDestination(newPortal1.getPos());
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
+        portal2Extension.adjustPositionAfterTeleport = false;
 
         switch (direction) {
             case SOUTH:
@@ -185,11 +190,13 @@ public class PortalMethods {
                 break;
             case UP:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y + 1.005, portalPosition.z);
-                portalExtension.adjustPositionAfterTeleport = true;
+                portal1Extension.adjustPositionAfterTeleport = true;
+                portal2Extension.adjustPositionAfterTeleport = true;
                 break;
             case DOWN:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y - 0.005, portalPosition.z);
-                portalExtension.adjustPositionAfterTeleport = true;
+                portal1Extension.adjustPositionAfterTeleport = true;
+                portal2Extension.adjustPositionAfterTeleport = true;
                 break;
         }
 
@@ -205,14 +212,12 @@ public class PortalMethods {
         portal.height = 2;
         makeRoundPortal(portal);
         portal.portalTag = "portalgun_portal2";
-        portalExtension.adjustPositionAfterTeleport = false;
         return portal;
     }
 
 
     public static void portal1Methods(LivingEntity user, HitResult hit) {
         Direction direction = ((BlockHitResult) hit).getSide();
-        Direction playerDirection = client.player.getHorizontalFacing();
 
         setPlaneInformation(hit);
         BlockHitResult blockHit = (BlockHitResult) hit;
@@ -246,7 +251,6 @@ public class PortalMethods {
 
     public static void portal2Methods(LivingEntity user, HitResult hit) {
         Direction direction = ((BlockHitResult) hit).getSide();
-        Direction playerDirection = client.player.getHorizontalFacing();
 
         setPlaneInformation(hit);
         BlockHitResult blockHit = (BlockHitResult) hit;

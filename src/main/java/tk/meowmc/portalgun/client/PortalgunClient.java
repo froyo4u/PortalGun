@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW;
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
 
-    public static int tickCounter = 4;
+    public static int tickCounter = 3;
     public static boolean delay = false;
 
     @Override
@@ -32,9 +32,9 @@ public class PortalgunClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             tickCounter++;
             if (client.options.keyAttack.isPressed()) {
-                if (tickCounter > 5)
-                    tickCounter = 4;
-                delay = tickCounter % 4 == 0;
+                if (tickCounter > 4)
+                    tickCounter = 3;
+                delay = tickCounter % 3 == 0;
 
                 // Portalgun.logInt(Level.INFO, tickCounter);
                 if (delay) {
