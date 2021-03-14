@@ -20,7 +20,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.ejml.data.FixedMatrix3x3_64F;
 import tk.meowmc.portalgun.Portalgun;
