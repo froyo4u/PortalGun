@@ -57,8 +57,8 @@ public class PortalGunItem extends Item {
         Portal portal1 = PortalPersistentState.getPortals().get(key1);
         Portal portal2 = PortalPersistentState.getPortals().get(key2);
         if (portal1 != null && portal2 != null) {
-            Entity portal1Entity = McHelper.getServerWorld(portal1.world.getRegistryKey()).getEntity(portal1.getUuid());
-            Entity portal2Entity = McHelper.getServerWorld(portal2.world.getRegistryKey()).getEntity(portal2.getUuid());
+            Entity portal1Entity = McHelper.getServerWorld(world.getRegistryKey()).getEntity(portal1.getUuid());
+            Entity portal2Entity = McHelper.getServerWorld(world.getRegistryKey()).getEntity(portal2.getUuid());
             if (portal1Entity != null && portal2Entity != null) {
                 portal1Entity.kill();
                 portal2Entity.kill();
@@ -66,6 +66,7 @@ public class PortalGunItem extends Item {
             PortalPersistentState.getPortals().replace(key1, newPortal1);
             PortalPersistentState.getPortals().replace(key2, newPortal2);
             persistentState.markDirty();
+            savePerstistentState(persistentState);
         }
     }
 
@@ -74,9 +75,13 @@ public class PortalGunItem extends Item {
         return false;
     }
 
-    public void savePerstistentState(PortalPersistentState persistentState) {
+    public static void savePerstistentState(PortalPersistentState persistentState) {
         persistentState.markDirty();
-        McHelper.getServerWorld(client.world.getRegistryKey()).getPersistentStateManager().set(persistentState);
+        McHelper.getServerWorld(World.OVERWORLD).getPersistentStateManager().set(persistentState);
+    }
+
+    public static PortalPersistentState getOrCreatePortalPersistentState() {
+        return McHelper.getServerWorld(World.OVERWORLD).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
     }
 
     public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
@@ -87,7 +92,7 @@ public class PortalGunItem extends Item {
         if (hit.getType() == BLOCK) {
             Direction direction = ((BlockHitResult) hit).getSide();
 
-            PortalPersistentState portalPersistentState = McHelper.getServerWorld(user.world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
+            PortalPersistentState portalPersistentState = getOrCreatePortalPersistentState();
 
             BlockHitResult blockHit = (BlockHitResult) hit;
             BlockPos blockPos = blockHit.getBlockPos();
@@ -124,9 +129,9 @@ public class PortalGunItem extends Item {
                     break;
             }
 
-            space1BlockState = user.world.getBlockState(space1BlockPos);
-            space2BlockState = user.world.getBlockState(space2BlockPos);
-            space3BlockState = user.world.getBlockState(space3BlockPos);
+            space1BlockState = world.getBlockState(space1BlockPos);
+            space2BlockState = world.getBlockState(space2BlockPos);
+            space3BlockState = world.getBlockState(space3BlockPos);
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
@@ -156,15 +161,11 @@ public class PortalGunItem extends Item {
 
                 waitPortal = true;
 
+                PortalMethods.portal1Methods(user, hit);
+
+                newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
+
                 ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-
-                    PortalMethods.portal1Methods(user, hit);
-
-                    newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
-
-                    removeOldPortals(user, portalPersistentState, user.world);
-
-
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                         portal2 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
@@ -177,17 +178,18 @@ public class PortalGunItem extends Item {
                                     SoundCategory.NEUTRAL,
                                     1.0F,
                                     1F);
+                            removeOldPortals(user, portalPersistentState, newPortal1.world);
+                            removeOldPortals(user, portalPersistentState, newPortal2.world);
                             McHelper.spawnServerEntity(newPortal1);
                             McHelper.spawnServerEntity(newPortal2);
                         }
                         waitPortal = false;
+                        PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal0", newPortal1);
+                        PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal1", newPortal2);
                     }
-                    PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal0", newPortal1);
-                    PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal1", newPortal2);
                 })));
             }
             user.incrementStat(Stats.USED.getOrCreateStat(this));
-
             savePerstistentState(portalPersistentState);
         }
     }
@@ -203,7 +205,7 @@ public class PortalGunItem extends Item {
         else if (hit.getType() == BLOCK) {
             Direction direction = ((BlockHitResult) hit).getSide();
 
-            PortalPersistentState portalPersistentState = McHelper.getServerWorld(world.getRegistryKey()).getPersistentStateManager().getOrCreate(() -> new PortalPersistentState(KEY), KEY);
+            PortalPersistentState portalPersistentState = getOrCreatePortalPersistentState();
 
             BlockHitResult blockHit = (BlockHitResult) hit;
             BlockPos blockPos = blockHit.getBlockPos();
@@ -239,9 +241,9 @@ public class PortalGunItem extends Item {
                     break;
             }
 
-            space1BlockState = user.world.getBlockState(space1BlockPos);
-            space2BlockState = user.world.getBlockState(space2BlockPos);
-            space3BlockState = user.world.getBlockState(space3BlockPos);
+            space1BlockState = world.getBlockState(space1BlockPos);
+            space2BlockState = world.getBlockState(space2BlockPos);
+            space3BlockState = world.getBlockState(space3BlockPos);
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
             double distanceZ = blockPos.getZ() - user.getZ();
@@ -268,12 +270,10 @@ public class PortalGunItem extends Item {
 
                 waitPortal = true;
 
+
+                PortalMethods.portal2Methods(user, hit);
+
                 ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-
-                    PortalMethods.portal2Methods(user, hit);
-
-                    removeOldPortals(user, portalPersistentState, world);
-
                     if (McHelper.getServer().getThread() == Thread.currentThread()) {
                         portal1 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal0");
                         portal2 = PortalPersistentState.getPortals().get(user.getUuidAsString() + "-portalGunPortal1");
@@ -286,6 +286,8 @@ public class PortalGunItem extends Item {
                                     SoundCategory.NEUTRAL,
                                     1.0F,
                                     1F);
+                            removeOldPortals(user, portalPersistentState, newPortal1.world);
+                            removeOldPortals(user, portalPersistentState, newPortal2.world);
                             McHelper.spawnServerEntity(newPortal2);
                             McHelper.spawnServerEntity(newPortal1);
                         }
@@ -293,13 +295,11 @@ public class PortalGunItem extends Item {
                     }
                     PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal0", newPortal1);
                     PortalPersistentState.getPortals().put(user.getUuidAsString() + "-portalGunPortal1", newPortal2);
-                    waitPortal = false;
                 })));
 
 
             }
             user.incrementStat(Stats.USED.getOrCreateStat(this));
-
             savePerstistentState(portalPersistentState);
 
         }

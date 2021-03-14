@@ -115,12 +115,14 @@ public class PortalMethods {
         Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY() + 2, blockPos.getZ());
-        PortalExtension portal1Extension = PortalExtension.get(newPortal1);
-        PortalExtension portal2Extension = PortalExtension.get(newPortal2);
+        PortalExtension portalExtension = PortalExtension.get(portal);
 
         portal.setDestination(destPos);
-        portal.dimensionTo = newPortal2.world.getRegistryKey();
-        portal1Extension.adjustPositionAfterTeleport = false;
+        if (newPortal2 != null)
+            portal.dimensionTo = newPortal2.world.getRegistryKey();
+        else
+            portal.dimensionTo = client.world.getRegistryKey();
+        portalExtension.adjustPositionAfterTeleport = false;
 
         switch (direction) {
             case SOUTH:
@@ -137,13 +139,11 @@ public class PortalMethods {
                 break;
             case UP:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y + 1.005, portalPosition.z);
-                portal1Extension.adjustPositionAfterTeleport = true;
-                portal2Extension.adjustPositionAfterTeleport = true;
+                portalExtension.adjustPositionAfterTeleport = true;
                 break;
             case DOWN:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y - 0.005, portalPosition.z);
-                portal1Extension.adjustPositionAfterTeleport = true;
-                portal2Extension.adjustPositionAfterTeleport = true;
+                portalExtension.adjustPositionAfterTeleport = true;
                 break;
         }
 
@@ -167,13 +167,15 @@ public class PortalMethods {
         Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destpos = newPortal1.getPos();
-        PortalExtension portal1Extension = PortalExtension.get(newPortal1);
-        PortalExtension portal2Extension = PortalExtension.get(newPortal2);
+        PortalExtension portalExtension = PortalExtension.get(portal);
 
-        portal.dimensionTo = newPortal1.world.getRegistryKey();
+        if (newPortal1 != null)
+            portal.dimensionTo = newPortal1.world.getRegistryKey();
+        else
+            portal.dimensionTo = client.world.getRegistryKey();
         portal.setDestination(newPortal1.getPos());
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
-        portal2Extension.adjustPositionAfterTeleport = false;
+        portalExtension.adjustPositionAfterTeleport = false;
 
         switch (direction) {
             case SOUTH:
@@ -190,13 +192,11 @@ public class PortalMethods {
                 break;
             case UP:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y + 1.005, portalPosition.z);
-                portal1Extension.adjustPositionAfterTeleport = true;
-                portal2Extension.adjustPositionAfterTeleport = true;
+                portalExtension.adjustPositionAfterTeleport = true;
                 break;
             case DOWN:
                 portal.updatePosition(portalPosition.x + 0.5, portalPosition.y - 0.005, portalPosition.z);
-                portal1Extension.adjustPositionAfterTeleport = true;
-                portal2Extension.adjustPositionAfterTeleport = true;
+                portalExtension.adjustPositionAfterTeleport = true;
                 break;
         }
 
