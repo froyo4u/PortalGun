@@ -13,7 +13,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.ejml.data.FixedMatrix3x3_64F;
 import tk.meowmc.portalgun.items.PortalGunItem;
@@ -31,9 +30,6 @@ public class PortalMethods {
     static FixedMatrix3x3_64F planeMatrixInverse;
     static Direction direction;
     static Direction playerDirection;
-    public static Vec3i dirUp;
-    public static Vec3i dirOut;
-    public static Vec3i dirRight;
 
     @SuppressWarnings("ReturnOfNull")
     public static Vec3d getDirectionVec(Direction direction) {
