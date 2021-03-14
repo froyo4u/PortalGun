@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tk.meowmc.portalgun.Portalgun;
 
-@Mixin(ClientPlayNetworkHandler.class)
 @Environment(EnvType.CLIENT)
+@Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow
     private MinecraftClient client;
@@ -31,3 +31,4 @@ public abstract class ClientPlayNetworkHandlerMixin {
     }
 
 }
+
