@@ -9,8 +9,8 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven {
-            url 'https://maven.fabricmc.net/'
             name 'Fabric'
+            url 'https://maven.fabricmc.net/'
         }
         maven {
             name = 'JitPack'
