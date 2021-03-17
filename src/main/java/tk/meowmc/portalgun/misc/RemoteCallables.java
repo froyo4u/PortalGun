@@ -17,7 +17,7 @@ public class RemoteCallables {
 
     public static void removeOldPortal1(ServerPlayerEntity user) {
         if (newPortal1 != null) {
-            PortalPersistentState persistentState = getOrCreatePortalPersistentState();
+            PortalPersistentState persistentState = getOrCreatePortalPersistentState(user);
             String key = user.getUuidAsString() + "-portalGunPortal0";
             PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
@@ -43,7 +43,7 @@ public class RemoteCallables {
 
     public static void removeOldPortal2(ServerPlayerEntity user) {
         if (newPortal2 != null) {
-            PortalPersistentState persistentState = getOrCreatePortalPersistentState();
+            PortalPersistentState persistentState = getOrCreatePortalPersistentState(user);
             String key = user.getUuidAsString() + "-portalGunPortal1";
             PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
