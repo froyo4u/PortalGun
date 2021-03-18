@@ -24,7 +24,10 @@ import static tk.meowmc.portalgun.items.PortalGunItem.newPortal1;
 import static tk.meowmc.portalgun.items.PortalGunItem.newPortal2;
 
 public class PortalMethods {
-
+    public static final int TRIANGLE_NUM = 30; //Number of triangles used to approximate the elliptical shape of the portal
+    public static final double TAU = Math.PI*2; //mathematical name for 2 * PI
+    public static final int PORTAL_HEIGHT = 2;
+    public static final int PORTAL_WIDTH = 1;
     public static MinecraftClient client = MinecraftClient.getInstance();
     public static Vec3i dirUp1;
     public static Vec3i dirUp2;
@@ -39,27 +42,21 @@ public class PortalMethods {
 
     public static void makeRoundPortal(Portal portal) {
         GeometryPortalShape shape = new GeometryPortalShape();
-        final int triangleNum = 30;
-        double twoPi = Math.PI * 2;
-        shape.triangles = IntStream.range(0, triangleNum)
+        shape.triangles = IntStream.range(0, TRIANGLE_NUM)
                 .mapToObj(i -> new GeometryPortalShape.TriangleInPlane(
                         0, 0,
-                        portal.width * 0.5 * Math.cos(twoPi * ((double) i) / triangleNum),
-                        portal.height * 0.5 * Math.sin(twoPi * ((double) i) / triangleNum),
-                        portal.width * 0.5 * Math.cos(twoPi * ((double) i + 1) / triangleNum),
-                        portal.height * 0.5 * Math.sin(twoPi * ((double) i + 1) / triangleNum)
+                        portal.width * 0.5 * Math.cos(TAU * ((double) i) / TRIANGLE_NUM),
+                        portal.height * 0.5 * Math.sin(TAU * ((double) i) / TRIANGLE_NUM),
+                        portal.width * 0.5 * Math.cos(TAU * ((double) i + 1) / TRIANGLE_NUM),
+                        portal.height * 0.5 * Math.sin(TAU * ((double) i + 1) / TRIANGLE_NUM)
                 )).collect(Collectors.toList());
         portal.specialShape = shape;
-        portal.cullableXStart = 0;
-        portal.cullableXEnd = 0;
-        portal.cullableYStart = 0;
-        portal.cullableYEnd = 0;
+        portal.cullableXStart = portal.cullableXEnd = portal.cullableYStart = portal.cullableYEnd = 0;
+
     }
 
     private static Vec3d calcPortalPos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
-        double upOffset = -0.5;
-        double faceOffset = -0.505;
-        double crossOffset = 0.0;
+        double upOffset = -0.5, faceOffset = -0.505, crossOffset = 0.0;
         return new Vec3d(
                 ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
                 ((hit.getY() + 0.5) + upOffset * upright.getY() + faceOffset * facing.getY() + crossOffset * cross.getY()), // y component
@@ -75,19 +72,15 @@ public class PortalMethods {
         PortalExtension portalExtension = PortalExtension.get(portal);
 
         portal.setDestination(destPos);
-        if (newPortal2 != null)
-            portal.dimensionTo = newPortal2.world.getRegistryKey();
-        else
-            portal.dimensionTo = client.world.getRegistryKey();
+
+        portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : client.world.getRegistryKey();
 
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
-        if (dirOut1.getY() == 0) {
-            dirUp1 = new Vec3i(0, 1, 0);
-        } else {
-            dirUp1 = client.player.getHorizontalFacing().getVector();
-        }
+
+        dirUp1 = dirOut1.getY()==0 ? new Vec3i(0, 1, 0) : client.player.getHorizontalFacing().getVector();
+
         dirRight1 = dirUp1.crossProduct(dirOut1);
 
         dirRight1 = new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ());
@@ -96,8 +89,8 @@ public class PortalMethods {
         portal.setOrientationAndSize(
                 Vec3d.of(dirRight1), //axisW
                 Vec3d.of(dirUp1), //axisH
-                1, // width
-                2 // height
+                PORTAL_WIDTH, // width
+                PORTAL_HEIGHT // height
         );
         makeRoundPortal(portal);
         portal.portalTag = "portalgun_portal1";
@@ -110,21 +103,16 @@ public class PortalMethods {
         Vec3d destpos = newPortal1.getPos();
         PortalExtension portalExtension = PortalExtension.get(portal);
 
-        if (newPortal1 != null)
-            portal.dimensionTo = newPortal1.world.getRegistryKey();
-        else
-            portal.dimensionTo = client.world.getRegistryKey();
+        portal.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : client.world.getRegistryKey();
+
         portal.setDestination(newPortal1.getPos());
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
 
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
-        if (dirOut2.getY() == 0) {
-            dirUp2 = new Vec3i(0, 1, 0);
-        } else {
-            dirUp2 = client.player.getHorizontalFacing().getVector();
-        }
+        dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : client.player.getHorizontalFacing().getVector();
+
         dirRight2 = dirUp2.crossProduct(dirOut2);
 
         dirRight2 = new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ());
@@ -133,8 +121,8 @@ public class PortalMethods {
         portal.setOrientationAndSize(
                 Vec3d.of(dirRight2), //axisW
                 Vec3d.of(dirUp2), //axisH
-                1, // width
-                2 // height
+                PORTAL_WIDTH, // width
+                PORTAL_HEIGHT // height
         );
         makeRoundPortal(portal);
         portal.portalTag = "portalgun_portal2";
@@ -179,8 +167,6 @@ public class PortalMethods {
 
         if (newPortal1 != null) {
             portal1World = newPortal1.getOriginWorld();
-        }
-        if (newPortal1 != null) {
             portal1AxisW = newPortal1.axisW;
             portal1AxisH = newPortal1.axisH;
         }
