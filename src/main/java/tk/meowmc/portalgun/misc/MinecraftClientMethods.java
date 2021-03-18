@@ -127,7 +127,7 @@ public class MinecraftClientMethods {
     }
 
     public static void myHandleBlockBreaking(boolean isKeyPressed) {
-        if (!client.player.isUsingItem() && !client.player.isHolding(PORTALGUN)) {
+        if (/* !client.player.isUsingItem() && */ !client.player.isHolding(PORTALGUN)) {
             if (isKeyPressed && isPointingToPortal()) {
                 BlockHitResult blockHitResult = (BlockHitResult) remoteHitResult;
                 BlockPos blockPos = blockHitResult.getBlockPos();
@@ -244,9 +244,9 @@ public class MinecraftClientMethods {
                 client.player.swingHand(hand);
                 if (!itemStack.isEmpty() && (itemStack.getCount() != i || client.interactionManager.hasCreativeInventory())) {
                     client.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
-                } else if (client.player.isHolding(PORTALGUN))
-                    client.attackCooldown = 10;
-            }
+                }
+            } else if (client.player.isHolding(PORTALGUN))
+                client.attackCooldown = 10;
 
         }
     }

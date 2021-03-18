@@ -1,7 +1,6 @@
 package tk.meowmc.portalgun.mixin;
 
 import com.qouteall.immersive_portals.McHelper;
-import com.qouteall.immersive_portals.network.McRemoteProcedureCall;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -15,8 +14,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tk.meowmc.portalgun.Portalgun;
 
-@Mixin(ClientPlayNetworkHandler.class)
+import static com.qouteall.immersive_portals.network.McRemoteProcedureCall.tellServerToInvoke;
+
 @Environment(EnvType.CLIENT)
+@Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin {
     @Shadow
     private MinecraftClient client;
@@ -25,9 +26,10 @@ public abstract class ClientPlayNetworkHandlerMixin {
     private void afterGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         Portalgun.logString(Level.INFO, "After Game Join!");
         McHelper.executeOnServerThread(() -> {
-            McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
+            tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
         });
 
     }
 
 }
+

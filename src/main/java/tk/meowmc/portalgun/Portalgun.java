@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +18,9 @@ public class Portalgun implements ModInitializer {
     public static final String MODID = "portalgun";
     public static final String KEY = MODID + ":portalgun_portals";
     public static final String MOD_NAME = "PortalGun Mod";
-    public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1).fireproof());
+    public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1).rarity(Rarity.EPIC));
+    public static final Item PORTALGUN_BODY = new Item(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
+    public static final Item PORTALGUN_CLAW = new Item(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
     public static final Identifier PORTAL1_SHOOT = new Identifier("portalgun:portal1_shoot");
     public static final Identifier PORTAL2_SHOOT = new Identifier("portalgun:portal2_shoot");
     public static final Identifier PORTAL_OPEN = new Identifier("portalgun:portal_open");
@@ -41,6 +44,8 @@ public class Portalgun implements ModInitializer {
     public void onInitialize() {
         logString(Level.INFO, "Initializing");
         Registry.register(Registry.ITEM, new Identifier(MODID, "portal_gun"), PORTALGUN);
+        Registry.register(Registry.ITEM, new Identifier(MODID, "portalgun_body"), PORTALGUN_BODY);
+        Registry.register(Registry.ITEM, new Identifier(MODID, "portalgun_claw"), PORTALGUN_CLAW);
         Registry.register(Registry.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL_OPEN, PORTAL_OPEN_EVENT);

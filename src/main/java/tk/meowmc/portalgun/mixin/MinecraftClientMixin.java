@@ -1,5 +1,7 @@
 package tk.meowmc.portalgun.mixin;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
@@ -15,6 +17,7 @@ import tk.meowmc.portalgun.misc.MinecraftClientMethods;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
 
+@Environment(EnvType.CLIENT)
 @Mixin(value = MinecraftClient.class, priority = 1500)
 public abstract class MinecraftClientMixin {
 

@@ -9,8 +9,8 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven {
-            url 'http://maven.fabricmc.net/'
             name 'Fabric'
+            url 'https://maven.fabricmc.net/'
         }
         maven {
             name = 'JitPack'
@@ -19,62 +19,66 @@ allprojects {
 
         jcenter()
     }
-}
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
-minecraft {
-    accessWidener =  file("src/main/resources/portalgun.accesswidener")
-}
-
-dependencies {
-    //to change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // https://mvnrepository.com/artifact/com.googlecode.efficient-java-matrix-library/ejml
-    implementation group: 'com.googlecode.efficient-java-matrix-library', name: 'ejml', version: '0.25'
-    include "com.googlecode.efficient-java-matrix-library:ejml:0.25"
-
-    modImplementation "com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:${project.ip_version}"
-    include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT'
 
 
-    // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-    // You may need to force-disable transitiveness on them.
-}
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
-shadowJar {
+    archivesBaseName = project.archives_base_name
+    version = project.mod_version
+    group = project.maven_group
+
+    minecraft {
+        accessWidener = file("src/main/resources/portalgun.accesswidener")
+    }
+
     dependencies {
-        exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
-        exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
-    }
-}
-afterEvaluate {
-    remapJar {
-        input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
-        archiveName = "${archivesBaseName}-${version}-mc${project.minecraft_version}-fabric.jar"
-    }
-}
-processResources {
-    inputs.property "version", project.version
+        //to change the versions see the gradle.properties file
+        minecraft "com.mojang:minecraft:${project.minecraft_version}"
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-        expand "version": project.version
+        // Fabric API. This is technically optional, but you probably want it anyway.
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+        // https://mvnrepository.com/artifact/com.googlecode.efficient-java-matrix-library/ejml
+        implementation group: 'com.googlecode.efficient-java-matrix-library', name: 'ejml', version: '0.25'
+        include "com.googlecode.efficient-java-matrix-library:ejml:0.25"
+
+        modImplementation('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT') {
+            transitive = false
+        }
+        include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.16-SNAPSHOT'
+
+        compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+        // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
+        // You may need to force-disable transitiveness on them.
     }
 
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
+    shadowJar {
+        dependencies {
+            exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
+            exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
+        }
+    }
+    afterEvaluate {
+        remapJar {
+            input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+            archiveName = "${archivesBaseName}-${version}-mc${project.minecraft_version}-fabric.jar"
+        }
+    }
+    processResources {
+        inputs.property "version", project.version
+
+        from(sourceSets.main.resources.srcDirs) {
+            include "fabric.mod.json"
+            expand "version": project.version
+        }
+
+        from(sourceSets.main.resources.srcDirs) {
+            exclude "fabric.mod.json"
+        }
     }
 }
 
