@@ -1,5 +1,7 @@
 {
   "item.portalgun.portal_gun": "Aperture Science Handheld Dual-Portal Device",
+  "item.portalgun.portalgun_body": "Portal Device Body",
+  "item.portalgun.portalgun_claw": "Portal Device Claw",
   "subtitles.portalgun.portal1_shoot": "Shot primary Portal",
   "subtitles.portalgun.portal2_shoot": "Shot secondary Portal",
   "subtitles.portalgun.portal_open": "Portal opened",

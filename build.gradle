@@ -126,3 +126,9 @@ task additionalCopy(type:Copy){
     from file("${project.buildDir}/libs/$archivesBaseName-${version}-mc${project.minecraft_version}-fabric.jar")
     into file("${project.buildDir}/to_upload")
 }
+
+task printClasspath {
+    doLast {
+        configurations.compileClasspath.each { println "\""+ (it.toString().replace("\\","/")) + "\"," }
+    }
+}
