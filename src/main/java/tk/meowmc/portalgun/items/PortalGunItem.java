@@ -3,11 +3,8 @@ package tk.meowmc.portalgun.items;
 import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.portal.Portal;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,7 +14,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -25,16 +21,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import net.minecraft.world.level.storage.LevelStorage;
-import org.ejml.data.FixedMatrix3x3_64F;
 import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.misc.PortalMethods;
 import tk.meowmc.portalgun.misc.PortalPersistentState;
 import tk.meowmc.portalgun.misc.TaskList;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 
 import static net.minecraft.util.hit.HitResult.Type.BLOCK;
 import static net.minecraft.util.hit.HitResult.Type.MISS;
@@ -43,16 +34,18 @@ import static tk.meowmc.portalgun.misc.PortalMethods.*;
 public class PortalGunItem extends Item {
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
     public static HitResult hit;
+    public static BlockHitResult blockHit;
+    public static BlockPos blockPos;
     public static Portal newPortal1;
     public static Portal newPortal2;
     public static boolean waitPortal = false;
     public static BlockState space1BlockState;
     public static BlockState space2BlockState;
     public static BlockState space3BlockState;
-    public static MinecraftClient client = MinecraftClient.getInstance();
+    BlockPos space1BlockPos;
+    BlockPos space2BlockPos;
+    BlockPos space3BlockPos;
 
-    FixedMatrix3x3_64F planeMatrix;
-    FixedMatrix3x3_64F planeMatrixInverse;
     Direction direction;
     Vec3d positionCorrectionVec;
     Portal portal1;
@@ -83,26 +76,6 @@ public class PortalGunItem extends Item {
         }
     }
 
-    private static File getGameDir() {
-        if (FabricLoader.INSTANCE.getEnvironmentType() == EnvType.CLIENT) {
-            return MinecraftClient.getInstance().runDirectory;
-        } else {
-            return McHelper.getServer().getRunDirectory();
-        }
-    }
-
-    public static Path pathSaves = new File(getGameDir(), "saves").toPath();
-    public static Path pathBackups = new File(getGameDir(), "backups").toPath();
-
-    private static File getFile(String id, LivingEntity user) throws IOException {
-        LevelStorage.Session session = new LevelStorage(pathSaves, pathBackups, user.getServer().getDataFixer()).new Session(getGameDir().getName());
-        File playerDataDir = session.getDirectory(WorldSavePath.PLAYERDATA).toFile();
-        File file = session.getWorldDirectory(user.world.getRegistryKey());
-        File file2 = new File(file, "data");
-        file2.mkdirs();
-        return new File(session.getWorldDirectory(World.OVERWORLD), id + ".dat");
-    }
-
     public static void savePerstistentState(PortalPersistentState persistentState, LivingEntity user) {
         persistentState.markDirty();
         McHelper.getServerWorld(user.world.getRegistryKey()).getPersistentStateManager().set(persistentState);
@@ -121,17 +94,17 @@ public class PortalGunItem extends Item {
         ItemStack itemStack = user.getStackInHand(hand);
         Entity entity = client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
+        blockHit = (BlockHitResult) hit;
+        blockPos = blockHit.getBlockPos();
 
-        if (hit.getType() == BLOCK) {
-            Direction direction = ((BlockHitResult) hit).getSide();
+        if (hit.getType() == BLOCK && PortalgunClient.delay) {
+            direction = blockHit.getSide();
 
             PortalPersistentState portalPersistentState = getOrCreatePortalPersistentState(user);
 
-            BlockHitResult blockHit = (BlockHitResult) hit;
-            BlockPos blockPos = blockHit.getBlockPos();
-            BlockPos space1BlockPos = blockPos.add(-1, 0, 0);
-            BlockPos space2BlockPos = blockPos.add(0, -1, 0);
-            BlockPos space3BlockPos = blockPos.add(0, -1, -1);
+            space1BlockPos = blockPos.add(-1, 0, 0);
+            space2BlockPos = blockPos.add(0, -1, 0);
+            space3BlockPos = blockPos.add(0, -1, -1);
 
 
             switch (direction) {
@@ -162,11 +135,11 @@ public class PortalGunItem extends Item {
                     break;
             }
 
-            dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
+            dirOut1 = blockHit.getSide().getOpposite().getVector();
             if (dirOut1.getY() == 0) {
                 dirUp1 = new Vec3i(0, 1, 0);
             } else {
-                dirUp1 = client.player.getHorizontalFacing().getVector();
+                dirUp1 = user.getHorizontalFacing().getVector();
             }
             dirRight1 = dirUp1.crossProduct(dirOut1);
 

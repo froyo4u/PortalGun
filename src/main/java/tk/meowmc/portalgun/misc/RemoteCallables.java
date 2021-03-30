@@ -1,6 +1,7 @@
 package tk.meowmc.portalgun.misc;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.world.World;
@@ -68,22 +69,22 @@ public class RemoteCallables {
     }
 
     public static void portal1Place(ServerPlayerEntity user) {
-        PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
+        Item gunItem = PORTALGUN;
         boolean portalGunActive = user.isHolding(PORTALGUN);
         if (delay && newPortal1 != null && portalGunActive) {
             if (newPortal1.age >= 2 && newPortal1.isAlive()) {
-                gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
                 client.attackCooldown = 10;
                 client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
             } else if (!newPortal1.isAlive()) {
-                gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+                ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
                 newPortal1.removed = false;
                 client.attackCooldown = 10;
                 client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
             }
 
         } else if (delay && newPortal1 == null && portalGunActive) {
-            gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+            ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
             client.attackCooldown = 10;
             client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
         }

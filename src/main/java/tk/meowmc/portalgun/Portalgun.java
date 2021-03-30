@@ -2,7 +2,6 @@ package tk.meowmc.portalgun;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.sound.SoundEvent;
@@ -30,7 +29,6 @@ public class Portalgun implements ModInitializer {
     public static SoundEvent PORTAL2_SHOOT_EVENT = new SoundEvent(PORTAL2_SHOOT);
     public static SoundEvent PORTAL_OPEN_EVENT = new SoundEvent(PORTAL_OPEN);
     public static SoundEvent PORTAL_CLOSE_EVENT = new SoundEvent(PORTAL_CLOSE);
-    MinecraftClient client = MinecraftClient.getInstance();
 
     public static void logString(Level level, String message) {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message);
