@@ -6,7 +6,6 @@ import com.qouteall.immersive_portals.portal.Portal;
 import com.qouteall.immersive_portals.portal.PortalExtension;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -28,7 +27,6 @@ public class PortalMethods {
     public static final double TAU = Math.PI*2; //mathematical name for 2 * PI
     public static final int PORTAL_HEIGHT = 2;
     public static final int PORTAL_WIDTH = 1;
-    public static MinecraftClient client = MinecraftClient.getInstance();
     public static Vec3i dirUp1;
     public static Vec3i dirUp2;
     public static Vec3i dirOut1;
@@ -65,21 +63,21 @@ public class PortalMethods {
 
     }
 
-    public static Portal Settings1(Direction direction, BlockPos blockPos, HitResult hit) {
-        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
+    public static Portal Settings1(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
+        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY() + 2, blockPos.getZ());
         PortalExtension portalExtension = PortalExtension.get(portal);
 
         portal.setDestination(destPos);
 
-        portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : client.world.getRegistryKey();
+        portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
-        dirUp1 = dirOut1.getY()==0 ? new Vec3i(0, 1, 0) : client.player.getHorizontalFacing().getVector();
+        dirUp1 = dirOut1.getY()==0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
 
         dirRight1 = dirUp1.crossProduct(dirOut1);
 
@@ -97,13 +95,13 @@ public class PortalMethods {
         return portal;
     }
 
-    public static Portal Settings2(Direction direction, BlockPos blockPos, HitResult hit) {
-        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(client.world.getRegistryKey()));
+    public static Portal Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
+        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destpos = newPortal1.getPos();
         PortalExtension portalExtension = PortalExtension.get(portal);
 
-        portal.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : client.world.getRegistryKey();
+        portal.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
 
         portal.setDestination(newPortal1.getPos());
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
@@ -111,7 +109,7 @@ public class PortalMethods {
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
-        dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : client.player.getHorizontalFacing().getVector();
+        dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
 
         dirRight2 = dirUp2.crossProduct(dirOut2);
 
@@ -137,7 +135,7 @@ public class PortalMethods {
         BlockPos blockPos = blockHit.getBlockPos();
         World portal2World = McHelper.getServerWorld(World.OVERWORLD);
 
-        newPortal1 = Settings1(direction, blockPos, hit);
+        newPortal1 = Settings1(direction, blockPos, hit, user);
         newPortal1.setDestination(newPortal2.getPos());
 
         if (newPortal2 != null) {
@@ -146,7 +144,7 @@ public class PortalMethods {
         Vec3d portal2AxisW = newPortal2.axisW;
         Vec3d portal2AxisH = newPortal2.axisH;
 
-        newPortal2 = Settings2(direction, blockPos, hit);
+        newPortal2 = Settings2(direction, blockPos, hit, user);
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
         newPortal2.setWorld(portal2World);
@@ -170,8 +168,8 @@ public class PortalMethods {
             portal1AxisW = newPortal1.axisW;
             portal1AxisH = newPortal1.axisH;
         }
-        newPortal2 = Settings2(direction, blockPos, hit);
-        newPortal1 = Settings1(direction, blockPos, hit);
+        newPortal2 = Settings2(direction, blockPos, hit, user);
+        newPortal1 = Settings1(direction, blockPos, hit, user);
 
         if (PortalGunItem.space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
             newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY() - 0.875, newPortal2.getZ());

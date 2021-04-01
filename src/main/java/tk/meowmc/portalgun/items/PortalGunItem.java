@@ -5,6 +5,7 @@ import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.portal.Portal;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -45,7 +46,7 @@ public class PortalGunItem extends Item {
     BlockPos space1BlockPos;
     BlockPos space2BlockPos;
     BlockPos space3BlockPos;
-
+    static final MinecraftClient client = MinecraftClient.getInstance();
     Direction direction;
     Vec3d positionCorrectionVec;
     Portal portal1;

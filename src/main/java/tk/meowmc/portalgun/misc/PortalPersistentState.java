@@ -3,9 +3,9 @@ package tk.meowmc.portalgun.misc;
 import com.qouteall.immersive_portals.Helper;
 import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.portal.Portal;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.world.ServerWorld;
@@ -14,12 +14,12 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PortalPersistentState extends PersistentState {
     public static Map<String, Portal> portals = new HashMap<>();
-    MinecraftClient client = MinecraftClient.getInstance();
 
     public PortalPersistentState(String key) {
         super(key);
@@ -54,14 +54,21 @@ public class PortalPersistentState extends PersistentState {
         return (Portal) e;
     }
 
-    @Override
-    public void fromTag(CompoundTag tag) {
-        ServerWorld currWorld = McHelper.getServerWorld(client.world.getRegistryKey());
+    public void fromTag(CompoundTag tag, LivingEntity user) {
+        ServerWorld currWorld = McHelper.getServerWorld(user.world.getRegistryKey());
         portals = getPortalsFromTag(tag, currWorld);
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public void fromTag(CompoundTag tag) {
+    }
+
+    @Override
+    public @Nullable CompoundTag toTag(CompoundTag tag) {
+        return null;
+    }
+
+    public CompoundTag toTag(CompoundTag tag, LivingEntity user) {
         ListTag portalsListTag = new ListTag();
 
         for (String key : portals.keySet()) {
@@ -74,7 +81,7 @@ public class PortalPersistentState extends PersistentState {
                 portalsListTag.add(portalTag);
                 tag.put("portals", portalsListTag);
             } else if (portals == null) {
-                tag.putString("useruuid", client.player.getUuidAsString());
+                tag.putString("useruuid", user.getUuidAsString());
             }
         }
         return tag;
