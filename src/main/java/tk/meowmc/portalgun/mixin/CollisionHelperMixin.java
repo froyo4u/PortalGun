@@ -11,17 +11,21 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(CollisionHelper.class)
 public class CollisionHelperMixin {
-    @Shadow
+    @Shadow(remap = false)
     public static boolean canCollideWithPortal(Entity entity, Portal portal, float tickDelta) {
         return false;
     }
 
     /**
      * @author someone
+     * @reason because I can
      */
     @Overwrite(remap = false)
     public static Box getStretchedBoundingBox(Entity entity) {
-        Vec3d expand = entity.getVelocity().multiply(.9);
+        Vec3d expand;
+
+        expand = entity.getVelocity().multiply(1.2);
+
         Vec3d expand2 = entity.getVelocity();
         return entity.getBoundingBox().stretch(expand);
     }

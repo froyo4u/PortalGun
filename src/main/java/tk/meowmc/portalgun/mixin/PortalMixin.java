@@ -19,12 +19,11 @@ public abstract class PortalMixin extends Entity implements PortalLike {
         super(type, world);
     }
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract Vec3d transformLocalVec(Vec3d localVec);
 
     @Inject(method = "transformVelocity", at = @At("TAIL"), cancellable = true, remap = false)
     public void transformVelocity(Entity entity, CallbackInfo ci) {
-        entity.setVelocity(entity.getVelocity());
     }
 
 }
