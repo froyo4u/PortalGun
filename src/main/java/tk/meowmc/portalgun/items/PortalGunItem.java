@@ -46,7 +46,6 @@ public class PortalGunItem extends Item {
     BlockPos space1BlockPos;
     BlockPos space2BlockPos;
     BlockPos space3BlockPos;
-    static final MinecraftClient client = MinecraftClient.getInstance();
     Direction direction;
     Vec3d positionCorrectionVec;
     Portal portal1;
@@ -93,6 +92,7 @@ public class PortalGunItem extends Item {
 
     public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
+        MinecraftClient client = MinecraftClient.getInstance();
         Entity entity = client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
         blockHit = (BlockHitResult) hit;
@@ -222,6 +222,7 @@ public class PortalGunItem extends Item {
 
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
+        MinecraftClient client = MinecraftClient.getInstance();
         user.getItemCooldownManager().set(this, 4);
         Entity entity = client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
