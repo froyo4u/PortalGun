@@ -19,23 +19,19 @@ public class RemoteCallables {
     public static void removeOldPortal1(ServerPlayerEntity user) {
         if (newPortal1 != null) {
             String key = user.getUuidAsString() + "-portalGunPortal0";
-            PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
-            if (portalGunActive) {
-                if (newPortal1.isAlive()) {
-                    newPortal1.kill();
-                    World world = user.world;
-                    world.playSound(null,
-                            newPortal1.getX(),
-                            newPortal1.getY(),
-                            newPortal1.getZ(),
-                            Portalgun.PORTAL_CLOSE_EVENT,
-                            SoundCategory.NEUTRAL,
-                            1.0F,
-                            1F);
-                }
+            if (portalGunActive && portal1Exists) {
+                newPortal1.kill();
+                World world = user.world;
+                world.playSound(null,
+                        newPortal1.getX(),
+                        newPortal1.getY(),
+                        newPortal1.getZ(),
+                        Portalgun.PORTAL_CLOSE_EVENT,
+                        SoundCategory.NEUTRAL,
+                        1.0F,
+                        1F);
                 portalsTag.remove("Left" + "Portal");
-                tag.remove("Left" + "Portal");
                 waitPortal = false;
             }
         }
@@ -43,24 +39,20 @@ public class RemoteCallables {
 
     public static void removeOldPortal2(ServerPlayerEntity user) {
         if (newPortal2 != null) {
-            PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
-            if (portalGunActive) {
-                if (newPortal2.isAlive()) {
-                    newPortal2.kill();
-                    World world = user.world;
-                    world.playSound(null,
-                            newPortal2.getX(),
-                            newPortal2.getY(),
-                            newPortal2.getZ(),
-                            Portalgun.PORTAL_CLOSE_EVENT,
-                            SoundCategory.NEUTRAL,
-                            1.0F,
-                            1F);
-                    portalsTag.remove("Right" + "Portal");
-                    tag.remove("Right" + "Portal");
-                    waitPortal = false;
-                }
+            if (portalGunActive && portal2Exists) {
+                newPortal2.kill();
+                World world = user.world;
+                world.playSound(null,
+                        newPortal2.getX(),
+                        newPortal2.getY(),
+                        newPortal2.getZ(),
+                        Portalgun.PORTAL_CLOSE_EVENT,
+                        SoundCategory.NEUTRAL,
+                        1.0F,
+                        1F);
+                portalsTag.remove("Right" + "Portal");
+                waitPortal = false;
             }
         }
     }
