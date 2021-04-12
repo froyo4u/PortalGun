@@ -7,6 +7,7 @@ import com.qouteall.immersive_portals.portal.PortalExtension;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -19,8 +20,7 @@ import tk.meowmc.portalgun.items.PortalGunItem;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static tk.meowmc.portalgun.items.PortalGunItem.newPortal1;
-import static tk.meowmc.portalgun.items.PortalGunItem.newPortal2;
+import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class PortalMethods {
     public static final int TRIANGLE_NUM = 30; //Number of triangles used to approximate the elliptical shape of the portal
@@ -127,36 +127,46 @@ public class PortalMethods {
         return portal;
     }
 
-
-    public static void portal1Methods(LivingEntity user, HitResult hit) {
+    public static void portal1Methods(LivingEntity user, HitResult hit, World world) {
         Direction direction = ((BlockHitResult) hit).getSide();
 
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
         World portal2World = McHelper.getServerWorld(World.OVERWORLD);
 
+        if (portalsTag.contains("Left" + "Portal")) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
+            if (newPortal1 != null) {
+                portal1Exists = true;
+            }
+        }
         newPortal1 = Settings1(direction, blockPos, hit, user);
-        newPortal1.setDestination(newPortal2.getPos());
+
+        if (newPortal2 != null)
+            newPortal1.setDestination(newPortal2.getPos());
 
         if (newPortal2 != null) {
             portal2World = newPortal2.getOriginWorld();
+            portal2AxisW = newPortal2.axisW;
+            portal2AxisH = newPortal2.axisH;
         }
-        Vec3d portal2AxisW = newPortal2.axisW;
-        Vec3d portal2AxisH = newPortal2.axisH;
 
+        if (portalsTag.contains("Right" + "Portal")) {
+            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
+            if (newPortal2 != null) {
+                portal2Exists = true;
+            }
+        }
         newPortal2 = Settings2(direction, blockPos, hit, user);
+
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
         newPortal2.setWorld(portal2World);
-
         newPortal2.axisW = portal2AxisW;
         newPortal2.axisH = portal2AxisH;
-
-        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
-
     }
 
-    public static void portal2Methods(LivingEntity user, HitResult hit) {
+    public static void portal2Methods(LivingEntity user, HitResult hit, World world) {
         Direction direction = ((BlockHitResult) hit).getSide();
 
         BlockHitResult blockHit = (BlockHitResult) hit;
@@ -168,7 +178,14 @@ public class PortalMethods {
             portal1AxisW = newPortal1.axisW;
             portal1AxisH = newPortal1.axisH;
         }
+
         newPortal2 = Settings2(direction, blockPos, hit, user);
+        if (portalsTag.contains("Left" + "Portal")) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
+            if (newPortal1 != null) {
+                portal1Exists = true;
+            }
+        }
         newPortal1 = Settings1(direction, blockPos, hit, user);
 
         if (PortalGunItem.space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
@@ -180,7 +197,5 @@ public class PortalMethods {
         newPortal1.setWorld(portal1World);
         newPortal1.axisW = portal1AxisW;
         newPortal1.axisH = portal1AxisH;
-
-        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
     }
 }

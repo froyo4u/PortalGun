@@ -18,7 +18,6 @@ public class RemoteCallables {
 
     public static void removeOldPortal1(ServerPlayerEntity user) {
         if (newPortal1 != null) {
-            PortalPersistentState persistentState = getOrCreatePortalPersistentState(user);
             String key = user.getUuidAsString() + "-portalGunPortal0";
             PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
@@ -35,8 +34,8 @@ public class RemoteCallables {
                             1.0F,
                             1F);
                 }
-                PortalPersistentState.getPortals().remove(key);
-                persistentState.markDirty();
+                portalsTag.remove("Left" + "Portal");
+                tag.remove("Left" + "Portal");
                 waitPortal = false;
             }
         }
@@ -44,8 +43,6 @@ public class RemoteCallables {
 
     public static void removeOldPortal2(ServerPlayerEntity user) {
         if (newPortal2 != null) {
-            PortalPersistentState persistentState = getOrCreatePortalPersistentState(user);
-            String key = user.getUuidAsString() + "-portalGunPortal1";
             PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
             boolean portalGunActive = user.isHolding(PORTALGUN);
             if (portalGunActive) {
@@ -60,8 +57,8 @@ public class RemoteCallables {
                             SoundCategory.NEUTRAL,
                             1.0F,
                             1F);
-                    PortalPersistentState.getPortals().remove(key);
-                    persistentState.markDirty();
+                    portalsTag.remove("Right" + "Portal");
+                    tag.remove("Right" + "Portal");
                     waitPortal = false;
                 }
             }
