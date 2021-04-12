@@ -4,7 +4,6 @@ import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.portal.GeometryPortalShape;
 import com.qouteall.immersive_portals.portal.Portal;
 import com.qouteall.immersive_portals.portal.PortalExtension;
-import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -15,7 +14,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,12 +25,12 @@ public class PortalMethods {
     public static final double TAU = Math.PI*2; //mathematical name for 2 * PI
     public static final int PORTAL_HEIGHT = 2;
     public static final int PORTAL_WIDTH = 1;
-    public static Vec3i dirUp1;
-    public static Vec3i dirUp2;
+    public static Vec3i dirUp1; //Portal 1 AxisH
+    public static Vec3i dirUp2; //Portal 2 AxisH
     public static Vec3i dirOut1;
     public static Vec3i dirOut2;
-    public static Vec3i dirRight1;
-    public static Vec3i dirRight2;
+    public static Vec3i dirRight1; //Portal 1 AxisW
+    public static Vec3i dirRight2; //Portal 2 AxisW
     static Vec3d portal1AxisW;
     static Vec3d portal1AxisH;
     static Vec3d portal2AxisW;
@@ -98,12 +96,14 @@ public class PortalMethods {
     public static Portal Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
         Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        Vec3d destpos = newPortal1.getPos();
         PortalExtension portalExtension = PortalExtension.get(portal);
 
         portal.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
 
-        portal.setDestination(newPortal1.getPos());
+        if (newPortal1 != null)
+            portal.setDestination(newPortal1.getPos());
+        else
+            portal.setDestination(portalPosition);
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
 
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
@@ -140,6 +140,7 @@ public class PortalMethods {
                 portal1Exists = true;
             }
         }
+
         newPortal1 = Settings1(direction, blockPos, hit, user);
 
         if (newPortal2 != null)
@@ -179,6 +180,12 @@ public class PortalMethods {
             portal1AxisH = newPortal1.axisH;
         }
 
+        if (portalsTag.contains("Right" + "Portal")) {
+            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
+            if (newPortal2 != null) {
+                portal2Exists = true;
+            }
+        }
         newPortal2 = Settings2(direction, blockPos, hit, user);
         if (portalsTag.contains("Left" + "Portal")) {
             newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
@@ -188,12 +195,12 @@ public class PortalMethods {
         }
         newPortal1 = Settings1(direction, blockPos, hit, user);
 
-        if (PortalGunItem.space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
+        if (space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
             newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY() - 0.875, newPortal2.getZ());
         }
 
         newPortal1.updatePosition(newPortal2.getDestPos().getX(), newPortal2.getDestPos().getY(), newPortal2.getDestPos().getZ());
-        newPortal1.setDestination(new Vec3d(newPortal2.getX(), newPortal2.getY(), newPortal2.getZ()));
+        newPortal1.setDestination(newPortal2.getPos());
         newPortal1.setWorld(portal1World);
         newPortal1.axisW = portal1AxisW;
         newPortal1.axisH = portal1AxisH;
