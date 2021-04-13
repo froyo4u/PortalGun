@@ -200,8 +200,6 @@ public class PortalGunItem extends Item {
                             1F);
 
 
-                    waitPortal = true;
-
 
                     if (portalsTag.contains("Left" + "Portal")) {
                         newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
@@ -218,6 +216,8 @@ public class PortalGunItem extends Item {
                     }
 
                     if (notSnowUp(direction) || isSnowUp(direction)) {
+                        waitPortal = true;
+
                         PortalMethods.portal1Methods(user, hit, world);
 
                         if (isSnowUp(direction)) {
@@ -376,8 +376,6 @@ public class PortalGunItem extends Item {
                             1.0F,
                             1F);
 
-                    waitPortal = true;
-
                     if (portalsTag.contains("Left" + "Portal")) {
                         newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
                         if (newPortal1 != null) {
@@ -392,10 +390,13 @@ public class PortalGunItem extends Item {
                         }
                     }
 
+
                     if (notSnowUp(direction) || isSnowUp(direction)) {
+                        waitPortal = true;
+
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
+                        Vec3d newPortalPos2 = calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2);
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
