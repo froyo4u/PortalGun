@@ -51,7 +51,7 @@ public class PortalMethods {
 
     }
 
-    private static Vec3d calcPortalPos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
+    public static Vec3d calcPortalPos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
         double upOffset = -0.5, faceOffset = -0.505, crossOffset = 0.0;
         return new Vec3d(
                 ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
@@ -71,7 +71,7 @@ public class PortalMethods {
 
         portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
-        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+        portalExtension.adjustPositionAfterTeleport = true;
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -106,7 +106,7 @@ public class PortalMethods {
             portal.setDestination(portalPosition);
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
 
-        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+        portalExtension.adjustPositionAfterTeleport = true;
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
         dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
