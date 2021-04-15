@@ -396,7 +396,7 @@ public class PortalGunItem extends Item {
 
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        Vec3d newPortalPos2 = calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2);
+                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
