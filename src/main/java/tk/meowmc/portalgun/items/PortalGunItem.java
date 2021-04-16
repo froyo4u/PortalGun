@@ -227,8 +227,8 @@ public class PortalGunItem extends Item {
                         if (newPortal2 != null && notSnowUp(direction))
                             newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
 
-
-                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
+                        if (newPortal2 != null)
+                            PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
@@ -396,7 +396,9 @@ public class PortalGunItem extends Item {
 
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
+
+                        if (newPortal1 != null)
+                            PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
