@@ -132,7 +132,6 @@ public class PortalMethods {
 
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
-        World portal2World = McHelper.getServerWorld(World.OVERWORLD);
 
         if (portalsTag.contains("Left" + "Portal")) {
             newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
@@ -147,7 +146,6 @@ public class PortalMethods {
             newPortal1.setDestination(newPortal2.getPos());
 
         if (newPortal2 != null) {
-            portal2World = newPortal2.getOriginWorld();
             portal2AxisW = newPortal2.axisW;
             portal2AxisH = newPortal2.axisH;
         }
@@ -162,7 +160,6 @@ public class PortalMethods {
 
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
-        newPortal2.setWorld(portal2World);
         newPortal2.axisW = portal2AxisW;
         newPortal2.axisH = portal2AxisH;
     }
@@ -174,8 +171,19 @@ public class PortalMethods {
         BlockPos blockPos = blockHit.getBlockPos();
         World portal1World = McHelper.getServerWorld(World.OVERWORLD);
 
+        if (portalsTag.contains("Left" + "Portal")) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
+            if (newPortal1 != null) {
+                portal1Exists = true;
+            }
+        }
+
+        newPortal1 = Settings1(direction, blockPos, hit, user);
+
+        if (newPortal1 != null)
+            newPortal2.setDestination(newPortal1.getPos());
+
         if (newPortal1 != null) {
-            portal1World = newPortal1.getOriginWorld();
             portal1AxisW = newPortal1.axisW;
             portal1AxisH = newPortal1.axisH;
         }
@@ -187,13 +195,6 @@ public class PortalMethods {
             }
         }
         newPortal2 = Settings2(direction, blockPos, hit, user);
-        if (portalsTag.contains("Left" + "Portal")) {
-            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-            if (newPortal1 != null) {
-                portal1Exists = true;
-            }
-        }
-        newPortal1 = Settings1(direction, blockPos, hit, user);
 
         if (space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
             newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY() - 0.875, newPortal2.getZ());
