@@ -71,7 +71,7 @@ public class PortalMethods {
 
         portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
-        portalExtension.adjustPositionAfterTeleport = true;
+        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -106,7 +106,7 @@ public class PortalMethods {
             portal.setDestination(portalPosition);
         portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
 
-        portalExtension.adjustPositionAfterTeleport = true;
+        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
         dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
