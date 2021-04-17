@@ -16,6 +16,8 @@ allprojects {
             name = 'JitPack'
             url = 'https://jitpack.io'
         }
+        maven { url 'https://hephaestus.dev/release' }
+        maven { url 'https://repo.repsy.io/mvn/gandiber/geckolib' }
 
         jcenter()
     }
