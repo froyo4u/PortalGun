@@ -4,6 +4,7 @@ import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.portal.GeometryPortalShape;
 import com.qouteall.immersive_portals.portal.Portal;
 import com.qouteall.immersive_portals.portal.PortalExtension;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -14,6 +15,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import tk.meowmc.portalgun.config.PortalGunConfig;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,7 +23,7 @@ import java.util.stream.IntStream;
 import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class PortalMethods {
-    public static final int TRIANGLE_NUM = 30; //Number of triangles used to approximate the elliptical shape of the portal
+    public static final int TRIANGLE_NUM = 30; //Number of triangles used to approximate the elliptical shape of the newPortal1
     public static final double TAU = Math.PI*2; //mathematical name for 2 * PI
     public static final int PORTAL_HEIGHT = 2;
     public static final int PORTAL_WIDTH = 1;
@@ -61,17 +63,20 @@ public class PortalMethods {
 
     }
 
-    public static Portal Settings1(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
-        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+    public static void Settings1(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
+        if (newPortal1 == null)
+            newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+        PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
         Vec3d destPos = new Vec3d(blockPos.getX(), blockPos.getY() + 2, blockPos.getZ());
-        PortalExtension portalExtension = PortalExtension.get(portal);
+        if (newPortal1 != null) {
+            PortalExtension portalExtension = PortalExtension.get(newPortal1);
+            portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+        }
 
-        portal.setDestination(destPos);
+        newPortal1.setDestination(destPos);
 
-        portal.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
-
-        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+        newPortal1.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -81,32 +86,35 @@ public class PortalMethods {
 
         dirRight1 = new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ());
 
-        portal.setOriginPos(calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
-        portal.setOrientationAndSize(
+        newPortal1.setOriginPos(calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
+        newPortal1.setOrientationAndSize(
                 Vec3d.of(dirRight1), //axisW
                 Vec3d.of(dirUp1), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
-        makeRoundPortal(portal);
-        portal.portalTag = "portalgun_portal1";
-        return portal;
+        if (config.enabled.enableRoundPortals)
+            makeRoundPortal(newPortal1);
+        newPortal1.portalTag = "portalgun_portal1";
     }
 
-    public static Portal Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
-        Portal portal = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+    public static void Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
+        if (newPortal2 == null)
+            newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+        PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
         Vec3d portalPosition = new Vec3d(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-        PortalExtension portalExtension = PortalExtension.get(portal);
+        if (newPortal2 != null) {
+            PortalExtension portalExtension = PortalExtension.get(newPortal2);
+            portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+        }
 
-        portal.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
+        newPortal2.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
 
         if (newPortal1 != null)
-            portal.setDestination(newPortal1.getPos());
+            newPortal2.setDestination(newPortal1.getPos());
         else
-            portal.setDestination(portalPosition);
-        portal.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
-
-        portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
+            newPortal2.setDestination(portalPosition);
+        newPortal2.updatePosition(portalPosition.x, portalPosition.y, portalPosition.z);
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
         dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
@@ -115,16 +123,16 @@ public class PortalMethods {
 
         dirRight2 = new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ());
 
-        portal.setOriginPos(calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
-        portal.setOrientationAndSize(
+        newPortal2.setOriginPos(calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
+        newPortal2.setOrientationAndSize(
                 Vec3d.of(dirRight2), //axisW
                 Vec3d.of(dirUp2), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
-        makeRoundPortal(portal);
-        portal.portalTag = "portalgun_portal2";
-        return portal;
+        if (config.enabled.enableRoundPortals)
+            makeRoundPortal(newPortal2);
+        newPortal2.portalTag = "portalgun_portal2";
     }
 
     public static void portal1Methods(LivingEntity user, HitResult hit, World world) {
@@ -135,12 +143,14 @@ public class PortalMethods {
 
         if (portalsTag.contains("Left" + "Portal")) {
             newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-            if (newPortal1 != null) {
-                portal1Exists = true;
+            if (portal1 == null) {
+                newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                portal1Exists = false;
             }
+            else
+                portal1Exists = true;
         }
-
-        newPortal1 = Settings1(direction, blockPos, hit, user);
+        Settings1(direction, blockPos, hit, user);
 
         if (newPortal2 != null)
             newPortal1.setDestination(newPortal2.getPos());
@@ -152,11 +162,14 @@ public class PortalMethods {
 
         if (portalsTag.contains("Right" + "Portal")) {
             newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-            if (newPortal2 != null) {
-                portal2Exists = true;
+            if (newPortal2 == null) {
+                newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                portal2Exists = false;
             }
+            else
+                portal2Exists = true;
         }
-        newPortal2 = Settings2(direction, blockPos, hit, user);
+        Settings2(direction, blockPos, hit, user);
 
         newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
         newPortal2.setDestination(newPortal1.getPos());
@@ -171,18 +184,6 @@ public class PortalMethods {
         BlockPos blockPos = blockHit.getBlockPos();
         World portal1World = McHelper.getServerWorld(World.OVERWORLD);
 
-        if (portalsTag.contains("Left" + "Portal")) {
-            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-            if (newPortal1 != null) {
-                portal1Exists = true;
-            }
-        }
-
-        newPortal1 = Settings1(direction, blockPos, hit, user);
-
-        if (newPortal1 != null)
-            newPortal2.setDestination(newPortal1.getPos());
-
         if (newPortal1 != null) {
             portal1AxisW = newPortal1.axisW;
             portal1AxisH = newPortal1.axisH;
@@ -190,11 +191,25 @@ public class PortalMethods {
 
         if (portalsTag.contains("Right" + "Portal")) {
             newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-            if (newPortal2 != null) {
-                portal2Exists = true;
+            if (newPortal2 == null) {
+                newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                portal2Exists = false;
             }
+            else
+                portal2Exists = true;
         }
-        newPortal2 = Settings2(direction, blockPos, hit, user);
+        Settings2(direction, blockPos, hit, user);
+
+        if (portalsTag.contains("Left" + "Portal")) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
+            if (portal1 == null) {
+                newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                portal1Exists = false;
+            }
+            else
+                portal1Exists = true;
+        }
+        Settings1(direction, blockPos, hit, user);
 
         if (space2BlockState.getBlock().is(Blocks.SNOW) && direction == Direction.UP) {
             newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY() - 0.875, newPortal2.getZ());

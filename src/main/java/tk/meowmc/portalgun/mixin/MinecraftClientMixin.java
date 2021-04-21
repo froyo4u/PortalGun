@@ -5,7 +5,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,9 +29,6 @@ public abstract class MinecraftClientMixin {
     public ClientPlayerEntity player;
     @Shadow
     public int attackCooldown;
-
-    public MinecraftClientMixin() {
-    }
 
     @Shadow
     protected abstract void doItemPick();
@@ -59,28 +55,10 @@ public abstract class MinecraftClientMixin {
             cancellable = true
     )
     private void onDoAttack(CallbackInfo ci) {
-        if (this.attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN)) {
+        if (this.attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
             MinecraftClientMethods.myAttackBlock();
-        } else {
-            MinecraftClientMethods.doAttack();
-        }
+        else MinecraftClientMethods.doAttack();
         ci.cancel();
-
-    }
-
-    @Inject(
-            method = {"doItemUse"},
-            at = {@At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/network/ClientPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"
-            )},
-            cancellable = true
-    )
-    private void onDoItemUse(CallbackInfo ci) {
-        if (MinecraftClientMethods.isPointingToPortal()) {
-            MinecraftClientMethods.myItemUse(Hand.MAIN_HAND);
-            ci.cancel();
-        }
 
     }
 

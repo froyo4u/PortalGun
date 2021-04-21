@@ -10,6 +10,9 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
+import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
+import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
@@ -44,5 +47,7 @@ public class PortalgunClient implements ClientModInitializer {
                 }
             }
         });
+
+        GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN, new PortalGunRenderer());
     }
 }

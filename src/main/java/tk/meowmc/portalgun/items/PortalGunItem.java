@@ -24,6 +24,14 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
+import software.bernie.geckolib3.core.manager.AnimationData;
+import software.bernie.geckolib3.core.manager.AnimationFactory;
+import software.bernie.geckolib3.util.GeckoLibUtil;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.misc.PortalMethods;
@@ -34,8 +42,10 @@ import static net.minecraft.util.hit.HitResult.Type.BLOCK;
 import static net.minecraft.util.hit.HitResult.Type.MISS;
 import static tk.meowmc.portalgun.misc.PortalMethods.*;
 
-public class PortalGunItem extends Item {
+public class PortalGunItem extends Item implements IAnimatable {
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
+    public String controllerName = "portalgunController";
+    public AnimationFactory factory = new AnimationFactory(this);
     public static HitResult hit;
     public static BlockHitResult blockHit;
     public static BlockPos blockPos;
@@ -62,15 +72,33 @@ public class PortalGunItem extends Item {
         super(settings);
     }
 
-    public static void removeOldPortals(CompoundTag tag, CompoundTag portalsTag, Entity portal1, Entity portal2) {
-        if (portal1 != null && portal2 != null) {
+    private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {
+        return PlayState.CONTINUE;
+    }
+
+    @Override
+    public void registerControllers(AnimationData animationData) {
+        AnimationController controller = new AnimationController(this, controllerName, 1, this::predicate);
+        animationData.addAnimationController(controller);
+    }
+
+    @Override
+    public AnimationFactory getFactory() {
+        return this.factory;
+    }
+
+    public static void removeOldPortals(CompoundTag tag, CompoundTag portalsTag, Entity portal1, Entity portal2, World world) {
+        if (portal1 != null) {
             portal1.kill();
-            portal2.kill();
+            portalsTag.remove("Left" + "Portal");
+            newPortal1.removed = false;
         }
-        portalsTag.remove("Left" + "Portal");
-        portalsTag.remove("Right" + "Portal");
-        newPortal1.removed = false;
-        newPortal2.removed = false;
+        if (portal2 != null) {
+            portal2.kill();
+            portalsTag.remove("Right" + "Portal");
+            newPortal2.removed = false;
+        }
+        tag.remove(world.getRegistryKey().toString());
     }
 
     @Override
@@ -98,6 +126,8 @@ public class PortalGunItem extends Item {
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
+        AnimationController controller = GeckoLibUtil.getControllerForStack(factory, itemStack, controllerName);
+
 
         if (hit.getType() == BLOCK && PortalgunClient.delay) {
             direction = blockHit.getSide();
@@ -198,21 +228,24 @@ public class PortalGunItem extends Item {
                             SoundCategory.NEUTRAL,
                             1.0F,
                             1F);
-
-
+                    controller.markNeedsReload();
+                    controller.transitionLengthTicks = 3;
+                    controller.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
 
                     if (portalsTag.contains("Left" + "Portal")) {
-                        newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-                        if (newPortal1 != null) {
+                        portal1 = newPortal1.world != null ? (Portal) ((ServerWorld) newPortal1.world).getEntity(portalsTag.getUuid("Left" + "Portal")) : (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
+                        if (portal1 == null)
+                            newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                        else
                             portal1Exists = true;
-                        }
                     }
 
                     if (portalsTag.contains("Right" + "Portal")) {
-                        newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-                        if (newPortal2 != null) {
+                        portal2 = newPortal2.world != null ? (Portal) ((ServerWorld) newPortal2.world).getEntity(portalsTag.getUuid("Right" + "Portal")) : (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
+                        if (portal2 == null)
+                            newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                        else
                             portal2Exists = true;
-                        }
                     }
 
                     if (notSnowUp(direction) || isSnowUp(direction)) {
@@ -232,10 +265,6 @@ public class PortalGunItem extends Item {
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
-                                if (portalsTag.contains("Left" + "Portal") && portalsTag.contains("Right" + "Portal")) {
-                                    portal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-                                    portal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-                                }
                                 world.playSound(null,
                                         newPortal1.getX(),
                                         newPortal1.getY(),
@@ -244,9 +273,14 @@ public class PortalGunItem extends Item {
                                         SoundCategory.NEUTRAL,
                                         1.0F,
                                         1F);
-                                removeOldPortals(tag, portalsTag, portal1, portal2);
-                                McHelper.spawnServerEntity(newPortal1);
-                                McHelper.spawnServerEntity(newPortal2);
+                                if (!portal1Exists && !portal2Exists) {
+                                    removeOldPortals(tag, portalsTag, portal1, portal2, world);
+                                    McHelper.spawnServerEntity(newPortal1);
+                                    McHelper.spawnServerEntity(newPortal2);
+                                } else {
+                                    newPortal1.reloadAndSyncToClient();
+                                    newPortal2.reloadAndSyncToClient();
+                                }
                             }
                             waitPortal = false;
                             if (newPortal2 != null) {
@@ -276,6 +310,7 @@ public class PortalGunItem extends Item {
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
+        AnimationController controller = GeckoLibUtil.getControllerForStack(this.factory, itemStack, controllerName);
 
         if (hit.getType() == MISS)
             return TypedActionResult.fail(itemStack);
@@ -361,12 +396,11 @@ public class PortalGunItem extends Item {
 
             int delay = (int) (0.5 * distance);
 
-            client.attackCooldown = 10;
-            client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
+            controller.markNeedsReload();
+            controller.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
 
             if (!world.isClient) {
                 if (!waitPortal && !space1BlockState.isOpaque() && space2BlockState.isOpaque() && !space3BlockState.isOpaque()) {
-
                     world.playSound(null,
                             user.getX(),
                             user.getY(),
@@ -378,16 +412,22 @@ public class PortalGunItem extends Item {
 
                     if (portalsTag.contains("Left" + "Portal")) {
                         newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-                        if (newPortal1 != null) {
-                            portal1Exists = true;
+                        if (portal1 == null) {
+                            newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            portal1Exists = false;
                         }
+                        else
+                            portal1Exists = true;
                     }
 
                     if (portalsTag.contains("Right" + "Portal")) {
                         newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-                        if (newPortal2 != null) {
-                            portal2Exists = true;
+                        if (newPortal2 == null) {
+                            newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            portal2Exists = false;
                         }
+                        else
+                            portal2Exists = true;
                     }
 
 
@@ -402,10 +442,6 @@ public class PortalGunItem extends Item {
 
                         ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
                             if (McHelper.getServer().getThread() == Thread.currentThread()) {
-                                if (portalsTag.contains("Left" + "Portal") && portalsTag.contains("Right" + "Portal")) {
-                                    portal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-                                    portal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
-                                }
                                 world.playSound(null,
                                         newPortal2.getX(),
                                         newPortal2.getY(),
@@ -414,9 +450,14 @@ public class PortalGunItem extends Item {
                                         SoundCategory.NEUTRAL,
                                         1.0F,
                                         1F);
-                                removeOldPortals(tag, portalsTag, portal1, portal2);
-                                McHelper.spawnServerEntity(newPortal1);
-                                McHelper.spawnServerEntity(newPortal2);
+                                if (!portal1Exists && !portal2Exists) {
+                                    removeOldPortals(tag, portalsTag, portal1, portal2, world);
+                                    McHelper.spawnServerEntity(newPortal1);
+                                    McHelper.spawnServerEntity(newPortal2);
+                                } else {
+                                    newPortal1.reloadAndSyncToClient();
+                                    newPortal2.reloadAndSyncToClient();
+                                }
                             }
                             waitPortal = false;
                             if (newPortal2 != null) {
@@ -434,7 +475,6 @@ public class PortalGunItem extends Item {
             user.incrementStat(Stats.USED.getOrCreateStat(this));
         }
 
-        return TypedActionResult.pass(itemStack);
+        return TypedActionResult.fail(itemStack);
     }
-
 }

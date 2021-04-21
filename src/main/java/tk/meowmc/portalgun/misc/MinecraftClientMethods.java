@@ -1,7 +1,6 @@
 package tk.meowmc.portalgun.misc;
 
 import com.qouteall.immersive_portals.ClientWorldLoader;
-import com.qouteall.immersive_portals.block_manipulation.BlockManipulationServer;
 import com.qouteall.immersive_portals.commands.PortalCommand;
 import com.qouteall.immersive_portals.portal.Portal;
 import com.qouteall.immersive_portals.portal.PortalPlaceholderBlock;
@@ -10,10 +9,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -29,7 +26,7 @@ import tk.meowmc.portalgun.Portalgun;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
 
-@SuppressWarnings({"ReturnOfNull", "UnnecessaryReturnStatement"})
+@SuppressWarnings({"ReturnOfNull"})
 public class MinecraftClientMethods {
     private static final MinecraftClient client = MinecraftClient.getInstance();
     public static RegistryKey<World> remotePointedDim;
@@ -127,7 +124,7 @@ public class MinecraftClientMethods {
     }
 
     public static void myHandleBlockBreaking(boolean isKeyPressed) {
-        if (/* !client.player.isUsingItem() && */ !client.player.isHolding(PORTALGUN)) {
+        if (!client.player.isUsingItem() && !client.player.isHolding(PORTALGUN)) {
             if (isKeyPressed && isPointingToPortal()) {
                 BlockHitResult blockHitResult = (BlockHitResult) remoteHitResult;
                 BlockPos blockPos = blockHitResult.getBlockPos();
@@ -183,7 +180,7 @@ public class MinecraftClientMethods {
         if (client.attackCooldown <= 0) {
             if (client.crosshairTarget == null) {
                 Portalgun.LOGGER.error("Null returned as 'hitResult', this shouldn't happen!");
-                if (client.interactionManager.hasLimitedAttackSpeed()) {
+                if (client.interactionManager.hasLimitedAttackSpeed()  && !client.player.isHolding(PORTALGUN)) {
                     client.attackCooldown = 10;
                 }
 
@@ -198,56 +195,18 @@ public class MinecraftClientMethods {
                         if (!client.world.getBlockState(blockPos).isAir() && !client.player.isHolding(PORTALGUN)) {
                             client.interactionManager.attackBlock(blockPos, blockHitResult.getSide());
                             break;
-                        } else if (!client.world.getBlockState(blockPos).isAir() && client.player.isHolding(PORTALGUN))
-                            client.attackCooldown = 10;
+                        } /*else if (!client.world.getBlockState(blockPos).isAir() && client.player.isHolding(PORTALGUN))
+                            client.attackCooldown = 10;*/
                     case MISS:
-                        if (client.interactionManager.hasLimitedAttackSpeed() || client.player.isHolding(PORTALGUN)) {
+                        if (client.interactionManager.hasLimitedAttackSpeed() && !client.player.isHolding(PORTALGUN)) {
                             client.attackCooldown = 10;
                         }
-
-                        client.player.resetLastAttackedTicks();
+                        if (!client.player.isHolding(PORTALGUN))
+                            client.player.resetLastAttackedTicks();
                 }
                 if (!client.player.isHolding(PORTALGUN))
                     client.player.swingHand(Hand.MAIN_HAND);
             }
-        }
-    }
-
-    public static void myItemUse(Hand hand) {
-        ClientWorld targetWorld = ClientWorldLoader.getWorld(remotePointedDim);
-        ItemStack itemStack = client.player.getStackInHand(hand);
-        BlockHitResult blockHitResult = (BlockHitResult) remoteHitResult;
-        Pair<BlockHitResult, RegistryKey<World>> result = BlockManipulationServer.getHitResultForPlacing(targetWorld, blockHitResult);
-        blockHitResult = (BlockHitResult) result.getLeft();
-        targetWorld = ClientWorldLoader.getWorld((RegistryKey) result.getRight());
-        remoteHitResult = blockHitResult;
-        remotePointedDim = (RegistryKey) result.getRight();
-        int i = itemStack.getCount();
-        ActionResult actionResult2 = myInteractBlock(hand, targetWorld, blockHitResult);
-        if (!actionResult2.isAccepted()) {
-            if (actionResult2 != ActionResult.FAIL) {
-                if (!itemStack.isEmpty()) {
-                    ActionResult actionResult3 = client.interactionManager.interactItem(client.player, targetWorld, hand);
-                    if (actionResult3.isAccepted()) {
-                        if (actionResult3.shouldSwingHand() && !client.player.isHolding(PORTALGUN)) {
-                            client.player.swingHand(hand);
-                        }
-
-                        client.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
-                        return;
-                    }
-                }
-
-            }
-        } else {
-            if (actionResult2.shouldSwingHand() && !client.player.isHolding(PORTALGUN)) {
-                client.player.swingHand(hand);
-                if (!itemStack.isEmpty() && (itemStack.getCount() != i || client.interactionManager.hasCreativeInventory())) {
-                    client.gameRenderer.firstPersonRenderer.resetEquipProgress(hand);
-                }
-            } else if (client.player.isHolding(PORTALGUN))
-                client.attackCooldown = 10;
-
         }
     }
 

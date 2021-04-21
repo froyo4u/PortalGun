@@ -17,6 +17,9 @@
     ],
     "main": [
       "tk.meowmc.portalgun.Portalgun"
+    ],
+    "modmenu": [
+      "tk.meowmc.portalgun.config.ModMenuIntegration"
     ]
   },
   "mixins": [

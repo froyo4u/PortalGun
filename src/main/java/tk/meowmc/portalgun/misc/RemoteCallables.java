@@ -1,7 +1,6 @@
 package tk.meowmc.portalgun.misc;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.world.World;
@@ -33,6 +32,7 @@ public class RemoteCallables {
                         1F);
                 portalsTag.remove("Left" + "Portal");
                 waitPortal = false;
+                newPortal1 = null;
             }
         }
     }
@@ -53,29 +53,19 @@ public class RemoteCallables {
                         1F);
                 portalsTag.remove("Right" + "Portal");
                 waitPortal = false;
+                newPortal2 = null;
             }
         }
     }
 
     public static void portal1Place(ServerPlayerEntity user) {
-        Item gunItem = PORTALGUN;
+        PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
         boolean portalGunActive = user.isHolding(PORTALGUN);
-        if (delay && newPortal1 != null && portalGunActive) {
-            if (newPortal1.age >= 2 && newPortal1.isAlive()) {
-                ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
-                client.attackCooldown = 10;
-                client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
-            } else if (!newPortal1.isAlive()) {
-                ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
-                newPortal1.removed = false;
-                client.attackCooldown = 10;
-                client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
+        if(delay && newPortal1 != null && portalGunActive) {
+            gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+            if(!newPortal1.isAlive()) {
+                newPortal1.removed=false;
             }
-
-        } else if (delay && newPortal1 == null && portalGunActive) {
-            ((PortalGunItem) gunItem).portal1Spawn(user.world, user, user.getActiveHand());
-            client.attackCooldown = 10;
-            client.gameRenderer.firstPersonRenderer.resetEquipProgress(user.getActiveHand());
         }
     }
 

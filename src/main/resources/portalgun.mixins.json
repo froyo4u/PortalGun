@@ -3,14 +3,14 @@
   "minVersion": "0.8",
   "package": "tk.meowmc.portalgun.mixin",
   "compatibilityLevel": "JAVA_8",
+  "target": "@env(",
   "mixins": [
-    "CollisionHelperMixin",
     "PortalMixin",
     "ServerTeleportationManagerMixin"
   ],
   "client": [
-    "MinecraftClientMixin",
-    "ClientPlayNetworkHandlerMixin"
+    "ClientPlayNetworkHandlerMixin",
+    "MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

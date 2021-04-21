@@ -11,6 +11,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
 public class Portalgun implements ModInitializer {
@@ -33,9 +34,11 @@ public class Portalgun implements ModInitializer {
     public static SoundEvent PORTAL_CLOSE_EVENT = new SoundEvent(PORTAL_CLOSE);
 
     public static Logger LOGGER = LogManager.getLogger();
+
     public static void logString(Level level, String message) {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message);
     }
+
     public static void logInt(Level level, int message) {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message);
     }
@@ -55,6 +58,8 @@ public class Portalgun implements ModInitializer {
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL_OPEN, PORTAL_OPEN_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL_CLOSE, PORTAL_CLOSE_EVENT);
+
+        PortalGunConfig.register();
     }
 
 
