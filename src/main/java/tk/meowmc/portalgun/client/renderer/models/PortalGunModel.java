@@ -16,7 +16,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("geo/portalgun_og.geo.json");
         else*/
-            return id("geo/portalgun.geo.json");
+        return id("geo/portalgun.geo.json");
     }
 
     @Override
@@ -24,7 +24,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("textures/item/portal_gun_og.png");
         else*/
-            return id("textures/item/portal_gun.png");
+        return id("textures/item/portal_gun.png");
     }
 
     @Override
@@ -32,6 +32,6 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("animations/portalgun_og.animation.json");
         else*/
-            return id("animations/portalgun.animation.json");
+        return id("animations/portalgun.animation.json");
     }
 }
