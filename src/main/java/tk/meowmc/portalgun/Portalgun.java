@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tk.meowmc.portalgun.config.PortalGunConfig;
+import tk.meowmc.portalgun.items.ClawItem;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
 public class Portalgun implements ModInitializer {
@@ -21,7 +22,7 @@ public class Portalgun implements ModInitializer {
 
     public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1).rarity(Rarity.EPIC));
     public static final Item PORTALGUN_BODY = new Item(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
-    public static final Item PORTALGUN_CLAW = new Item(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
+    public static final Item PORTALGUN_CLAW = new ClawItem(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
 
     public static final Identifier PORTAL1_SHOOT = new Identifier("portalgun:portal1_shoot");
     public static final Identifier PORTAL2_SHOOT = new Identifier("portalgun:portal2_shoot");

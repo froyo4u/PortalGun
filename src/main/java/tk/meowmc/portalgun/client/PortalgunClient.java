@@ -9,10 +9,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
 import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.misc.RemoteCallables;
 
@@ -50,5 +50,6 @@ public class PortalgunClient implements ClientModInitializer {
         });
 
         GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN, new PortalGunRenderer());
+        GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN_CLAW, new ClawRenderer());
     }
 }
