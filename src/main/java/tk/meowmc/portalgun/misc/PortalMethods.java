@@ -141,13 +141,12 @@ public class PortalMethods {
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
 
-        if (portalsTag.contains("Left" + "Portal")) {
-            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-            if (portal1 == null) {
+        if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+            if (newPortal1 == null) {
                 newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                 portal1Exists = false;
-            }
-            else
+            } else
                 portal1Exists = true;
         }
         Settings1(direction, blockPos, hit, user);
@@ -160,13 +159,12 @@ public class PortalMethods {
             portal2AxisH = newPortal2.axisH;
         }
 
-        if (portalsTag.contains("Right" + "Portal")) {
-            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
+        if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
+            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
             if (newPortal2 == null) {
                 newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                 portal2Exists = false;
-            }
-            else
+            } else
                 portal2Exists = true;
         }
         Settings2(direction, blockPos, hit, user);
@@ -189,24 +187,22 @@ public class PortalMethods {
             portal1AxisH = newPortal1.axisH;
         }
 
-        if (portalsTag.contains("Right" + "Portal")) {
-            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Right" + "Portal"));
+        if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
+            newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
             if (newPortal2 == null) {
                 newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                 portal2Exists = false;
-            }
-            else
+            } else
                 portal2Exists = true;
         }
         Settings2(direction, blockPos, hit, user);
 
-        if (portalsTag.contains("Left" + "Portal")) {
-            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("Left" + "Portal"));
-            if (portal1 == null) {
+        if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
+            newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+            if (newPortal1 == null) {
                 newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                 portal1Exists = false;
-            }
-            else
+            } else
                 portal1Exists = true;
         }
         Settings1(direction, blockPos, hit, user);
