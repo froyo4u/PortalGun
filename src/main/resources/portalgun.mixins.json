@@ -3,7 +3,6 @@
   "minVersion": "0.8",
   "package": "tk.meowmc.portalgun.mixin",
   "compatibilityLevel": "JAVA_8",
-  "target": "@env(",
   "mixins": [
     "PortalMixin",
     "ServerTeleportationManagerMixin"
