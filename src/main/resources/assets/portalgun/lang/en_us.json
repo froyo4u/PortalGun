@@ -7,5 +7,6 @@
   "subtitles.portalgun.portal_open": "Portal opened",
   "subtitles.portalgun.portal_close": "Portal closed",
   "key.portalgun.clearportals": "Clear Portals",
-  "category.portalgun": "Portal Gun"
+  "category.portalgun": "Portal Gun",
+  "text.autoconfig.portalgun.option.enabled.enableRoundPortals": "Enable Round Portals"
 }
