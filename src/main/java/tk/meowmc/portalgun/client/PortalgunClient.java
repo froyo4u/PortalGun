@@ -9,10 +9,12 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
 import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
+import tk.meowmc.portalgun.misc.RemoteCallables;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
@@ -26,8 +28,7 @@ public class PortalgunClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (clearPortals.wasPressed()) {
                 McHelper.executeOnServerThread(() -> {
-                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal1");
-                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortal2");
+                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortals");
                 });
             }
         });
@@ -39,8 +40,8 @@ public class PortalgunClient implements ClientModInitializer {
                     tickCounter = 3;
                 delay = tickCounter % 3 == 0;
 
-                // Portalgun.logInt(Level.INFO, tickCounter);
                 if (delay) {
+                    RemoteCallables.playAnim();
                     McHelper.executeOnServerThread(() -> {
                         McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
                     });
