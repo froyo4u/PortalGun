@@ -42,7 +42,7 @@ public abstract class MinecraftClientMixin {
             cancellable = true
     )
     private void onHandleBlockBreaking(boolean isKeyPressed, CallbackInfo ci) {
-        if (MinecraftClientMethods.isPointingToPortal()) {
+        if (MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN)) {
             MinecraftClientMethods.myHandleBlockBreaking(isKeyPressed);
             ci.cancel();
         }
@@ -50,16 +50,16 @@ public abstract class MinecraftClientMixin {
     }
 
     @Inject(
-            method = {"doAttack"},
-            at = {@At("HEAD")},
+            method = "doAttack",
+            at = @At("HEAD"),
             cancellable = true
     )
     private void onDoAttack(CallbackInfo ci) {
-        if (this.attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
+        if (attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
             MinecraftClientMethods.myAttackBlock();
-        else MinecraftClientMethods.doAttack();
+        else if (!player.isHolding(PORTALGUN))
+            MinecraftClientMethods.doAttack();
         ci.cancel();
-
     }
 
 }

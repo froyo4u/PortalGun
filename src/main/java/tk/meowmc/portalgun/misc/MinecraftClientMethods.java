@@ -136,9 +136,8 @@ public class MinecraftClientMethods {
                         client.player.swingHand(Hand.MAIN_HAND);
                     }
                 }
-            } else {
+            } else if (!client.player.isHolding(PORTALGUN))
                 client.interactionManager.cancelBlockBreaking();
-            }
         }
 
     }
@@ -148,13 +147,14 @@ public class MinecraftClientMethods {
         client.world = ClientWorldLoader.getWorld(remotePointedDim);
         isContextSwitched = true;
 
-        boolean var3;
-        try {
-            var3 = client.interactionManager.updateBlockBreakingProgress(blockPos, direction);
-        } finally {
-            client.world = oldWorld;
-            isContextSwitched = false;
-        }
+        boolean var3 = false;
+        if (!client.player.isHolding(PORTALGUN))
+            try {
+                var3 = client.interactionManager.updateBlockBreakingProgress(blockPos, direction);
+            } finally {
+                client.world = oldWorld;
+                isContextSwitched = false;
+            }
 
         return var3;
     }
@@ -162,17 +162,20 @@ public class MinecraftClientMethods {
     public static void myAttackBlock() {
         ClientWorld targetWorld = ClientWorldLoader.getWorld(remotePointedDim);
         BlockPos blockPos = ((BlockHitResult) remoteHitResult).getBlockPos();
-        if (!targetWorld.isAir(blockPos) && !client.player.isHolding(PORTALGUN)) {
+        if (!targetWorld.isAir(blockPos)) {
             ClientWorld oldWorld = client.world;
             client.world = targetWorld;
             isContextSwitched = true;
 
-            try {
-                client.interactionManager.attackBlock(blockPos, ((BlockHitResult) remoteHitResult).getSide());
-            } finally {
-                client.world = oldWorld;
-                isContextSwitched = false;
-            }
+            if (!client.player.isHolding(PORTALGUN))
+                try {
+                    client.interactionManager.attackBlock(blockPos, ((BlockHitResult) remoteHitResult).getSide());
+                } finally {
+                    client.world = oldWorld;
+                    isContextSwitched = false;
+                }
+
+            client.player.swingHand(Hand.MAIN_HAND);
         }
     }
 
@@ -180,7 +183,7 @@ public class MinecraftClientMethods {
         if (client.attackCooldown <= 0) {
             if (client.crosshairTarget == null) {
                 Portalgun.LOGGER.error("Null returned as 'hitResult', this shouldn't happen!");
-                if (client.interactionManager.hasLimitedAttackSpeed()  && !client.player.isHolding(PORTALGUN)) {
+                if (client.interactionManager.hasLimitedAttackSpeed() && !client.player.isHolding(PORTALGUN)) {
                     client.attackCooldown = 10;
                 }
 
@@ -195,8 +198,7 @@ public class MinecraftClientMethods {
                         if (!client.world.getBlockState(blockPos).isAir() && !client.player.isHolding(PORTALGUN)) {
                             client.interactionManager.attackBlock(blockPos, blockHitResult.getSide());
                             break;
-                        } /*else if (!client.world.getBlockState(blockPos).isAir() && client.player.isHolding(PORTALGUN))
-                            client.attackCooldown = 10;*/
+                        }
                     case MISS:
                         if (client.interactionManager.hasLimitedAttackSpeed() && !client.player.isHolding(PORTALGUN)) {
                             client.attackCooldown = 10;
