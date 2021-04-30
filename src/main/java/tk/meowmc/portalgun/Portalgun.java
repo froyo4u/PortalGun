@@ -43,6 +43,10 @@ public class Portalgun implements ModInitializer {
         LOGGER.log(level, "[" + MOD_NAME + "] " + message);
     }
 
+    public static void logDouble(Level level, double message) {
+        LOGGER.log(level, "[" + MOD_NAME + "] " + message);
+    }
+
     public static Identifier id(String path) {
         return new Identifier(MODID, path);
     }
