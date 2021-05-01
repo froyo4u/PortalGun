@@ -14,10 +14,10 @@ import tk.meowmc.portalgun.misc.PortalMixinMethods;
 @Mixin(Portal.class)
 public abstract class PortalMixin extends Entity implements PortalLike {
 
-    @Shadow
+    @Shadow(remap = false)
     public boolean teleportChangesScale;
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract Vec3d transformLocalVecNonScale(Vec3d localVec);
 
     public PortalMixin(EntityType<?> type, World world) {
@@ -28,7 +28,7 @@ public abstract class PortalMixin extends Entity implements PortalLike {
      * @author someone
      * @reason cuz
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public void transformVelocity(Entity entity) {
         PortalMixinMethods.transformVelocity(entity, transformLocalVec(entity.getVelocity()), transformLocalVecNonScale(entity.getVelocity()), teleportChangesScale, (Portal) (Object) this);
     }
