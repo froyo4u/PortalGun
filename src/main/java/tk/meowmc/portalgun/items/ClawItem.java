@@ -10,12 +10,11 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class ClawItem extends Item implements IAnimatable {
 
+    public static String controllerName = "clawController";
+    public AnimationFactory factory = new AnimationFactory(this);
     public ClawItem(Settings settings) {
         super(settings);
     }
-
-    public static String controllerName = "clawController";
-    public AnimationFactory factory = new AnimationFactory(this);
 
     private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {
         return PlayState.CONTINUE;
