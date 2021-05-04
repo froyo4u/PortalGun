@@ -1,6 +1,5 @@
 package tk.meowmc.portalgun.client;
 
-import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.network.McRemoteProcedureCall;
 import com.qouteall.immersive_portals.render.PortalEntityRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -67,18 +66,14 @@ public class PortalgunClient implements ClientModInitializer {
         KeyBinding clearPortals = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.portalgun.clearportals", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (clearPortals.wasPressed()) {
-                McHelper.executeOnServerThread(() -> {
-                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortals");
-                });
+                McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortals");
             }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.options.keyAttack.isPressed() && !client.player.getItemCooldownManager().isCoolingDown(Portalgun.PORTALGUN)) {
                 RemoteCallables.playAnim();
-                McHelper.executeOnServerThread(() -> {
-                    McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
-                });
+                McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
             }
         });
 
