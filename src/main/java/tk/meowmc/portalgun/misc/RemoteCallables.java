@@ -5,7 +5,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
-import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.util.GeckoLibUtil;
@@ -13,7 +12,6 @@ import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
-import static tk.meowmc.portalgun.client.PortalgunClient.delay;
 import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class RemoteCallables {
@@ -56,10 +54,8 @@ public class RemoteCallables {
     public static void portal1Place(ServerPlayerEntity user) {
         PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
         boolean portalGunActive = user.isHolding(PORTALGUN);
-        if (delay && portalGunActive) {
+        if (!user.getItemCooldownManager().isCoolingDown(gunItem) && portalGunActive) {
             gunItem.portal1Spawn(user.world, user, user.getActiveHand());
-            if (!newPortal1.isAlive())
-                newPortal1.removed = false;
         }
     }
 
