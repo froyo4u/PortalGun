@@ -4,11 +4,11 @@
   "package": "tk.meowmc.portalgun.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "PortalMixin",
     "ServerTeleportationManagerMixin"
   ],
   "client": [
     "ClientPlayNetworkHandlerMixin",
+    "ClientPlayerEntityMixin",
     "MinecraftClientMixin"
   ],
   "injectors": {
