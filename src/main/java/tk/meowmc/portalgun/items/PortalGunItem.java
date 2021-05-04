@@ -2,7 +2,7 @@ package tk.meowmc.portalgun.items;
 
 import com.qouteall.immersive_portals.McHelper;
 import com.qouteall.immersive_portals.ModMain;
-import com.qouteall.immersive_portals.portal.Portal;
+import com.qouteall.immersive_portals.my_util.MyTaskList;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -33,7 +33,7 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.client.PortalgunClient;
+import tk.meowmc.portalgun.entities.CustomPortal;
 import tk.meowmc.portalgun.misc.PortalMethods;
 import tk.meowmc.portalgun.misc.TaskList;
 
@@ -45,32 +45,59 @@ import static tk.meowmc.portalgun.misc.PortalMethods.*;
 public class PortalGunItem extends Item implements IAnimatable {
     public static final String KEY = Portalgun.MODID + ":portalgun_portals";
     public static String controllerName = "portalgunController";
-    public AnimationFactory factory = new AnimationFactory(this);
+    public static CustomPortal newPortal1;
+    public static CustomPortal newPortal2;
+    public static Entity portal1;
+    public static Entity portal2;
+    public static boolean portal1Exists = false;
+    public static boolean portal2Exists = false;
+    public static boolean waitPortal = false;
+    public static CompoundTag tag;
+    public static CompoundTag portalsTag;
     public static HitResult hit;
     public static BlockHitResult blockHit;
     public static BlockPos blockPos;
     public static BlockState blockState;
-    public static Portal newPortal1;
-    public static Portal newPortal2;
-    public static Entity portal1;
-    public static Entity portal2;
-    public static boolean waitPortal = false;
-    public static BlockState space1BlockState;
-    public static BlockState space2BlockState;
-    public static BlockState space3BlockState;
-    BlockPos space1BlockPos;
-    BlockPos space2BlockPos;
-    BlockPos space3BlockPos;
-    Direction direction;
-    Vec3d positionCorrectionVec;
-    public static CompoundTag tag;
-    public static CompoundTag portalsTag;
-    public static boolean portal1Exists = false;
-    public static boolean portal2Exists = false;
+    public static BlockPos upperPos;
+    public static BlockPos lowerPos;
+    public static BlockPos spaceUpperPos;
+    public static BlockPos spaceLowerPos;
+    public static BlockState upperBlockState;
+    public static BlockState lowerBlockState;
+    public static BlockState spaceUpperBlockState;
+    public static BlockState spaceLowerBlockState;
     static AnimationController animController;
+    static Direction direction;
+    public AnimationFactory factory = new AnimationFactory(this);
 
     public PortalGunItem(Settings settings) {
         super(settings);
+    }
+
+    public static void removeOldPortals(PlayerEntity user) {
+        if (newPortal1 != null) {
+            newPortal1.kill();
+            portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
+            newPortal1.removed = false;
+        }
+        if (newPortal2 != null) {
+            newPortal2.kill();
+            portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
+            newPortal2.removed = false;
+        }
+        tag.remove(user.world.getRegistryKey().toString());
+    }
+
+    public static boolean isSnowUp(Direction direction) {
+        return (upperBlockState.isOpaque() && lowerBlockState.isOpaque()) && (!spaceUpperBlockState.isOpaque() && !spaceLowerBlockState.isOpaque()) && (upperBlockState.getBlock().is(Blocks.SNOW) && upperBlockState.get(LAYERS) == 1 && lowerBlockState.getBlock().is(Blocks.SNOW) && lowerBlockState.get(LAYERS) == 1 && direction == Direction.UP);
+    }
+
+    public static boolean canPlace(World world, Direction direction) {
+        return (upperBlockState.isSideSolidFullSquare(world, upperPos, direction) &&
+                lowerBlockState.isSideSolidFullSquare(world, lowerPos, direction) &&
+                upperBlockState.isOpaque() &&
+                lowerBlockState.isOpaque()) &&
+                (!spaceUpperBlockState.isOpaque() && !spaceLowerBlockState.isOpaque());
     }
 
     private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {
@@ -88,33 +115,9 @@ public class PortalGunItem extends Item implements IAnimatable {
         return this.factory;
     }
 
-    public static void removeOldPortals(PlayerEntity user) {
-        if (newPortal1 != null) {
-            newPortal1.kill();
-            portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
-            newPortal1.removed = false;
-        }
-        if (newPortal2 != null) {
-            newPortal2.kill();
-            portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
-            newPortal2.removed = false;
-        }
-        tag.remove(user.world.getRegistryKey().toString());
-    }
-
     @Override
     public boolean canMine(BlockState state, World world, BlockPos pos, PlayerEntity miner) {
         return false;
-    }
-
-    public static boolean isSnowUp(Direction direction) {
-        return blockState.getBlock().is(Blocks.SNOW) && blockState.get(LAYERS) == 1 &&
-                space2BlockState.getBlock().is(Blocks.SNOW) && space2BlockState.get(LAYERS) == 1 &&
-                direction == Direction.UP;
-    }
-
-    public static boolean notSnowUp(Direction direction) {
-        return !blockState.getBlock().is(Blocks.SNOW);
     }
 
     public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
@@ -122,8 +125,7 @@ public class PortalGunItem extends Item implements IAnimatable {
         tag = itemStack.getOrCreateTag();
         portalsTag = tag.getCompound(world.getRegistryKey().toString());
         MinecraftClient client = MinecraftClient.getInstance();
-        if (!user.getItemCooldownManager().isCoolingDown(this))
-            user.getItemCooldownManager().set(this, 4);
+        user.getItemCooldownManager().set(this, 4);
         Entity entity = client.getCameraEntity();
         hit = entity.raycast(50.0D, 0.0F, false);
         blockHit = (BlockHitResult) hit;
@@ -133,41 +135,9 @@ public class PortalGunItem extends Item implements IAnimatable {
         client.attackCooldown = 0;
 
 
-        if (hit.getType() == BLOCK && PortalgunClient.delay) {
+        if (hit.getType() == BLOCK) {
             direction = blockHit.getSide();
 
-            space1BlockPos = blockPos.add(-1, 0, 0);
-            space2BlockPos = blockPos.add(0, -1, 0);
-            space3BlockPos = blockPos.add(0, -1, -1);
-
-
-            switch (direction) {
-                case UP:
-                    space1BlockPos = blockPos.add(0, 1, 0);
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, 1, -1);
-                    break;
-                case DOWN:
-                    space1BlockPos = blockPos.add(0, -1, 0);
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, -1, -1);
-                    break;
-                case NORTH:
-                    space1BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, -1, -1);
-                    break;
-                case SOUTH:
-                    space1BlockPos = blockPos.add(0, 0, 1);
-                    space3BlockPos = blockPos.add(0, -1, 1);
-                    break;
-                case EAST:
-                    space1BlockPos = blockPos.add(1, 0, 0);
-                    space3BlockPos = blockPos.add(1, -1, 0);
-                    break;
-                case WEST:
-                    space3BlockPos = blockPos.add(-1, -1, 0);
-                    break;
-            }
 
             dirOut1 = blockHit.getSide().getOpposite().getVector();
             if (dirOut1.getY() == 0) {
@@ -179,32 +149,6 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             dirRight1 = new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ());
 
-            if (direction == Direction.UP) {
-                if (dirUp1.getZ() == -1) {
-                    space2BlockPos = blockPos.add(0, 0, 1);
-                    space3BlockPos = blockPos.add(0, 1, 1);
-                }
-
-                if (dirRight1.getX() == -1) {
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, 1, -1);
-                }
-
-                switch (dirRight1.getZ()) {
-                    case 1:
-                        space2BlockPos = blockPos.add(-1, 0, 0);
-                        space3BlockPos = blockPos.add(-1, 1, 0);
-                        break;
-                    case -1:
-                        space2BlockPos = blockPos.add(1, 0, 0);
-                        space3BlockPos = blockPos.add(1, 1, 0);
-                        break;
-                }
-            }
-
-            space1BlockState = world.getBlockState(space1BlockPos);
-            space2BlockState = world.getBlockState(space2BlockPos);
-            space3BlockState = world.getBlockState(space3BlockPos);
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
@@ -213,83 +157,138 @@ public class PortalGunItem extends Item implements IAnimatable {
             Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
 
             double distance = distanceVec.length();
+
             int delay = (int) (0.5 * distance);
 
-            ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-                waitPortal = false;
-            })));
 
-            if (!world.isClient) {
-                if (!waitPortal && !space1BlockState.isOpaque() && space2BlockState.isOpaque() && !space3BlockState.isOpaque()) {
-                    world.playSound(null,
-                            user.getX(),
-                            user.getY(),
-                            user.getZ(),
-                            Portalgun.PORTAL1_SHOOT_EVENT,
-                            SoundCategory.NEUTRAL,
-                            1.0F,
-                            1F);
+            if (!world.isClient && !waitPortal) {
+                world.playSound(null,
+                        user.getX(),
+                        user.getY(),
+                        user.getZ(),
+                        Portalgun.PORTAL1_SHOOT_EVENT,
+                        SoundCategory.NEUTRAL,
+                        1.0F,
+                        1F);
+
+
+                upperPos = new BlockPos(
+                        blockPos.getX() - dirRight1.crossProduct(dirUp1).getX(),
+                        blockPos.getY() - dirRight1.crossProduct(dirUp1).getY() + dirUp1.getY(),
+                        blockPos.getZ() - dirRight1.crossProduct(dirUp1).getZ());
+                lowerPos = new BlockPos(
+                        blockPos.getX() - dirRight1.crossProduct(dirUp1).getX() - dirUp1.getX(),
+                        blockPos.getY() - dirRight1.crossProduct(dirUp1).getY(),
+                        blockPos.getZ() - dirRight1.crossProduct(dirUp1).getZ() - dirUp1.getZ());
+
+                spaceUpperPos = new BlockPos(
+                        blockPos.getX() - dirRight1.crossProduct(dirUp1).getX(),
+                        blockPos.getY() - dirRight1.crossProduct(dirUp1).getY() + dirUp1.getY(),
+                        blockPos.getZ() - dirRight1.crossProduct(dirUp1).getZ());
+                spaceLowerPos = new BlockPos(
+                        blockPos.getX() - dirRight1.crossProduct(dirUp1).getX() - dirUp1.getX(),
+                        blockPos.getY() - dirRight1.crossProduct(dirUp1).getY(),
+                        blockPos.getZ() - dirRight1.crossProduct(dirUp1).getZ() - dirUp1.getZ());
+
+                switch (direction) {
+                    case UP:
+                        upperPos = upperPos.add(0, 1, 0);
+                        lowerPos = lowerPos.add(0, 1, 0);
+                        spaceUpperPos = spaceUpperPos.add(0, 2, 0);
+                        spaceLowerPos = spaceLowerPos.add(0, 2, 0);
+                        break;
+                    case DOWN:
+                        upperPos = upperPos.add(0, -1, 0);
+                        lowerPos = lowerPos.add(0, -1, 0);
+                        break;
+                    case NORTH:
+                        upperPos = upperPos.add(0, -1, -1);
+                        lowerPos = lowerPos.add(0, -1, -1);
+                        spaceUpperPos = spaceUpperPos.add(0, -1, -2);
+                        spaceLowerPos = spaceLowerPos.add(0, -1, -2);
+                        break;
+                    case SOUTH:
+                        upperPos = upperPos.add(0, -1, 1);
+                        lowerPos = lowerPos.add(0, -1, 1);
+                        spaceUpperPos = spaceUpperPos.add(0, -1, 2);
+                        spaceLowerPos = spaceLowerPos.add(0, -1, 2);
+                        break;
+                    case EAST:
+                        upperPos = upperPos.add(1, -1, 0);
+                        lowerPos = lowerPos.add(1, -1, 0);
+                        spaceUpperPos = spaceUpperPos.add(2, -1, 0);
+                        spaceLowerPos = spaceLowerPos.add(2, -1, 0);
+                        break;
+                    case WEST:
+                        upperPos = upperPos.add(-1, -1, 0);
+                        lowerPos = lowerPos.add(-1, -1, 0);
+                        spaceUpperPos = spaceUpperPos.add(-2, -1, 0);
+                        spaceLowerPos = spaceLowerPos.add(-2, -1, 0);
+                        break;
+                }
+
+                upperBlockState = world.getBlockState(upperPos);
+                lowerBlockState = world.getBlockState(lowerPos);
+                spaceUpperBlockState = world.getBlockState(spaceUpperPos);
+                spaceLowerBlockState = world.getBlockState(spaceLowerPos);
+
+                if (isSnowUp(direction) || canPlace(world, direction)) {
+
 
                     if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
-                        newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+                        newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
                         if (newPortal1 == null) {
-                            newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                             portal1Exists = false;
                         } else
                             portal1Exists = true;
                     }
-
                     if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
-                        newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
+                        newPortal2 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
                         if (newPortal2 == null) {
-                            newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal2 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                             portal2Exists = false;
                         } else
                             portal2Exists = true;
                     }
+                    PortalMethods.portal1Methods(user, hit, world);
 
-                    if (notSnowUp(direction) || isSnowUp(direction)) {
-                        waitPortal = true;
+                    PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
 
-                        PortalMethods.portal1Methods(user, hit, world);
-
-                        if (isSnowUp(direction)) {
-                            newPortal1.updatePosition(newPortal1.getX(), newPortal1.getY() - 0.875, newPortal1.getZ());
-                            newPortal1.setDestinationDimension(newPortal2.world.getRegistryKey());
+                    waitPortal = true;
+                    ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+                        if (McHelper.getServer().getThread() == Thread.currentThread()) {
+                            world.playSound(null,
+                                    newPortal1.getX(),
+                                    newPortal1.getY(),
+                                    newPortal1.getZ(),
+                                    Portalgun.PORTAL_OPEN_EVENT,
+                                    SoundCategory.NEUTRAL,
+                                    1.0F,
+                                    1F);
+                            if (!portal1Exists) {
+                                removeOldPortals(user);
+                                McHelper.spawnServerEntity(newPortal1);
+                            }
+                            if (!portal2Exists) {
+                                removeOldPortals(user);
+                                McHelper.spawnServerEntity(newPortal2);
+                            }
+                            if (portal1Exists)
+                                newPortal1.reloadAndSyncToClient();
+                            if (portal2Exists)
+                                newPortal2.reloadAndSyncToClient();
                         }
-
-                        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
-
-                        ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-                            if (McHelper.getServer().getThread() == Thread.currentThread()) {
-                                world.playSound(null,
-                                        newPortal1.getX(),
-                                        newPortal1.getY(),
-                                        newPortal1.getZ(),
-                                        Portalgun.PORTAL_OPEN_EVENT,
-                                        SoundCategory.NEUTRAL,
-                                        1.0F,
-                                        1F);
-                                if (!portal1Exists && !portal2Exists) {
-                                    removeOldPortals(user);
-                                    McHelper.spawnServerEntity(newPortal1);
-                                    McHelper.spawnServerEntity(newPortal2);
-                                } else {
-                                    newPortal1.reloadAndSyncToClient();
-                                    newPortal2.reloadAndSyncToClient();
-                                }
-                            }
-                            waitPortal = false;
-                            if (newPortal2 != null) {
-                                portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
-                                tag.put(world.getRegistryKey().toString(), portalsTag);
-                            }
-                            if (newPortal1 != null) {
-                                portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
-                                tag.put(world.getRegistryKey().toString(), portalsTag);
-                            }
-                        })));
-                    }
+                        waitPortal = false;
+                        if (newPortal2 != null) {
+                            portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
+                            tag.put(world.getRegistryKey().toString(), portalsTag);
+                        }
+                        if (newPortal1 != null) {
+                            portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
+                            tag.put(world.getRegistryKey().toString(), portalsTag);
+                        }
+                    })));
                 }
             }
             user.incrementStat(Stats.USED.getOrCreateStat(this));
@@ -314,37 +313,6 @@ public class PortalGunItem extends Item implements IAnimatable {
         else if (hit.getType() == BLOCK) {
             direction = blockHit.getSide();
 
-            space1BlockPos = blockPos.add(-1, 0, 0);
-            space2BlockPos = blockPos.add(0, -1, 0);
-            space3BlockPos = blockPos.add(0, -1, -1);
-
-            switch (direction) {
-                case UP:
-                    space1BlockPos = blockPos.add(0, 1, 0);
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, 1, -1);
-                    break;
-                case DOWN:
-                    space1BlockPos = blockPos.add(0, -1, 0);
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, -1, -1);
-                    break;
-                case NORTH:
-                    space1BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, -1, -1);
-                    break;
-                case SOUTH:
-                    space1BlockPos = blockPos.add(0, 0, 1);
-                    space3BlockPos = blockPos.add(0, -1, 1);
-                    break;
-                case EAST:
-                    space1BlockPos = blockPos.add(1, 0, 0);
-                    space3BlockPos = blockPos.add(1, -1, 0);
-                    break;
-                case WEST:
-                    space3BlockPos = blockPos.add(-1, -1, 0);
-                    break;
-            }
 
             dirOut2 = blockHit.getSide().getOpposite().getVector();
             if (dirOut2.getY() == 0) {
@@ -356,32 +324,6 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             dirRight2 = new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ());
 
-            if (direction == Direction.UP) {
-                if (dirUp2.getZ() == -1) {
-                    space2BlockPos = blockPos.add(0, 0, 1);
-                    space3BlockPos = blockPos.add(0, 1, 1);
-                }
-
-                if (dirRight2.getX() == -1) {
-                    space2BlockPos = blockPos.add(0, 0, -1);
-                    space3BlockPos = blockPos.add(0, 1, -1);
-                }
-
-                switch (dirRight2.getZ()) {
-                    case 1:
-                        space2BlockPos = blockPos.add(-1, 0, 0);
-                        space3BlockPos = blockPos.add(-1, 1, 0);
-                        break;
-                    case -1:
-                        space2BlockPos = blockPos.add(1, 0, 0);
-                        space3BlockPos = blockPos.add(1, 1, 0);
-                        break;
-                }
-            }
-
-            space1BlockState = world.getBlockState(space1BlockPos);
-            space2BlockState = world.getBlockState(space2BlockPos);
-            space3BlockState = world.getBlockState(space3BlockPos);
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
@@ -393,83 +335,143 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             int delay = (int) (0.5 * distance);
 
-            animController.markNeedsReload();
-            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
+            if (world.isClient) {
+                animController.markNeedsReload();
+                animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
+            }
 
-            if (!world.isClient) {
-                if (!waitPortal && !space1BlockState.isOpaque() && space2BlockState.isOpaque() && !space3BlockState.isOpaque()) {
-                    world.playSound(null,
-                            user.getX(),
-                            user.getY(),
-                            user.getZ(),
-                            Portalgun.PORTAL2_SHOOT_EVENT,
-                            SoundCategory.NEUTRAL,
-                            1.0F,
-                            1F);
+            if (!world.isClient && !waitPortal) {
+                world.playSound(null,
+                        user.getX(),
+                        user.getY(),
+                        user.getZ(),
+                        Portalgun.PORTAL2_SHOOT_EVENT,
+                        SoundCategory.NEUTRAL,
+                        1.0F,
+                        1F);
+
+
+                upperPos = new BlockPos(
+                        blockPos.getX() - dirRight2.crossProduct(dirUp2).getX(),
+                        blockPos.getY() - dirRight2.crossProduct(dirUp2).getY() + dirUp2.getY(),
+                        blockPos.getZ() - dirRight2.crossProduct(dirUp2).getZ());
+                lowerPos = new BlockPos(
+                        blockPos.getX() - dirRight2.crossProduct(dirUp2).getX() - dirUp2.getX(),
+                        blockPos.getY() - dirRight2.crossProduct(dirUp2).getY(),
+                        blockPos.getZ() - dirRight2.crossProduct(dirUp2).getZ() - dirUp2.getZ());
+
+                spaceUpperPos = new BlockPos(
+                        blockPos.getX() - dirRight2.crossProduct(dirUp2).getX(),
+                        blockPos.getY() - dirRight2.crossProduct(dirUp2).getY() + dirUp2.getY(),
+                        blockPos.getZ() - dirRight2.crossProduct(dirUp2).getZ());
+                spaceLowerPos = new BlockPos(
+                        blockPos.getX() - dirRight2.crossProduct(dirUp2).getX() - dirUp2.getX(),
+                        blockPos.getY() - dirRight2.crossProduct(dirUp2).getY(),
+                        blockPos.getZ() - dirRight2.crossProduct(dirUp2).getZ() - dirUp2.getZ());
+
+                switch (direction) {
+                    case UP:
+                        upperPos = upperPos.add(0, 1, 0);
+                        lowerPos = lowerPos.add(0, 1, 0);
+                        spaceUpperPos = spaceUpperPos.add(0, 2, 0);
+                        spaceLowerPos = spaceLowerPos.add(0, 2, 0);
+                        break;
+                    case DOWN:
+                        upperPos = upperPos.add(0, -1, 0);
+                        lowerPos = lowerPos.add(0, -1, 0);
+                        break;
+                    case NORTH:
+                        upperPos = upperPos.add(0, -1, -1);
+                        lowerPos = lowerPos.add(0, -1, -1);
+                        spaceUpperPos = spaceUpperPos.add(0, -1, -2);
+                        spaceLowerPos = spaceLowerPos.add(0, -1, -2);
+                        break;
+                    case SOUTH:
+                        upperPos = upperPos.add(0, -1, 1);
+                        lowerPos = lowerPos.add(0, -1, 1);
+                        spaceUpperPos = spaceUpperPos.add(0, -1, 2);
+                        spaceLowerPos = spaceLowerPos.add(0, -1, 2);
+                        break;
+                    case EAST:
+                        upperPos = upperPos.add(1, -1, 0);
+                        lowerPos = lowerPos.add(1, -1, 0);
+                        spaceUpperPos = spaceUpperPos.add(2, -1, 0);
+                        spaceLowerPos = spaceLowerPos.add(2, -1, 0);
+                        break;
+                    case WEST:
+                        upperPos = upperPos.add(-1, -1, 0);
+                        lowerPos = lowerPos.add(-1, -1, 0);
+                        spaceUpperPos = spaceUpperPos.add(-2, -1, 0);
+                        spaceLowerPos = spaceLowerPos.add(-2, -1, 0);
+                        break;
+                }
+
+                upperBlockState = world.getBlockState(upperPos);
+                lowerBlockState = world.getBlockState(lowerPos);
+                spaceUpperBlockState = world.getBlockState(spaceUpperPos);
+                spaceLowerBlockState = world.getBlockState(spaceLowerPos);
+
+                if (isSnowUp(direction) || canPlace(world, direction)) {
 
                     if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
-                        newPortal1 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+                        newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
                         if (newPortal1 == null) {
-                            newPortal1 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                             portal1Exists = false;
                         } else
                             portal1Exists = true;
                     }
-
                     if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
-                        newPortal2 = (Portal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
+                        newPortal2 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
                         if (newPortal2 == null) {
-                            newPortal2 = Portal.entityType.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal2 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
                             portal2Exists = false;
                         } else
                             portal2Exists = true;
                     }
+                    PortalMethods.portal2Methods(user, hit, world);
 
+                    PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
 
-                    if (notSnowUp(direction) || isSnowUp(direction)) {
-                        waitPortal = true;
-
-                        PortalMethods.portal2Methods(user, hit, world);
-
-
-                        if (newPortal1 != null)
-                            PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
-
-                        ModMain.serverTaskList.addTask(TaskList.withDelay(delay, TaskList.oneShotTask(() -> {
-                            if (McHelper.getServer().getThread() == Thread.currentThread()) {
-                                world.playSound(null,
-                                        newPortal2.getX(),
-                                        newPortal2.getY(),
-                                        newPortal2.getZ(),
-                                        Portalgun.PORTAL_OPEN_EVENT,
-                                        SoundCategory.NEUTRAL,
-                                        1.0F,
-                                        1F);
-                                if (!portal1Exists && !portal2Exists) {
-                                    removeOldPortals(user);
-                                    McHelper.spawnServerEntity(newPortal1);
-                                    McHelper.spawnServerEntity(newPortal2);
-                                } else {
-                                    newPortal1.reloadAndSyncToClient();
-                                    newPortal2.reloadAndSyncToClient();
-                                }
+                    waitPortal = true;
+                    ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+                        if (McHelper.getServer().getThread() == Thread.currentThread()) {
+                            world.playSound(null,
+                                    newPortal2.getX(),
+                                    newPortal2.getY(),
+                                    newPortal2.getZ(),
+                                    Portalgun.PORTAL_OPEN_EVENT,
+                                    SoundCategory.NEUTRAL,
+                                    1.0F,
+                                    1F);
+                            if (!portal1Exists) {
+                                removeOldPortals(user);
+                                McHelper.spawnServerEntity(newPortal1);
                             }
-                            waitPortal = false;
-                            if (newPortal2 != null) {
-                                portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
-                                tag.put(world.getRegistryKey().toString(), portalsTag);
+                            if (!portal2Exists) {
+                                removeOldPortals(user);
+                                McHelper.spawnServerEntity(newPortal2);
                             }
-                            if (newPortal1 != null) {
-                                portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
-                                tag.put(world.getRegistryKey().toString(), portalsTag);
-                            }
-                        })));
-                    }
+                            if (portal1Exists)
+                                newPortal1.reloadAndSyncToClient();
+                            if (portal2Exists)
+                                newPortal2.reloadAndSyncToClient();
+                        }
+                        waitPortal = false;
+                        if (newPortal2 != null) {
+                            portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
+                            tag.put(world.getRegistryKey().toString(), portalsTag);
+                        }
+                        if (newPortal1 != null) {
+                            portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
+                            tag.put(world.getRegistryKey().toString(), portalsTag);
+                        }
+                    })));
                 }
             }
             user.incrementStat(Stats.USED.getOrCreateStat(this));
         }
 
-        return TypedActionResult.fail(itemStack);
+        return TypedActionResult.pass(itemStack);
     }
 }
