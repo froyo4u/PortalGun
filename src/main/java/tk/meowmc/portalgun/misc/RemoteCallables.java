@@ -47,6 +47,19 @@ public class RemoteCallables {
             newPortal2 = null;
             portal2Exists = false;
         }
+
+        if (portalOutline1 != null) {
+            portalOutline1.kill();
+            portalsTag.remove("PrimaryOutline" + user.getUuidAsString());
+            portalOutline1 = null;
+            outline1Exists = false;
+        }
+        if (portalOutline2 != null) {
+            portalOutline2.kill();
+            portalsTag.remove("SecondaryOutline" + user.getUuidAsString());
+            portalOutline2 = null;
+            outline2Exists = false;
+        }
         resetWaits(user);
         tag.remove(user.world.getRegistryKey().toString());
     }
