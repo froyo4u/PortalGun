@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
+import tk.meowmc.portalgun.entities.PortalOverlay;
 import tk.meowmc.portalgun.items.ClawItem;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
@@ -30,6 +31,10 @@ public class Portalgun implements ModInitializer {
     public static final Item PORTALGUN_CLAW = new ClawItem(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
 
     public static final EntityType<CustomPortal> CUSTOM_PORTAL = FabricEntityTypeBuilder.create(SpawnGroup.MISC, CustomPortal::new)
+            .dimensions(EntityDimensions.changing(0F, 0F))
+            .build();
+
+    public static final EntityType<PortalOverlay> PORTAL_OVERLAY = FabricEntityTypeBuilder.create(SpawnGroup.AMBIENT, PortalOverlay::new)
             .dimensions(EntityDimensions.changing(0F, 0F))
             .build();
 
@@ -69,6 +74,7 @@ public class Portalgun implements ModInitializer {
         Registry.register(Registry.ITEM, id("portalgun_claw"), PORTALGUN_CLAW);
 
         Registry.register(Registry.ENTITY_TYPE, id("custom_portal"), CUSTOM_PORTAL);
+        Registry.register(Registry.ENTITY_TYPE, id("portal_overlay"), PORTAL_OVERLAY);
 
         Registry.register(Registry.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(Registry.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);
