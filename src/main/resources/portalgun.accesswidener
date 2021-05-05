@@ -3,3 +3,5 @@ accessWidener	v1	named
 accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
 accessible field net/minecraft/client/MinecraftClient itemUseCooldown I
 accessible field net/minecraft/client/MinecraftClient attackCooldown I
+
+extendable method net/minecraft/entity/Entity method_30950 (F)Lnet/minecraft/util/math/Vec3d;
