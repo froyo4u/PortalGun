@@ -1,26 +1,29 @@
 package tk.meowmc.portalgun.entities;
 
 import com.qouteall.immersive_portals.PehkuiInterface;
-import com.qouteall.immersive_portals.my_util.DQuaternion;
-import com.qouteall.immersive_portals.my_util.RotationHelper;
 import com.qouteall.immersive_portals.my_util.SignalArged;
 import com.qouteall.immersive_portals.my_util.SignalBiArged;
 import com.qouteall.immersive_portals.portal.Portal;
+import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import tk.meowmc.portalgun.Portalgun;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
@@ -31,10 +34,24 @@ public class CustomPortal extends Portal {
     public static final SignalArged<CustomPortal> portalDisposeSignal = new SignalArged();
     public static final SignalBiArged<CustomPortal, CompoundTag> readPortalDataSignal = new SignalBiArged();
     public static final SignalBiArged<CustomPortal, CompoundTag> writePortalDataSignal = new SignalBiArged();
+    public static final TrackedData<String> outline = DataTracker.registerData(CustomPortal.class, TrackedDataHandlerRegistry.STRING);
     public static EntityType<CustomPortal> entityType;
 
     public CustomPortal(@NotNull EntityType<?> entityType, World world) {
         super(entityType, world);
+    }
+
+    @Override
+    protected void initDataTracker() {
+        getDataTracker().startTracking(outline, "null");
+    }
+
+    public String getOutline() {
+        return getDataTracker().get(outline);
+    }
+
+    public void setOutline(String outline) {
+        getDataTracker().set(CustomPortal.outline, outline);
     }
 
     @Override
@@ -66,26 +83,27 @@ public class CustomPortal extends Portal {
         super.tick();
         if (!world.isClient) {
 
-            Vec3d axisHAbs = new Vec3d(Math.abs(axisH.x), Math.abs(axisH.y), Math.abs(axisH.z));
-
-            @NotNull BlockPos portalUpperPos = new BlockPos(
-                    this.getPos().getX() - this.axisW.crossProduct(axisHAbs).getX(),
-                    this.getPos().getY() - this.axisW.crossProduct(this.axisH).getY(),
-                    this.getPos().getZ() - this.axisW.crossProduct(this.axisH).getZ());
-            @NotNull BlockPos portalLowerPos = new BlockPos(
-                    this.getPos().getX() - this.axisW.crossProduct(axisHAbs).getX() - this.axisH.getX(),
-                    this.getPos().getY() - this.axisW.crossProduct(this.axisH).getY() - this.axisH.getY(),
-                    this.getPos().getZ() - this.axisW.crossProduct(this.axisH).getZ() - this.axisH.getZ());
+            BlockPos portalUpperPos = new BlockPos(
+                    this.getX() - axisW.crossProduct(axisH).getX(),
+                    this.getY() - axisW.crossProduct(axisH).getY(),
+                    this.getZ() - axisW.crossProduct(axisH).getZ());
+            BlockPos portalLowerPos = new BlockPos(
+                    this.getX() - axisW.crossProduct(axisH).getX() - Math.abs(axisH.getX()),
+                    this.getY() - axisW.crossProduct(axisH).getY() + axisH.getY(),
+                    this.getZ() - axisW.crossProduct(axisH).getZ() - Math.abs(axisH.getZ()));
 
             BlockState portalUpperBlockState = this.world.getBlockState(portalUpperPos);
             BlockState portalLowerBlockState = this.world.getBlockState(portalLowerPos);
 
 
-            DQuaternion rotationInverse = DQuaternion.fromMcQuaternion(getRotation()).getConjugated();
+            Direction portalDirection = Direction.fromVector((int) this.getNormal().getX(), (int) this.getNormal().getY(), (int) this.getNormal().getZ());
 
-            Direction portalDirection = Direction.fromRotation(RotationHelper.dotProduct4d(getRotation(), rotationInverse.toMcQuaternion()));
-
-            if ((!portalUpperBlockState.isOpaque() || !portalLowerBlockState.isOpaque()) || (!world.getBlockState(getBlockPos()).isAir()) || world.getBlockState(new BlockPos(getPos().getX() - axisH.getX(), getPos().getY() - axisH.getY(), getPos().getZ() - axisH.getZ())).isOpaque()) {
+            if ((!world.getBlockState(portalUpperPos).isSideSolidFullSquare(world, portalUpperPos, portalDirection)) ||
+                    (!world.getBlockState(portalLowerPos).isSideSolidFullSquare(world, portalLowerPos, portalDirection)
+                    ) || (!world.getBlockState(new BlockPos(this.getPos())).isAir()) || (!world.getBlockState(new BlockPos(
+                    this.getX() - Math.abs(axisH.getX()),
+                    this.getY() + axisH.getY(),
+                    this.getZ() - Math.abs(axisH.getZ()))).isAir())) {
                 Portalgun.logString(Level.INFO, "Upper" + portalUpperPos.toString());
                 Portalgun.logString(Level.INFO, "Lower" + portalLowerPos.toString());
 
@@ -98,15 +116,23 @@ public class CustomPortal extends Portal {
                         SoundCategory.NEUTRAL,
                         1.0F,
                         1F);
+                if (!this.getOutline().equals("null")) {
+                    PortalOverlay portalOutline;
+                    portalOutline = (PortalOverlay) ((ServerWorld) world).getEntity(UUID.fromString(this.getOutline()));
+                    if (portalOutline != null)
+                        portalOutline.kill();
+                }
                 if (Objects.equals(this.portalTag, "portalgun_portal1")) {
-                    if (newPortal2 != null) {
+                    if (portal2Exists) {
                         newPortal2.setDestination(newPortal2.getPos());
+                        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal2);
                         newPortal2.reloadAndSyncToClient();
                     }
                     portal1Exists = false;
                 } else if (Objects.equals(this.portalTag, "portalgun_portal2")) {
-                    if (newPortal1 != null) {
+                    if (portal1Exists) {
                         newPortal1.setDestination(newPortal1.getPos());
+                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal1);
                         newPortal1.reloadAndSyncToClient();
                     }
                     portal2Exists = false;
@@ -114,4 +140,6 @@ public class CustomPortal extends Portal {
             }
         }
     }
+
+
 }
