@@ -25,6 +25,7 @@ import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
+import tk.meowmc.portalgun.client.renderer.PortalOverlayRenderer;
 import tk.meowmc.portalgun.misc.RemoteCallables;
 
 import java.util.UUID;
@@ -81,6 +82,7 @@ public class PortalgunClient implements ClientModInitializer {
         GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN_CLAW, new ClawRenderer());
 
         EntityRendererRegistry.INSTANCE.register(Portalgun.CUSTOM_PORTAL, (dispatcher, context) -> new PortalEntityRenderer(dispatcher));
+        EntityRendererRegistry.INSTANCE.register(Portalgun.PORTAL_OVERLAY, (dispatcher, context) -> new PortalOverlayRenderer(dispatcher));
 
         ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
     }
