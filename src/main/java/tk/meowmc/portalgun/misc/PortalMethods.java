@@ -1,10 +1,14 @@
 package tk.meowmc.portalgun.misc;
 
 import com.qouteall.immersive_portals.McHelper;
+import com.qouteall.immersive_portals.my_util.DQuaternion;
 import com.qouteall.immersive_portals.portal.GeometryPortalShape;
 import com.qouteall.immersive_portals.portal.PortalExtension;
+import com.qouteall.immersive_portals.portal.PortalManipulation;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -53,7 +57,16 @@ public class PortalMethods {
     }
 
     public static Vec3d calcPortalPos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
-        double upOffset = -0.5, faceOffset = -0.505, crossOffset = 0.0;
+        double upOffset = -0.5, faceOffset = -0.502, crossOffset = 0.0;
+        return new Vec3d(
+                ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
+                ((hit.getY() + 0.5) + upOffset * upright.getY() + faceOffset * facing.getY() + crossOffset * cross.getY()), // y component
+                ((hit.getZ() + 0.5) + upOffset * upright.getZ() + faceOffset * facing.getZ() + crossOffset * cross.getZ())  // z component
+        );
+    }
+
+    public static Vec3d calcOutlinePos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
+        double upOffset = -1, faceOffset = -0.505, crossOffset = 0.0;
         return new Vec3d(
                 ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
                 ((hit.getY() + 0.5) + upOffset * upright.getY() + faceOffset * facing.getY() + crossOffset * cross.getY()), // y component
@@ -80,12 +93,10 @@ public class PortalMethods {
 
         dirRight1 = dirUp1.crossProduct(dirOut1);
 
-        dirRight1 = new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ());
-
         newPortal1.setOriginPos(calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
         newPortal1.setOrientationAndSize(
                 Vec3d.of(dirRight1), //axisW
-                Vec3d.of(dirUp1), //axisH
+                Vec3d.of(dirUp1).multiply(-1), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
@@ -112,12 +123,10 @@ public class PortalMethods {
 
         dirRight2 = dirUp2.crossProduct(dirOut2);
 
-        dirRight2 = new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ());
-
         newPortal2.setOriginPos(calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
         newPortal2.setOrientationAndSize(
                 Vec3d.of(dirRight2), //axisW
-                Vec3d.of(dirUp2), //axisH
+                Vec3d.of(dirUp2).multiply(-1), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
@@ -132,20 +141,30 @@ public class PortalMethods {
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
 
-
-        Settings1(direction, blockPos, hit, user);
-
         if (newPortal2 != null) {
             portal2AxisW = newPortal2.axisW;
             portal2AxisH = newPortal2.axisH;
         }
 
+        Settings1(direction, blockPos, hit, user);
+
         Settings2(direction, blockPos, hit, user);
 
-        if (isSnowUp(direction))
-            newPortal1.updatePosition(newPortal1.getX(), newPortal1.getY() - 0.875, newPortal1.getZ());
+        if (portalOutline1 == null)
+            portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
 
-        newPortal2.updatePosition(newPortal1.getDestPos().getX(), newPortal1.getDestPos().getY(), newPortal1.getDestPos().getZ());
+        Pair<Double, Double> angles = DQuaternion.getPitchYawFromRotation(PortalManipulation.getPortalOrientationQuaternion(Vec3d.of(dirRight1), Vec3d.of(dirUp1)));
+        portalOutline1.axisH = newPortal1.axisH;
+        portalOutline1.axisW = newPortal1.axisW;
+        portalOutline1.yaw = angles.getLeft().floatValue() + (90 * dirUp1.getX());
+        portalOutline1.pitch = angles.getRight().floatValue();
+        portalOutline1.setRoll((angles.getRight().floatValue() + 90) * dirUp1.getX());
+        portalOutline1.setColor(false);
+        portalOutline1.noClip = true;
+        portalOutline1.applyRotation(BlockRotation.CLOCKWISE_180);
+        newPortal1.setOutline(portalOutline1.getUuidAsString());
+
+        newPortal2.setOriginPos(newPortal1.getDestPos());
         newPortal2.setDestination(newPortal1.getPos());
         newPortal2.axisW = portal2AxisW;
         newPortal2.axisH = portal2AxisH;
@@ -167,10 +186,20 @@ public class PortalMethods {
 
         Settings1(direction, blockPos, hit, user);
 
-        if (isSnowUp(direction))
-            newPortal2.updatePosition(newPortal2.getX(), newPortal2.getY() - 0.875, newPortal2.getZ());
+        if (portalOutline2 == null)
+            portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
 
-        newPortal1.updatePosition(newPortal2.getDestPos().getX(), newPortal2.getDestPos().getY(), newPortal2.getDestPos().getZ());
+        Pair<Double, Double> angles = DQuaternion.getPitchYawFromRotation(PortalManipulation.getPortalOrientationQuaternion(Vec3d.of(dirRight2), Vec3d.of(dirUp2)));
+        portalOutline2.axisH = newPortal2.axisH;
+        portalOutline2.axisW = newPortal2.axisW;
+        portalOutline2.yaw = angles.getLeft().floatValue() + (90 * dirUp2.getX());
+        portalOutline2.pitch = angles.getRight().floatValue();
+        portalOutline2.setRoll((angles.getRight().floatValue() + 90) * dirUp2.getX());
+        portalOutline2.setColor(true);
+        portalOutline2.noClip = true;
+        newPortal2.setOutline(portalOutline2.getUuidAsString());
+
+        newPortal1.setOriginPos(newPortal2.getDestPos());
         newPortal1.setDestination(newPortal2.getPos());
         newPortal1.setWorld(portal1World);
         newPortal1.axisW = portal1AxisW;
