@@ -187,9 +187,6 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                 if (validPos(world, dirUp1, dirRight1, calcPortalPos(blockPos, dirUp1, dirOut1, new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ())))) {
 
-
-                    Vec3d outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
-
                     if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
                         newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
                         if (newPortal1 == null) {
@@ -228,6 +225,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                     waitPortal = true;
                     ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+                        Vec3d outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
 
                         PortalMethods.portal1Methods(user, hit, world);
 
@@ -330,8 +328,6 @@ public class PortalGunItem extends Item implements IAnimatable {
                         1.0F,
                         1F);
 
-                Vec3d outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
-
                 if (validPos(world, dirUp2, dirRight2, calcPortalPos(blockPos, dirUp2, dirOut2, new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ())))) {
 
                     if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
@@ -373,6 +369,8 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                     waitPortal = true;
                     ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+
+                        Vec3d outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
 
                         PortalMethods.portal2Methods(user, hit, world);
 
