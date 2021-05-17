@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "GQQ",
-    "RQQ",
+    "NRQ",
     "SSS"
   ],
   "key": {
@@ -17,6 +17,9 @@
     },
     "S": {
       "item": "minecraft:stone"
+    },
+    "N": {
+      "item": "minecraft:nether_star"
     }
   },
   "result": {

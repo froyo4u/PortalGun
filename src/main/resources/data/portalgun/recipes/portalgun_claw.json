@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "SS ",
-    " SS",
+    " DS",
     "SSQ"
   ],
   "key": {
@@ -11,6 +11,9 @@
     },
     "S": {
       "item": "minecraft:stone"
+    },
+    "D": {
+      "item": "minecraft:diamond"
     }
   },
   "result": {
