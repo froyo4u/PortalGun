@@ -17,7 +17,7 @@ allprojects {
             url = 'https://jitpack.io'
         }
         maven { url 'https://hephaestus.dev/release' }
-        maven { url 'https://repo.repsy.io/mvn/gandiber/geckolib' }
+        maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
         maven { url 'https://maven.shedaniel.me' }
         maven { url 'https://maven.fabricmc.net/io/github/prospector/modmenu' }
 
@@ -52,8 +52,7 @@ allprojects {
 
         compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
-        modImplementation 'software.bernie.geckolib:geckolib-fabric-1.16.5:3.0.31:dev'
-        include 'software.bernie.geckolib:geckolib-fabric-1.16.5:3.0.31:dev'
+        modImplementation 'software.bernie.geckolib:geckolib-fabric-1.16.5:3.0.33:dev'
 
         modImplementation('io.github.prospector:modmenu:1.16.9')
 
