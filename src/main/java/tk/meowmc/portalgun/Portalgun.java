@@ -1,6 +1,7 @@
 package tk.meowmc.portalgun;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
@@ -8,6 +9,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -26,9 +28,14 @@ public class Portalgun implements ModInitializer {
     public static final String KEY = MODID + ":portalgun_portals";
     public static final String MOD_NAME = "PortalGun Mod";
 
+    /* public static final ItemGroup PG_ITEMGROUP = FabricItemGroupBuilder.build(
+            id("general"),
+            () -> new ItemStack(new PortalGunItem(new FabricItemSettings()).asItem())); */
+
     public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireproof().group(ItemGroup.TOOLS).maxCount(1).rarity(Rarity.EPIC));
     public static final Item PORTALGUN_BODY = new Item(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
     public static final Item PORTALGUN_CLAW = new ClawItem(new FabricItemSettings().fireproof().group(ItemGroup.MATERIALS).maxCount(1).rarity(Rarity.RARE));
+    // public static final Item MINI_BLACKHOLE = new Item(new FabricItemSettings().fireproof().group(PG_ITEMGROUP));
 
     public static final EntityType<CustomPortal> CUSTOM_PORTAL = FabricEntityTypeBuilder.create(SpawnGroup.MISC, CustomPortal::new)
             .dimensions(EntityDimensions.changing(0F, 0F))
