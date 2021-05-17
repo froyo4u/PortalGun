@@ -26,10 +26,10 @@ import java.util.stream.IntStream;
 import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class PortalMethods {
-    public static final int TRIANGLE_NUM = 30; //Number of triangles used to approximate the elliptical shape of the newPortal1
+    public static final int TRIANGLE_NUM = 100; //Number of triangles used to approximate the elliptical shape of the portal
     public static final double TAU = Math.PI * 2; //mathematical name for 2 * PI
-    public static final int PORTAL_HEIGHT = 2;
-    public static final int PORTAL_WIDTH = 1;
+    public static final double PORTAL_HEIGHT = 1.9;
+    public static final double PORTAL_WIDTH = 0.9;
     public static Vec3i dirUp1; //Portal 1 AxisH
     public static Vec3i dirUp2; //Portal 2 AxisH
     public static Vec3i dirOut1;
@@ -57,7 +57,7 @@ public class PortalMethods {
     }
 
     public static Vec3d calcPortalPos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
-        double upOffset = -0.5, faceOffset = -0.502, crossOffset = 0.0;
+        double upOffset = -0.5, faceOffset = -0.51, crossOffset = 0.0;
         return new Vec3d(
                 ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
                 ((hit.getY() + 0.5) + upOffset * upright.getY() + faceOffset * facing.getY() + crossOffset * cross.getY()), // y component
@@ -66,7 +66,7 @@ public class PortalMethods {
     }
 
     public static Vec3d calcOutlinePos(BlockPos hit, Vec3i upright, Vec3i facing, Vec3i cross) {
-        double upOffset = -1, faceOffset = -0.505, crossOffset = 0.0;
+        double upOffset = -1, faceOffset = -0.5105, crossOffset = 0.0;
         return new Vec3d(
                 ((hit.getX() + 0.5) + upOffset * upright.getX() + faceOffset * facing.getX() + crossOffset * cross.getX()), // x component
                 ((hit.getY() + 0.5) + upOffset * upright.getY() + faceOffset * facing.getY() + crossOffset * cross.getY()), // y component
