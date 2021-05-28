@@ -146,7 +146,6 @@ public class PortalGunItem extends Item implements IAnimatable {
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
         animController = GeckoLibUtil.getControllerForStack(this.factory, itemStack, controllerName);
-        client.attackCooldown = 0;
 
 
         if (hit.getType() == BLOCK) {
