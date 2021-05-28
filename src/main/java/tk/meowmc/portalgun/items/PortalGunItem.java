@@ -140,15 +140,12 @@ public class PortalGunItem extends Item implements IAnimatable {
         ItemStack itemStack = user.getStackInHand(hand);
         tag = itemStack.getOrCreateTag();
         portalsTag = tag.getCompound(world.getRegistryKey().toString());
-        MinecraftClient client = MinecraftClient.getInstance();
         user.getItemCooldownManager().set(this, 4);
-        Entity entity = client.getCameraEntity();
-        hit = entity.raycast(50.0D, 1.0F, false);
+        hit = user.raycast(50.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
         animController = GeckoLibUtil.getControllerForStack(this.factory, itemStack, controllerName);
-        client.attackCooldown = 0;
 
 
         if (hit.getType() == BLOCK) {
@@ -279,10 +276,8 @@ public class PortalGunItem extends Item implements IAnimatable {
         ItemStack itemStack = user.getStackInHand(hand);
         tag = itemStack.getOrCreateTag();
         portalsTag = tag.getCompound(world.getRegistryKey().toString());
-        MinecraftClient client = MinecraftClient.getInstance();
         user.getItemCooldownManager().set(this, 4);
-        Entity entity = client.getCameraEntity();
-        hit = entity.raycast(50.0D, 1.0F, false);
+        hit = user.raycast(50.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
