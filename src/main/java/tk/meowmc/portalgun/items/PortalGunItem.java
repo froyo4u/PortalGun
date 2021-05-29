@@ -5,7 +5,6 @@ import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.my_util.MyTaskList;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -109,8 +108,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                 portalPos1.getY() + CalculatedAxisH.getY(),
                 portalPos1.getZ() - Math.abs(CalculatedAxisH.getZ()))).isAir()) {
             Portalgun.logString(Level.WARN, "portalInvalid");
-            Portalgun.logString(Level.INFO, "Upper" + upperPos.toString());
-            Portalgun.logString(Level.INFO, "Lower" + lowerPos.toString());
+            Portalgun.logString(Level.INFO, "Upper" + upperPos);
+            Portalgun.logString(Level.INFO, "Lower" + lowerPos);
             return false;
         }
         return true;
