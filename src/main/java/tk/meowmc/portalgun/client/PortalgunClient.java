@@ -32,11 +32,11 @@ import java.util.UUID;
 
 import static tk.meowmc.portalgun.Portalgun.id;
 
-@Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
 
     public static final Identifier PacketID = id("spawn_packet");
 
+    @Environment(EnvType.CLIENT)
     public static void onEntitySpawn(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
         EntityType<?> type = Registry.ENTITY_TYPE.get(buf.readVarInt());
         UUID entityUUID = buf.readUuid();
@@ -62,6 +62,7 @@ public class PortalgunClient implements ClientModInitializer {
         });
     }
 
+    @Environment(EnvType.CLIENT)
     @Override
     public void onInitializeClient() {
         KeyBinding clearPortals = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.portalgun.clearportals", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
