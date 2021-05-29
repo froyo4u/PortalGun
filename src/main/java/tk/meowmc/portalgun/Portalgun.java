@@ -25,6 +25,7 @@ public class Portalgun implements ModInitializer {
     public static final String MODID = "portalgun";
     public static final String KEY = MODID + ":portalgun_portals";
     public static final String MOD_NAME = "PortalGun Mod";
+    public static final Identifier PacketID = id("spawn_packet");
 
     /* public static final ItemGroup PG_ITEMGROUP = FabricItemGroupBuilder.build(
             id("general"),

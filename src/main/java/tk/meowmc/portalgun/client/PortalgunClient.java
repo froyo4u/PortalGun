@@ -18,7 +18,6 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.lwjgl.glfw.GLFW;
 import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
@@ -30,13 +29,9 @@ import tk.meowmc.portalgun.misc.RemoteCallables;
 
 import java.util.UUID;
 
-import static tk.meowmc.portalgun.Portalgun.id;
-
+@Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
 
-    public static final Identifier PacketID = id("spawn_packet");
-
-    @Environment(EnvType.CLIENT)
     public static void onEntitySpawn(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
         EntityType<?> type = Registry.ENTITY_TYPE.get(buf.readVarInt());
         UUID entityUUID = buf.readUuid();
@@ -62,7 +57,6 @@ public class PortalgunClient implements ClientModInitializer {
         });
     }
 
-    @Environment(EnvType.CLIENT)
     @Override
     public void onInitializeClient() {
         KeyBinding clearPortals = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.portalgun.clearportals", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
@@ -85,6 +79,6 @@ public class PortalgunClient implements ClientModInitializer {
         EntityRendererRegistry.INSTANCE.register(Portalgun.CUSTOM_PORTAL, (dispatcher, context) -> new PortalEntityRenderer(dispatcher));
         EntityRendererRegistry.INSTANCE.register(Portalgun.PORTAL_OVERLAY, (dispatcher, context) -> new PortalOverlayRenderer(dispatcher));
 
-        ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
+        ClientPlayNetworking.registerGlobalReceiver(Portalgun.PacketID, PortalgunClient::onEntitySpawn);
     }
 }
