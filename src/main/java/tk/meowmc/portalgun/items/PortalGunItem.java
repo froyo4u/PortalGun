@@ -5,7 +5,6 @@ import com.qouteall.immersive_portals.ModMain;
 import com.qouteall.immersive_portals.my_util.MyTaskList;
 import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -47,8 +46,6 @@ public class PortalGunItem extends Item implements IAnimatable {
     public static CustomPortal newPortal2;
     public static PortalOverlay portalOutline1;
     public static PortalOverlay portalOutline2;
-    public static Entity portal1;
-    public static Entity portal2;
     public static boolean portal1Exists = false;
     public static boolean portal2Exists = false;
     public static boolean outline1Exists = false;
@@ -161,7 +158,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
 
             double distanceX = blockPos.getX() - user.getX();
-            double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
+            double distanceY = blockPos.getY() - user.getEyeY();
             double distanceZ = blockPos.getZ() - user.getZ();
 
             Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
@@ -298,7 +295,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
 
             double distanceX = blockPos.getX() - user.getX();
-            double distanceY = blockPos.getY() - (user.getY() + user.getEyeHeight(user.getPose()));
+            double distanceY = blockPos.getY() - user.getEyeY();
             double distanceZ = blockPos.getZ() - user.getZ();
 
             Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);

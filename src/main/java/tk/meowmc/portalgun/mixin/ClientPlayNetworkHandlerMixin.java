@@ -1,6 +1,5 @@
 package tk.meowmc.portalgun.mixin;
 
-import com.qouteall.immersive_portals.McHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -25,10 +24,7 @@ public abstract class ClientPlayNetworkHandlerMixin {
     @Inject(method = "onGameJoin", at = @At("TAIL"))
     private void afterGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
         Portalgun.logString(Level.INFO, "After Game Join!");
-        McHelper.executeOnServerThread(() -> {
-            tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
-        });
-
+        tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.resetWaits");
     }
 
 }

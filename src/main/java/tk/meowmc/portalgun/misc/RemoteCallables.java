@@ -1,5 +1,7 @@
 package tk.meowmc.portalgun.misc;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,8 +17,6 @@ import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
 import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class RemoteCallables {
-
-    static MinecraftClient client = MinecraftClient.getInstance();
 
     public static void removeOldPortals(ServerPlayerEntity user) {
         if (newPortal1 != null) {
@@ -72,7 +72,10 @@ public class RemoteCallables {
         }
     }
 
+    @Environment(EnvType.CLIENT)
     public static void playAnim() {
+        MinecraftClient client = MinecraftClient.getInstance();
+
         PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
         boolean portalGunActive = client.player.isHolding(PORTALGUN);
         ItemStack itemStack = client.player.getStackInHand(Hand.MAIN_HAND);

@@ -19,8 +19,9 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.handlers.QuaternionHandler;
+
+import static tk.meowmc.portalgun.Portalgun.PacketID;
 
 public class PortalOverlay extends Entity {
     public static final TrackedData<Quaternion> quaternion = DataTracker.registerData(PortalOverlay.class, QuaternionHandler.quaternionHandler);
@@ -72,7 +73,7 @@ public class PortalOverlay extends Entity {
                 .writeByte(MathHelper.floor(this.pitch * 256.0F / 360.0F))
                 .writeByte(MathHelper.floor(this.yaw * 256.0F / 360.0F));
 
-        return ServerPlayNetworking.createS2CPacket(PortalgunClient.PacketID, buf);
+        return ServerPlayNetworking.createS2CPacket(PacketID, buf);
     }
 
     @Override
