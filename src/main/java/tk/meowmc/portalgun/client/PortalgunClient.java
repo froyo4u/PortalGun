@@ -26,8 +26,11 @@ import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalOverlayRenderer;
 import tk.meowmc.portalgun.misc.RemoteCallables;
+import tk.meowmc.portalgun.network.Packets;
 
 import java.util.UUID;
+
+import static tk.meowmc.portalgun.network.Packets.PacketID;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
@@ -79,6 +82,6 @@ public class PortalgunClient implements ClientModInitializer {
         EntityRendererRegistry.INSTANCE.register(Portalgun.CUSTOM_PORTAL, (dispatcher, context) -> new PortalEntityRenderer(dispatcher));
         EntityRendererRegistry.INSTANCE.register(Portalgun.PORTAL_OVERLAY, (dispatcher, context) -> new PortalOverlayRenderer(dispatcher));
 
-        ClientPlayNetworking.registerGlobalReceiver(Portalgun.PacketID, PortalgunClient::onEntitySpawn);
+        ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
     }
 }

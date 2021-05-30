@@ -21,7 +21,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tk.meowmc.portalgun.handlers.QuaternionHandler;
 
-import static tk.meowmc.portalgun.Portalgun.PacketID;
+import static tk.meowmc.portalgun.network.Packets.PacketID;
 
 public class PortalOverlay extends Entity {
     public static final TrackedData<Quaternion> quaternion = DataTracker.registerData(PortalOverlay.class, QuaternionHandler.quaternionHandler);
