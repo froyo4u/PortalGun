@@ -26,7 +26,6 @@ import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalOverlayRenderer;
 import tk.meowmc.portalgun.misc.RemoteCallables;
-import tk.meowmc.portalgun.network.Packets;
 
 import java.util.UUID;
 
