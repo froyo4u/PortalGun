@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
 import tk.meowmc.portalgun.entities.PortalOverlay;
-import tk.meowmc.portalgun.handlers.QuaternionHandler;
 import tk.meowmc.portalgun.items.ClawItem;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
@@ -75,7 +74,6 @@ public class Portalgun implements ModInitializer {
     @Override
     public void onInitialize() {
         logString(Level.INFO, "Initializing");
-        QuaternionHandler.quaternionHandler.getClass();
         Registry.register(Registry.ITEM, id("portal_gun"), PORTALGUN);
         Registry.register(Registry.ITEM, id("portalgun_body"), PORTALGUN_BODY);
         Registry.register(Registry.ITEM, id("portalgun_claw"), PORTALGUN_CLAW);
