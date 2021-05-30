@@ -40,25 +40,24 @@ import static net.minecraft.util.hit.HitResult.Type.MISS;
 import static tk.meowmc.portalgun.misc.PortalMethods.*;
 
 public class PortalGunItem extends Item implements IAnimatable {
-    public static final String KEY = Portalgun.MODID + ":portalgun_portals";
     public static String controllerName = "portalgunController";
-    public static CustomPortal newPortal1;
-    public static CustomPortal newPortal2;
-    public static PortalOverlay portalOutline1;
-    public static PortalOverlay portalOutline2;
     public static boolean portal1Exists = false;
     public static boolean portal2Exists = false;
     public static boolean outline1Exists = false;
     public static boolean outline2Exists = false;
     public static boolean waitPortal = false;
-    public static CompoundTag tag;
-    public static CompoundTag portalsTag;
     public static HitResult hit;
     public static BlockHitResult blockHit;
     public static BlockPos blockPos;
     public static BlockState blockState;
     static AnimationController animController;
     static Direction direction;
+    public CustomPortal newPortal1;
+    public CustomPortal newPortal2;
+    public PortalOverlay portalOutline1;
+    public PortalOverlay portalOutline2;
+    public CompoundTag tag;
+    public CompoundTag portalsTag;
     public AnimationFactory factory = new AnimationFactory(this);
 
     public PortalGunItem(Settings settings) {
@@ -66,17 +65,18 @@ public class PortalGunItem extends Item implements IAnimatable {
     }
 
     public static void removeOldPortals(PlayerEntity user) {
-        if (newPortal1 != null) {
-            newPortal1.kill();
-            portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
-            newPortal1.removed = false;
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
+        if (gunItem.newPortal1 != null) {
+            gunItem.newPortal1.kill();
+            gunItem.portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
+            gunItem.newPortal1.removed = false;
         }
-        if (newPortal2 != null) {
-            newPortal2.kill();
-            portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
-            newPortal2.removed = false;
+        if (gunItem.newPortal2 != null) {
+            gunItem.newPortal2.kill();
+            gunItem.portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
+            gunItem.newPortal2.removed = false;
         }
-        tag.remove(user.world.getRegistryKey().toString());
+        gunItem.tag.remove(user.world.getRegistryKey().toString());
     }
 
     /**

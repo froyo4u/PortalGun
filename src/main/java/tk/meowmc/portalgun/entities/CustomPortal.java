@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -104,8 +105,8 @@ public class CustomPortal extends Portal {
                     this.getX() - Math.abs(axisH.getX()),
                     this.getY() + axisH.getY(),
                     this.getZ() - Math.abs(axisH.getZ()))).isAir())) {
-                Portalgun.logString(Level.INFO, "Upper" + portalUpperPos.toString());
-                Portalgun.logString(Level.INFO, "Lower" + portalLowerPos.toString());
+                Portalgun.logString(Level.INFO, "Upper" + portalUpperPos);
+                Portalgun.logString(Level.INFO, "Lower" + portalLowerPos);
 
                 this.kill();
                 world.playSound(null,
@@ -122,18 +123,19 @@ public class CustomPortal extends Portal {
                     if (portalOutline != null)
                         portalOutline.kill();
                 }
+                PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
                 if (Objects.equals(this.portalTag, "portalgun_portal1")) {
                     if (portal2Exists) {
-                        newPortal2.setDestination(newPortal2.getPos());
-                        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal2);
-                        newPortal2.reloadAndSyncToClient();
+                        gunItem.newPortal2.setDestination(gunItem.newPortal2.getPos());
+                        PortalManipulation.adjustRotationToConnect(gunItem.newPortal2, gunItem.newPortal2);
+                        gunItem.newPortal2.reloadAndSyncToClient();
                     }
                     portal1Exists = false;
                 } else if (Objects.equals(this.portalTag, "portalgun_portal2")) {
                     if (portal1Exists) {
-                        newPortal1.setDestination(newPortal1.getPos());
-                        PortalManipulation.adjustRotationToConnect(newPortal1, newPortal1);
-                        newPortal1.reloadAndSyncToClient();
+                        gunItem.newPortal1.setDestination(gunItem.newPortal1.getPos());
+                        PortalManipulation.adjustRotationToConnect(gunItem.newPortal1, gunItem.newPortal1);
+                        gunItem.newPortal1.reloadAndSyncToClient();
                     }
                     portal2Exists = false;
                 }

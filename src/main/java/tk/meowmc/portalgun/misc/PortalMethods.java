@@ -19,11 +19,10 @@ import net.minecraft.world.World;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
+import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class PortalMethods {
     public static final int TRIANGLE_NUM = 100; //Number of triangles used to approximate the elliptical shape of the portal
@@ -75,17 +74,19 @@ public class PortalMethods {
     }
 
     public static void Settings1(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
-        if (newPortal1 == null)
-            newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
 
-        PortalExtension portalExtension = PortalExtension.get(newPortal1);
+        if (gunItem.newPortal1 == null)
+            gunItem.newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+
+        PortalExtension portalExtension = PortalExtension.get(gunItem.newPortal1);
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
-        newPortal1.setDestination(newPortal2 != null ? newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
+        gunItem.newPortal1.setDestination(gunItem .newPortal2!= null ? gunItem.newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
 
-        newPortal1.dimensionTo = newPortal2 != null ? newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
+        gunItem.newPortal1.dimensionTo = gunItem .newPortal2!= null ? gunItem.newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -93,116 +94,122 @@ public class PortalMethods {
 
         dirRight1 = dirUp1.crossProduct(dirOut1);
 
-        newPortal1.setOriginPos(calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
-        newPortal1.setOrientationAndSize(
+        gunItem.newPortal1.setOriginPos(calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
+        gunItem.newPortal1.setOrientationAndSize(
                 Vec3d.of(dirRight1), //axisW
                 Vec3d.of(dirUp1).multiply(-1), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
         if (config.enabled.enableRoundPortals)
-            makeRoundPortal(newPortal1);
-        newPortal1.portalTag = "portalgun_portal1";
+            makeRoundPortal(gunItem.newPortal1);
+        gunItem.newPortal1.portalTag = "portalgun_portal1";
     }
 
     public static void Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
-        if (newPortal2 == null)
-            newPortal2 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
 
-        PortalExtension portalExtension = PortalExtension.get(newPortal2);
+        if (gunItem .newPortal2== null)
+            gunItem .newPortal2= Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+
+        PortalExtension portalExtension = PortalExtension.get(gunItem.newPortal2);
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
-        newPortal2.dimensionTo = newPortal1 != null ? newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
+        gunItem.newPortal2.dimensionTo = gunItem.newPortal1 != null ? gunItem.newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
 
-        newPortal2.setDestination(newPortal1 != null ? newPortal1.getPos() : calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
+        gunItem.newPortal2.setDestination(gunItem.newPortal1 != null ? gunItem.newPortal1.getPos() : calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
         dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
 
         dirRight2 = dirUp2.crossProduct(dirOut2);
 
-        newPortal2.setOriginPos(calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
-        newPortal2.setOrientationAndSize(
+        gunItem.newPortal2.setOriginPos(calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
+        gunItem.newPortal2.setOrientationAndSize(
                 Vec3d.of(dirRight2), //axisW
                 Vec3d.of(dirUp2).multiply(-1), //axisH
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
         if (config.enabled.enableRoundPortals)
-            makeRoundPortal(newPortal2);
-        newPortal2.portalTag = "portalgun_portal2";
+            makeRoundPortal(gunItem.newPortal2);
+        gunItem.newPortal2.portalTag = "portalgun_portal2";
     }
 
     public static void portal1Methods(LivingEntity user, HitResult hit, World world) {
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
+
         Direction direction = ((BlockHitResult) hit).getSide();
 
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
 
-        if (newPortal2 != null) {
-            portal2AxisW = newPortal2.axisW;
-            portal2AxisH = newPortal2.axisH;
+        if (gunItem .newPortal2!= null) {
+            portal2AxisW = gunItem.newPortal2.axisW;
+            portal2AxisH = gunItem.newPortal2.axisH;
         }
 
         Settings1(direction, blockPos, hit, user);
 
         Settings2(direction, blockPos, hit, user);
 
-        if (portalOutline1 == null)
-            portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
+        if (gunItem.portalOutline1 == null)
+            gunItem.portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
 
         Pair<Double, Double> angles = DQuaternion.getPitchYawFromRotation(PortalManipulation.getPortalOrientationQuaternion(Vec3d.of(dirRight1), Vec3d.of(dirUp1)));
-        portalOutline1.axisH = newPortal1.axisH;
-        portalOutline1.axisW = newPortal1.axisW;
-        portalOutline1.yaw = angles.getLeft().floatValue() + (90 * dirUp1.getX());
-        portalOutline1.pitch = angles.getRight().floatValue();
-        portalOutline1.setRoll((angles.getRight().floatValue() + 90) * dirUp1.getX());
-        portalOutline1.setColor(false);
-        portalOutline1.noClip = true;
-        portalOutline1.applyRotation(BlockRotation.CLOCKWISE_180);
-        newPortal1.setOutline(portalOutline1.getUuidAsString());
+        gunItem.portalOutline1.axisH = gunItem.newPortal1.axisH;
+        gunItem.portalOutline1.axisW = gunItem.newPortal1.axisW;
+        gunItem.portalOutline1.yaw = angles.getLeft().floatValue() + (90 * dirUp1.getX());
+        gunItem.portalOutline1.pitch = angles.getRight().floatValue();
+        gunItem.portalOutline1.setRoll((angles.getRight().floatValue() + 90) * dirUp1.getX());
+        gunItem.portalOutline1.setColor(false);
+        gunItem.portalOutline1.noClip = true;
+        gunItem.portalOutline1.applyRotation(BlockRotation.CLOCKWISE_180);
+        gunItem.newPortal1.setOutline(gunItem.portalOutline1.getUuidAsString());
 
-        newPortal2.setOriginPos(newPortal1.getDestPos());
-        newPortal2.setDestination(newPortal1.getPos());
-        newPortal2.axisW = portal2AxisW;
-        newPortal2.axisH = portal2AxisH;
+        gunItem.newPortal2.setOriginPos(gunItem.newPortal1.getDestPos());
+        gunItem.newPortal2.setDestination(gunItem.newPortal1.getPos());
+        gunItem.newPortal2.axisW = portal2AxisW;
+        gunItem.newPortal2.axisH = portal2AxisH;
     }
 
     public static void portal2Methods(LivingEntity user, HitResult hit, World world) {
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
+
         Direction direction = ((BlockHitResult) hit).getSide();
 
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
         World portal1World = McHelper.getServerWorld(World.OVERWORLD);
 
-        if (newPortal1 != null) {
-            portal1AxisW = newPortal1.axisW;
-            portal1AxisH = newPortal1.axisH;
+        if (gunItem.newPortal1 != null) {
+            portal1AxisW = gunItem.newPortal1.axisW;
+            portal1AxisH = gunItem.newPortal1.axisH;
         }
 
         Settings2(direction, blockPos, hit, user);
 
         Settings1(direction, blockPos, hit, user);
 
-        if (portalOutline2 == null)
-            portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
+        if (gunItem.portalOutline2 == null)
+            gunItem.portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
 
         Pair<Double, Double> angles = DQuaternion.getPitchYawFromRotation(PortalManipulation.getPortalOrientationQuaternion(Vec3d.of(dirRight2), Vec3d.of(dirUp2)));
-        portalOutline2.axisH = newPortal2.axisH;
-        portalOutline2.axisW = newPortal2.axisW;
-        portalOutline2.yaw = angles.getLeft().floatValue() + (90 * dirUp2.getX());
-        portalOutline2.pitch = angles.getRight().floatValue();
-        portalOutline2.setRoll((angles.getRight().floatValue() + 90) * dirUp2.getX());
-        portalOutline2.setColor(true);
-        portalOutline2.noClip = true;
-        newPortal2.setOutline(portalOutline2.getUuidAsString());
+        gunItem.portalOutline2.axisH = gunItem.newPortal2.axisH;
+        gunItem.portalOutline2.axisW = gunItem.newPortal2.axisW;
+        gunItem.portalOutline2.yaw = angles.getLeft().floatValue() + (90 * dirUp2.getX());
+        gunItem.portalOutline2.pitch = angles.getRight().floatValue();
+        gunItem.portalOutline2.setRoll((angles.getRight().floatValue() + 90) * dirUp2.getX());
+        gunItem.portalOutline2.setColor(true);
+        gunItem.portalOutline2.noClip = true;
+        gunItem.newPortal2.setOutline(gunItem.portalOutline2.getUuidAsString());
 
-        newPortal1.setOriginPos(newPortal2.getDestPos());
-        newPortal1.setDestination(newPortal2.getPos());
-        newPortal1.setWorld(portal1World);
-        newPortal1.axisW = portal1AxisW;
-        newPortal1.axisH = portal1AxisH;
+        gunItem.newPortal1.setOriginPos(gunItem.newPortal2.getDestPos());
+        gunItem.newPortal1.setDestination(gunItem.newPortal2.getPos());
+        gunItem.newPortal1.setWorld(portal1World);
+        gunItem.newPortal1.axisW = portal1AxisW;
+        gunItem.newPortal1.axisH = portal1AxisH;
     }
 }

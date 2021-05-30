@@ -19,49 +19,51 @@ import static tk.meowmc.portalgun.items.PortalGunItem.*;
 public class RemoteCallables {
 
     public static void removeOldPortals(ServerPlayerEntity user) {
-        if (newPortal1 != null) {
-            newPortal1.kill();
+        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
+
+        if (gunItem.newPortal1 != null) {
+            gunItem.newPortal1.kill();
             user.world.playSound(null,
-                    newPortal1.getX(),
-                    newPortal1.getY(),
-                    newPortal1.getZ(),
+                    gunItem.newPortal1.getX(),
+                    gunItem.newPortal1.getY(),
+                    gunItem.newPortal1.getZ(),
                     Portalgun.PORTAL_CLOSE_EVENT,
                     SoundCategory.NEUTRAL,
                     1.0F,
                     1F);
-            portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
-            newPortal1 = null;
+            gunItem.portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
+            gunItem.newPortal1 = null;
             portal1Exists = false;
         }
-        if (newPortal2 != null) {
-            newPortal2.kill();
+        if (gunItem.newPortal2 != null) {
+            gunItem.newPortal2.kill();
             user.world.playSound(null,
-                    newPortal2.getX(),
-                    newPortal2.getY(),
-                    newPortal2.getZ(),
+                    gunItem.newPortal2.getX(),
+                    gunItem.newPortal2.getY(),
+                    gunItem.newPortal2.getZ(),
                     Portalgun.PORTAL_CLOSE_EVENT,
                     SoundCategory.NEUTRAL,
                     1.0F,
                     1F);
-            portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
-            newPortal2 = null;
+            gunItem.portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
+            gunItem.newPortal2 = null;
             portal2Exists = false;
         }
 
-        if (portalOutline1 != null) {
-            portalOutline1.kill();
-            portalsTag.remove("PrimaryOutline" + user.getUuidAsString());
-            portalOutline1 = null;
+        if (gunItem.portalOutline1 != null) {
+            gunItem.portalOutline1.kill();
+            gunItem.portalsTag.remove("PrimaryOutline" + user.getUuidAsString());
+            gunItem.portalOutline1 = null;
             outline1Exists = false;
         }
-        if (portalOutline2 != null) {
-            portalOutline2.kill();
-            portalsTag.remove("SecondaryOutline" + user.getUuidAsString());
-            portalOutline2 = null;
+        if (gunItem.portalOutline2 != null) {
+            gunItem.portalOutline2.kill();
+            gunItem.portalsTag.remove("SecondaryOutline" + user.getUuidAsString());
+            gunItem.portalOutline2 = null;
             outline2Exists = false;
         }
         resetWaits(user);
-        tag.remove(user.world.getRegistryKey().toString());
+        gunItem.tag.remove(user.world.getRegistryKey().toString());
     }
 
     public static void portal1Place(ServerPlayerEntity user) {
