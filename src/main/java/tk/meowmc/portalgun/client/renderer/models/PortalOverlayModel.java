@@ -1,30 +1,36 @@
 package tk.meowmc.portalgun.client.renderer.models;
 
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.model.*;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import tk.meowmc.portalgun.entities.PortalOverlay;
+import net.minecraft.entity.Entity;
 
-public class PortalOverlayModel extends EntityModel<PortalOverlay> {
+public class PortalOverlayModel<T extends Entity> extends EntityModel<T> {
+    public static int textureWidth;
+    public static int textureHeight;
     private final ModelPart bone;
 
-    public PortalOverlayModel() {
+    public PortalOverlayModel(ModelPart modelPart) {
         textureWidth = 32;
         textureHeight = 64;
-        bone = new ModelPart(this);
+        bone = modelPart.getChild("base");
         bone.setPivot(0.0F, 8.0F, 0.5F);
+    }
 
+    public static TexturedModelData createModelData() {
+        ModelData modelData = new ModelData();
+        ModelPartData modelPartData = modelData.getRoot();
+        modelPartData.addChild("base", ModelPartBuilder.create()
+                        .cuboid(-8.0F, -16.0F, 16.0F, 32.0F, 0.0F, 0.0F, true),
+                ModelTransform.pivot(0, 0, 0)
+        );
 
-        ModelPart cube_r1 = new ModelPart(this);
-        cube_r1.setPivot(0.0F, 0.0F, -0.5F);
-        bone.addChild(cube_r1);
-        setRotationAngle(cube_r1, 0.0F, 3.1416F, 0.0F);
-        cube_r1.setTextureOffset(0, 16).addCuboid(-8.0F, -16.0F, 0.0F, 16.0F, 32.0F, 0.0F, 0.0F, true);
+        return TexturedModelData.of(modelData, textureWidth, textureHeight);
     }
 
     @Override
-    public void setAngles(PortalOverlay entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+    public void setAngles(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         //previously the render function, render code was moved to a method below
     }
 
@@ -39,5 +45,4 @@ public class PortalOverlayModel extends EntityModel<PortalOverlay> {
         bone.yaw = y;
         bone.roll = z;
     }
-
 }
