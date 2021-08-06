@@ -1,12 +1,8 @@
 package tk.meowmc.portalgun.misc;
 
-import com.qouteall.immersive_portals.McHelper;
-import com.qouteall.immersive_portals.my_util.DQuaternion;
-import com.qouteall.immersive_portals.portal.GeometryPortalShape;
-import com.qouteall.immersive_portals.portal.PortalExtension;
-import com.qouteall.immersive_portals.portal.PortalManipulation;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
@@ -16,6 +12,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import qouteall.imm_ptl.core.McHelper;
+import qouteall.imm_ptl.core.portal.GeometryPortalShape;
+import qouteall.imm_ptl.core.portal.PortalExtension;
+import qouteall.imm_ptl.core.portal.PortalManipulation;
+import qouteall.q_misc_util.my_util.DQuaternion;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
@@ -77,16 +78,16 @@ public class PortalMethods {
         PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
 
         if (gunItem.newPortal1 == null)
-            gunItem.newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+            gunItem.newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServerWorld(user.world.getRegistryKey()));
 
         PortalExtension portalExtension = PortalExtension.get(gunItem.newPortal1);
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
 
         PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
-        gunItem.newPortal1.setDestination(gunItem .newPortal2!= null ? gunItem.newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
+        gunItem.newPortal1.setDestination(gunItem.newPortal2 != null ? gunItem.newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
 
-        gunItem.newPortal1.dimensionTo = gunItem .newPortal2!= null ? gunItem.newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
+        gunItem.newPortal1.dimensionTo = gunItem.newPortal2 != null ? gunItem.newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -109,8 +110,8 @@ public class PortalMethods {
     public static void Settings2(Direction direction, BlockPos blockPos, HitResult hit, LivingEntity user) {
         PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
 
-        if (gunItem .newPortal2== null)
-            gunItem .newPortal2= Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(user.world.getRegistryKey()));
+        if (gunItem.newPortal2 == null)
+            gunItem.newPortal2 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServerWorld(user.world.getRegistryKey()));
 
         PortalExtension portalExtension = PortalExtension.get(gunItem.newPortal2);
         portalExtension.adjustPositionAfterTeleport = direction == Direction.UP || direction == Direction.DOWN;
@@ -146,7 +147,7 @@ public class PortalMethods {
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
 
-        if (gunItem .newPortal2!= null) {
+        if (gunItem.newPortal2 != null) {
             portal2AxisW = gunItem.newPortal2.axisW;
             portal2AxisH = gunItem.newPortal2.axisH;
         }
@@ -182,7 +183,7 @@ public class PortalMethods {
 
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos blockPos = blockHit.getBlockPos();
-        World portal1World = McHelper.getServerWorld(World.OVERWORLD);
+        ServerWorld portal1World = McHelper.getServerWorld(World.OVERWORLD);
 
         if (gunItem.newPortal1 != null) {
             portal1AxisW = gunItem.newPortal1.axisW;
@@ -208,7 +209,7 @@ public class PortalMethods {
 
         gunItem.newPortal1.setOriginPos(gunItem.newPortal2.getDestPos());
         gunItem.newPortal1.setDestination(gunItem.newPortal2.getPos());
-        gunItem.newPortal1.setWorld(portal1World);
+        gunItem.newPortal1.moveToWorld(portal1World);
         gunItem.newPortal1.axisW = portal1AxisW;
         gunItem.newPortal1.axisH = portal1AxisH;
     }

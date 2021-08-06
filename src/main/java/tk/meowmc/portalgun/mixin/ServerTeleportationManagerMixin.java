@@ -1,6 +1,6 @@
 package tk.meowmc.portalgun.mixin;
 
-import com.qouteall.immersive_portals.teleportation.ServerTeleportationManager;
+import qouteall.imm_ptl.core.teleportation.ServerTeleportationManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
