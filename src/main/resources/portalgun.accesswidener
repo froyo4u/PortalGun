@@ -4,4 +4,8 @@ accessible method net/minecraft/entity/LivingEntity getHandSwingDuration ()I
 accessible field net/minecraft/client/MinecraftClient itemUseCooldown I
 accessible field net/minecraft/client/MinecraftClient attackCooldown I
 
-extendable method net/minecraft/entity/Entity method_30950 (F)Lnet/minecraft/util/math/Vec3d;
+extendable class net/minecraft/entity/Entity
+accessible field net/minecraft/entity/Entity yaw F
+accessible field net/minecraft/entity/Entity pitch F
+extendable method net/minecraft/entity/Entity getLerpedPos (F)Lnet/minecraft/util/math/Vec3d;
+
