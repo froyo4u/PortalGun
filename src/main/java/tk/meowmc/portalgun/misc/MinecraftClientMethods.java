@@ -1,14 +1,7 @@
 package tk.meowmc.portalgun.misc;
 
-import com.qouteall.immersive_portals.ClientWorldLoader;
-import com.qouteall.immersive_portals.commands.PortalCommand;
-import com.qouteall.immersive_portals.portal.Portal;
-import com.qouteall.immersive_portals.portal.PortalPlaceholderBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -18,15 +11,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import qouteall.imm_ptl.core.ClientWorldLoader;
+import qouteall.imm_ptl.core.portal.PortalPlaceholderBlock;
 import tk.meowmc.portalgun.Portalgun;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
 
-@SuppressWarnings({"ReturnOfNull"})
 public class MinecraftClientMethods {
     private static final MinecraftClient client = MinecraftClient.getInstance();
     public static RegistryKey<World> remotePointedDim;
@@ -49,25 +40,6 @@ public class MinecraftClientMethods {
         return bhr == null || bhr.getType() == HitResult.Type.MISS;
     }
 
-    public static void updatePointedBlock(float tickDelta) {
-        if (client.interactionManager != null && client.world != null) {
-            remotePointedDim = null;
-            remoteHitResult = null;
-            Vec3d cameraPos = client.gameRenderer.getCamera().getPos();
-            float reachDistance = client.interactionManager.getReachDistance();
-            PortalCommand.getPlayerPointingPortalRaw(client.player, tickDelta, (double) reachDistance, true).ifPresent((pair) -> {
-                if (((Portal) pair.getFirst()).isInteractable()) {
-                    double distanceToPortalPointing = ((Vec3d) pair.getSecond()).distanceTo(cameraPos);
-                    if (distanceToPortalPointing < getCurrentTargetDistance() + 0.2D) {
-                        client.crosshairTarget = createMissedHitResult(cameraPos, (Vec3d) pair.getSecond());
-                        updateTargetedBlockThroughPortal(cameraPos, client.player.getRotationVec(tickDelta), client.player.world.getRegistryKey(), distanceToPortalPointing, (double) reachDistance, (Portal) pair.getFirst());
-                    }
-                }
-
-            });
-        }
-    }
-
     private static double getCurrentTargetDistance() {
         Vec3d cameraPos = client.gameRenderer.getCamera().getPos();
         if (hitResultIsMissedOrNull(client.crosshairTarget)) {
@@ -82,45 +54,6 @@ public class MinecraftClientMethods {
 
             return cameraPos.distanceTo(client.crosshairTarget.getPos());
         }
-    }
-
-    private static void updateTargetedBlockThroughPortal(Vec3d cameraPos, Vec3d viewVector, RegistryKey<World> playerDimension, double beginDistance, double endDistance, Portal portal) {
-        Vec3d from = portal.transformPoint(cameraPos.add(viewVector.multiply(beginDistance)));
-        Vec3d to = portal.transformPoint(cameraPos.add(viewVector.multiply(endDistance)));
-        RaycastContext context = new RaycastContext(from, to, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, client.player);
-        ClientWorld world = ClientWorldLoader.getWorld(portal.dimensionTo);
-        remoteHitResult = (HitResult) BlockView.raycast(context, (rayTraceContext, blockPos) -> {
-            BlockState blockState = world.getBlockState(blockPos);
-            if (blockState.getBlock() == PortalPlaceholderBlock.instance) {
-                return null;
-            } else if (blockState.getBlock() == Blocks.BARRIER) {
-                return null;
-            } else {
-                FluidState fluidState = world.getFluidState(blockPos);
-                Vec3d start = rayTraceContext.getStart();
-                Vec3d end = rayTraceContext.getEnd();
-                Vec3d correctedStart = start.subtract(end.subtract(start).multiply(0.0015D));
-                VoxelShape solidShape = rayTraceContext.getBlockShape(blockState, world, blockPos);
-                BlockHitResult blockHitResult = world.raycastBlock(correctedStart, end, blockPos, solidShape, blockState);
-                VoxelShape fluidShape = rayTraceContext.getFluidShape(fluidState, world, blockPos);
-                BlockHitResult blockHitResult2 = fluidShape.raycast(start, end, blockPos);
-                double d = blockHitResult == null ? 1.7976931348623157E308D : rayTraceContext.getStart().squaredDistanceTo(blockHitResult.getPos());
-                double e = blockHitResult2 == null ? 1.7976931348623157E308D : rayTraceContext.getStart().squaredDistanceTo(blockHitResult2.getPos());
-                return d <= e ? blockHitResult : blockHitResult2;
-            }
-        }, (rayTraceContext) -> {
-            Vec3d vec3d = rayTraceContext.getStart().subtract(rayTraceContext.getEnd());
-            return BlockHitResult.createMissed(rayTraceContext.getEnd(), Direction.getFacing(vec3d.x, vec3d.y, vec3d.z), new BlockPos(rayTraceContext.getEnd()));
-        });
-        if (remoteHitResult.getPos().y < 0.1D) {
-            remoteHitResult = new BlockHitResult(remoteHitResult.getPos(), Direction.DOWN, ((BlockHitResult) remoteHitResult).getBlockPos(), ((BlockHitResult) remoteHitResult).isInsideBlock());
-        }
-
-        if (remoteHitResult != null && !world.getBlockState(((BlockHitResult) remoteHitResult).getBlockPos()).isAir()) {
-            client.crosshairTarget = createMissedHitResult(from, to);
-            remotePointedDim = portal.dimensionTo;
-        }
-
     }
 
     public static void myHandleBlockBreaking(boolean isKeyPressed) {
