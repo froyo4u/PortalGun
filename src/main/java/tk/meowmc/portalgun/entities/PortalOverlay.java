@@ -1,6 +1,5 @@
 package tk.meowmc.portalgun.entities;
 
-import com.qouteall.immersive_portals.Helper;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -10,7 +9,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Direction;
@@ -19,6 +18,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import qouteall.q_misc_util.Helper;
 import tk.meowmc.portalgun.handlers.QuaternionHandler;
 
 import static tk.meowmc.portalgun.network.Packets.PacketID;
@@ -44,7 +44,7 @@ public class PortalOverlay extends Entity {
     }
 
     @Override
-    protected void readCustomDataFromTag(CompoundTag compoundTag) {
+    protected void readCustomDataFromNbt(NbtCompound compoundTag) {
         setColor(compoundTag.getBoolean("color"));
         setRoll(compoundTag.getFloat("roll"));
         axisH = Helper.getVec3d(compoundTag, "axisH").normalize();
@@ -52,7 +52,7 @@ public class PortalOverlay extends Entity {
     }
 
     @Override
-    protected void writeCustomDataToTag(CompoundTag compoundTag) {
+    protected void writeCustomDataToNbt(NbtCompound compoundTag) {
         compoundTag.putBoolean("color", this.getColor());
         compoundTag.putFloat("roll", this.getRoll());
         Helper.putVec3d(compoundTag, "axisH", this.axisH);
@@ -66,7 +66,7 @@ public class PortalOverlay extends Entity {
         buf.writeVarInt(
                 Registry.ENTITY_TYPE.getRawId(this.getType()))
                 .writeUuid(this.getUuid())
-                .writeVarInt(this.getEntityId())
+                .writeVarInt(this.getId())
                 .writeDouble(this.getX())
                 .writeDouble(this.getY())
                 .writeDouble(this.getZ())
@@ -105,7 +105,7 @@ public class PortalOverlay extends Entity {
 
     @Override
     @Environment(EnvType.CLIENT)
-    public Vec3d method_30950(float f) {
+    public Vec3d getLerpedPos(float f) {
         return this.getPos();
     }
 
