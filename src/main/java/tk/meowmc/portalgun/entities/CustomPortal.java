@@ -1,10 +1,10 @@
 package tk.meowmc.portalgun.entities;
 
-import com.qouteall.immersive_portals.PehkuiInterface;
-import com.qouteall.immersive_portals.my_util.SignalArged;
-import com.qouteall.immersive_portals.my_util.SignalBiArged;
-import com.qouteall.immersive_portals.portal.Portal;
-import com.qouteall.immersive_portals.portal.PortalManipulation;
+import qouteall.imm_ptl.core.PehkuiInterface;
+import qouteall.q_misc_util.my_util.SignalArged;
+import qouteall.q_misc_util.my_util.SignalBiArged;
+import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.imm_ptl.core.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -12,7 +12,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -33,8 +33,8 @@ public class CustomPortal extends Portal {
     public static final SignalArged<CustomPortal> serverPortalTickSignal = new SignalArged();
     public static final SignalArged<CustomPortal> portalCacheUpdateSignal = new SignalArged();
     public static final SignalArged<CustomPortal> portalDisposeSignal = new SignalArged();
-    public static final SignalBiArged<CustomPortal, CompoundTag> readPortalDataSignal = new SignalBiArged();
-    public static final SignalBiArged<CustomPortal, CompoundTag> writePortalDataSignal = new SignalBiArged();
+    public static final SignalBiArged<CustomPortal, NbtCompound> readPortalDataSignal = new SignalBiArged();
+    public static final SignalBiArged<CustomPortal, NbtCompound> writePortalDataSignal = new SignalBiArged();
     public static final TrackedData<String> outline = DataTracker.registerData(CustomPortal.class, TrackedDataHandlerRegistry.STRING);
     public static EntityType<CustomPortal> entityType;
 
