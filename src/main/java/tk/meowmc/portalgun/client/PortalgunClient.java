@@ -84,7 +84,7 @@ public class PortalgunClient implements ClientModInitializer {
         GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN_CLAW, new ClawRenderer());
 
         EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER,
-                PortalOverlayModel::createModelData);
+                PortalOverlayModel::getTexturedModelData);
         EntityRendererRegistry.INSTANCE.register(Portalgun.CUSTOM_PORTAL, PortalEntityRenderer::new);
         EntityRendererRegistry.INSTANCE.register(Portalgun.PORTAL_OVERLAY, PortalOverlayRenderer::new);
 
