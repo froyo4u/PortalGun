@@ -165,7 +165,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             double distance = distanceVec.length();
 
-            int delay = (int) (0.5 * distance);
+            int delay = (int) (0.3 * distance);
 
 
             if (!world.isClient && !waitPortal) {
@@ -302,7 +302,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             double distance = distanceVec.length();
 
-            int delay = (int) (0.5 * distance);
+            int delay = (int) (0.3 * distance);
 
             if (world.isClient) {
                 animController.markNeedsReload();
