@@ -1,14 +1,10 @@
 package tk.meowmc.portalgun.items;
 
-import com.qouteall.immersive_portals.McHelper;
-import com.qouteall.immersive_portals.ModMain;
-import com.qouteall.immersive_portals.my_util.MyTaskList;
-import com.qouteall.immersive_portals.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.stat.Stats;
@@ -22,6 +18,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
+import qouteall.imm_ptl.core.IPGlobal;
+import qouteall.imm_ptl.core.McHelper;
+import qouteall.imm_ptl.core.portal.PortalManipulation;
+import qouteall.q_misc_util.my_util.MyTaskList;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -56,8 +56,8 @@ public class PortalGunItem extends Item implements IAnimatable {
     public CustomPortal newPortal2;
     public PortalOverlay portalOutline1;
     public PortalOverlay portalOutline2;
-    public CompoundTag tag;
-    public CompoundTag portalsTag;
+    public NbtCompound tag;
+    public NbtCompound portalsTag;
     public AnimationFactory factory = new AnimationFactory(this);
 
     public PortalGunItem(Settings settings) {
@@ -69,12 +69,12 @@ public class PortalGunItem extends Item implements IAnimatable {
         if (gunItem.newPortal1 != null) {
             gunItem.newPortal1.kill();
             gunItem.portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
-            gunItem.newPortal1.removed = false;
+            gunItem.newPortal1.myUnsetRemoved();
         }
         if (gunItem.newPortal2 != null) {
             gunItem.newPortal2.kill();
             gunItem.portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
-            gunItem.newPortal2.removed = false;
+            gunItem.newPortal2.myUnsetRemoved();
         }
         gunItem.tag.remove(user.world.getRegistryKey().toString());
     }
@@ -134,10 +134,10 @@ public class PortalGunItem extends Item implements IAnimatable {
 
     public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        tag = itemStack.getOrCreateTag();
+        tag = itemStack.getOrCreateNbt();
         portalsTag = tag.getCompound(world.getRegistryKey().toString());
         user.getItemCooldownManager().set(this, 4);
-        hit = user.raycast(50.0D, 1.0F, false);
+        hit = user.raycast(100.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
@@ -165,7 +165,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             double distance = distanceVec.length();
 
-            int delay = (int) (0.5 * distance);
+            int delay = (int) (0.3 * distance);
 
 
             if (!world.isClient && !waitPortal) {
@@ -217,7 +217,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                     }
 
                     waitPortal = true;
-                    ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+                    IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
                         Vec3d outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
 
                         PortalMethods.portal1Methods(user, hit, world);
@@ -229,7 +229,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                         else
                             PortalManipulation.adjustRotationToConnect(newPortal1, newPortal1);
 
-                        if (McHelper.getServer().getThread() == Thread.currentThread()) {
+                        {
                             world.playSound(null,
                                     newPortal1.getX(),
                                     newPortal1.getY(),
@@ -239,7 +239,6 @@ public class PortalGunItem extends Item implements IAnimatable {
                                     1.0F,
                                     1F);
                             if (!portal1Exists) {
-                                removeOldPortals(user);
                                 McHelper.spawnServerEntity(newPortal1);
                                 if (portalOutline1 != null)
                                     McHelper.spawnServerEntity(portalOutline1);
@@ -248,6 +247,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                                 newPortal1.reloadAndSyncToClient();
                             if (portal2Exists)
                                 newPortal2.reloadAndSyncToClient();
+
+                            portal1Exists = true;
                         }
                         waitPortal = false;
                         if (newPortal2 != null)
@@ -270,10 +271,10 @@ public class PortalGunItem extends Item implements IAnimatable {
 
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        tag = itemStack.getOrCreateTag();
+        tag = itemStack.getOrCreateNbt();
         portalsTag = tag.getCompound(world.getRegistryKey().toString());
         user.getItemCooldownManager().set(this, 4);
-        hit = user.raycast(50.0D, 1.0F, false);
+        hit = user.raycast(100.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
@@ -302,7 +303,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
             double distance = distanceVec.length();
 
-            int delay = (int) (0.5 * distance);
+            int delay = (int) (0.3 * distance);
 
             if (world.isClient) {
                 animController.markNeedsReload();
@@ -324,7 +325,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                     if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
                         newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
                         if (newPortal1 == null) {
-                            newPortal1 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal1 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal1Exists = false;
                         } else
                             portal1Exists = true;
@@ -332,7 +333,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                     if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
                         newPortal2 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
                         if (newPortal2 == null) {
-                            newPortal2 = Portalgun.CUSTOM_PORTAL.create(McHelper.getServer().getWorld(world.getRegistryKey()));
+                            newPortal2 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal2Exists = false;
                         } else
                             portal2Exists = true;
@@ -359,7 +360,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
 
                     waitPortal = true;
-                    ModMain.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
+                    IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
 
                         Vec3d outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
 
@@ -372,7 +373,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                         else
                             PortalManipulation.adjustRotationToConnect(newPortal2, newPortal2);
 
-                        if (McHelper.getServer().getThread() == Thread.currentThread()) {
+                        {
                             world.playSound(null,
                                     newPortal2.getX(),
                                     newPortal2.getY(),
@@ -382,15 +383,16 @@ public class PortalGunItem extends Item implements IAnimatable {
                                     1.0F,
                                     1F);
                             if (!portal2Exists) {
-                                removeOldPortals(user);
-                                McHelper.spawnServerEntity(newPortal2);
+                                world.spawnEntity(newPortal2);
                                 if (portalOutline2 != null)
-                                    McHelper.spawnServerEntity(portalOutline2);
+                                    world.spawnEntity(portalOutline2);
                             }
-                            if (portal1Exists)
-                                newPortal1.reloadAndSyncToClient();
                             if (portal2Exists)
                                 newPortal2.reloadAndSyncToClient();
+                            if (portal1Exists)
+                                newPortal1.reloadAndSyncToClient();
+
+                            portal2Exists = true;
                         }
                         waitPortal = false;
                         if (newPortal2 != null)
