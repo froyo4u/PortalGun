@@ -7,8 +7,9 @@
     "ServerTeleportationManagerMixin"
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
     "ClientPlayerEntityMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "IPModMainClientMixin",
     "MinecraftClientMixin"
   ],
   "injectors": {
