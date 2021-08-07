@@ -12,7 +12,8 @@ public class IPModMainClientMixin {
     @Inject(
             method = "showOptiFineWarning",
             at = @At("HEAD"),
-            cancellable = true
+            cancellable = true,
+            remap = false
     )
     private static void dontShowOptiFineWarning(CallbackInfo ci) {
         ci.cancel();
