@@ -85,9 +85,9 @@ public class PortalMethods {
 
         PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
-        gunItem.newPortal1.setDestination(gunItem.newPortal2 != null ? gunItem.newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
+        gunItem.newPortal1.setDestination(PortalGunItem.portal2Exists && gunItem.newPortal2 != null ? gunItem.newPortal2.getPos() : calcPortalPos(blockPos, dirUp1, dirOut1, dirRight1));
 
-        gunItem.newPortal1.dimensionTo = gunItem.newPortal2 != null ? gunItem.newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
+        gunItem.newPortal1.dimensionTo = PortalGunItem.portal2Exists && gunItem.newPortal2 != null ? gunItem.newPortal2.world.getRegistryKey() : user.world.getRegistryKey();
 
         dirOut1 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
 
@@ -102,8 +102,7 @@ public class PortalMethods {
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
-        if (config.enabled.enableRoundPortals)
-            makeRoundPortal(gunItem.newPortal1);
+        makeRoundPortal(gunItem.newPortal1);
         gunItem.newPortal1.portalTag = "portalgun_portal1";
     }
 
@@ -118,9 +117,9 @@ public class PortalMethods {
 
         PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
-        gunItem.newPortal2.dimensionTo = gunItem.newPortal1 != null ? gunItem.newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
+        gunItem.newPortal2.dimensionTo = PortalGunItem.portal1Exists && gunItem.newPortal1 != null ? gunItem.newPortal1.world.getRegistryKey() : user.world.getRegistryKey();
 
-        gunItem.newPortal2.setDestination(gunItem.newPortal1 != null ? gunItem.newPortal1.getPos() : calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
+        gunItem.newPortal2.setDestination(PortalGunItem.portal1Exists && gunItem.newPortal1 != null ? gunItem.newPortal1.getPos() : calcPortalPos(blockPos, dirUp2, dirOut2, dirRight2));
 
         dirOut2 = ((BlockHitResult) hit).getSide().getOpposite().getVector();
         dirUp2 = dirOut2.getY() == 0 ? new Vec3i(0, 1, 0) : user.getHorizontalFacing().getVector();
@@ -134,8 +133,7 @@ public class PortalMethods {
                 PORTAL_WIDTH, // width
                 PORTAL_HEIGHT // height
         );
-        if (config.enabled.enableRoundPortals)
-            makeRoundPortal(gunItem.newPortal2);
+        makeRoundPortal(gunItem.newPortal2);
         gunItem.newPortal2.portalTag = "portalgun_portal2";
     }
 

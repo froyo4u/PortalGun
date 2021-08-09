@@ -100,10 +100,10 @@ public class PortalGunItem extends Item implements IAnimatable {
 
         if (!world.getBlockState(upperPos).isSideSolidFullSquare(world, upperPos, direction) ||
                 (!world.getBlockState(lowerPos).isSideSolidFullSquare(world, lowerPos, direction)
-                ) || !world.getBlockState(new BlockPos(portalPos1)).isAir() || !world.getBlockState(new BlockPos(
+                ) || world.getBlockState(new BlockPos(portalPos1)).isOpaque() || world.getBlockState(new BlockPos(
                 portalPos1.getX() - Math.abs(CalculatedAxisH.getX()),
                 portalPos1.getY() + CalculatedAxisH.getY(),
-                portalPos1.getZ() - Math.abs(CalculatedAxisH.getZ()))).isAir()) {
+                portalPos1.getZ() - Math.abs(CalculatedAxisH.getZ()))).isOpaque()) {
             Portalgun.logString(Level.WARN, "portalInvalid");
             Portalgun.logString(Level.INFO, "Upper" + upperPos);
             Portalgun.logString(Level.INFO, "Lower" + lowerPos);
@@ -222,7 +222,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                         PortalMethods.portal1Methods(user, hit, world);
 
-                        portalOutline1.updatePosition(outlinePos.x, outlinePos.y, outlinePos.z);
+                        portalOutline1.refreshPositionAfterTeleport(outlinePos.x, outlinePos.y, outlinePos.z);
 
                         if (portal2Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
@@ -366,7 +366,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        portalOutline2.updatePosition(outlinePos.x, outlinePos.y, outlinePos.z);
+                        portalOutline2.refreshPositionAfterTeleport(outlinePos.x, outlinePos.y, outlinePos.z);
 
                         if (portal1Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
