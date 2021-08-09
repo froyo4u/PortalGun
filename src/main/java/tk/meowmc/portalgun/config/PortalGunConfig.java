@@ -3,15 +3,11 @@ package tk.meowmc.portalgun.config;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import tk.meowmc.portalgun.Portalgun;
 
 @Config(name = Portalgun.MODID)
 public class PortalGunConfig implements ConfigData {
-    @ConfigEntry.Gui.TransitiveObject
-    @ConfigEntry.Category("enabled")
-    public final Enabled enabled = new Enabled();
 
     public static void register() {
         AutoConfig.register(PortalGunConfig.class, JanksonConfigSerializer::new);
@@ -25,10 +21,5 @@ public class PortalGunConfig implements ConfigData {
         AutoConfig.getConfigHolder(PortalGunConfig.class).save();
     }
 
-
-    public static class Enabled {
-        /*public final boolean enableOldPortalGunModel = false;*/
-        public final boolean enableRoundPortals = true;
-    }
 
 }

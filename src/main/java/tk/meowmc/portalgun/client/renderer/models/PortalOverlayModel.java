@@ -6,8 +6,6 @@ import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 
-import static tk.meowmc.portalgun.Portalgun.id;
-
 public class PortalOverlayModel<T extends Entity> extends EntityModel<T> {
     private final ModelPart base;
     private final ModelPart cube_r1;

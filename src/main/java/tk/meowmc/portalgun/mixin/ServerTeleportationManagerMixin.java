@@ -1,10 +1,10 @@
 package tk.meowmc.portalgun.mixin;
 
-import qouteall.imm_ptl.core.teleportation.ServerTeleportationManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+import qouteall.imm_ptl.core.teleportation.ServerTeleportationManager;
 
 @Mixin(ServerTeleportationManager.class)
 public abstract class ServerTeleportationManagerMixin {

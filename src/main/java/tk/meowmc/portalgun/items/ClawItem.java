@@ -12,6 +12,7 @@ public class ClawItem extends Item implements IAnimatable {
 
     public static String controllerName = "clawController";
     public AnimationFactory factory = new AnimationFactory(this);
+
     public ClawItem(Settings settings) {
         super(settings);
     }
