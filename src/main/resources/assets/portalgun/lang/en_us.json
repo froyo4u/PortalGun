@@ -8,5 +8,6 @@
   "subtitles.portalgun.portal_close": "Portal closed",
   "key.portalgun.clearportals": "Clear Portals",
   "category.portalgun": "Portal Gun",
-  "text.autoconfig.portalgun.option.enabled.enableRoundPortals": "Enable Round Portals"
+  "text.autoconfig.portalgun.option.enabled.portalFunneling": "Portal Funneling",
+  "text.autoconfig.portalgun.title": "Portal Gun Fabric Options"
 }
