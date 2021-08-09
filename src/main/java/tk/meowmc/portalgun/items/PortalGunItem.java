@@ -222,7 +222,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                         PortalMethods.portal1Methods(user, hit, world);
 
-                        portalOutline1.refreshPositionAfterTeleport(outlinePos.x, outlinePos.y, outlinePos.z);
+                        portalOutline1.refreshPositionAfterTeleport(outlinePos);
 
                         if (portal2Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
@@ -247,6 +247,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                                 newPortal1.reloadAndSyncToClient();
                             if (portal2Exists)
                                 newPortal2.reloadAndSyncToClient();
+
+                            portalOutline1.refreshPositionAfterTeleport(outlinePos);
 
                             portal1Exists = true;
                         }
@@ -366,7 +368,7 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        portalOutline2.refreshPositionAfterTeleport(outlinePos.x, outlinePos.y, outlinePos.z);
+                        portalOutline2.refreshPositionAfterTeleport(outlinePos);
 
                         if (portal1Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
@@ -391,6 +393,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                                 newPortal2.reloadAndSyncToClient();
                             if (portal1Exists)
                                 newPortal1.reloadAndSyncToClient();
+
+                            portalOutline2.refreshPositionAfterTeleport(outlinePos);
 
                             portal2Exists = true;
                         }
