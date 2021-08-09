@@ -4,6 +4,7 @@
   "package": "tk.meowmc.portalgun.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "EntityMixin",
     "ServerTeleportationManagerMixin"
   ],
   "client": [
