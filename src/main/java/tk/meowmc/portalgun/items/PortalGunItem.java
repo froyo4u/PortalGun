@@ -216,13 +216,12 @@ public class PortalGunItem extends Item implements IAnimatable {
                             outline2Exists = true;
                     }
 
+
                     waitPortal = true;
                     IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
                         Vec3d outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
 
                         PortalMethods.portal1Methods(user, hit, world);
-
-                        portalOutline1.refreshPositionAfterTeleport(outlinePos);
 
                         if (portal2Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
@@ -367,8 +366,6 @@ public class PortalGunItem extends Item implements IAnimatable {
                         Vec3d outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
 
                         PortalMethods.portal2Methods(user, hit, world);
-
-                        portalOutline2.refreshPositionAfterTeleport(outlinePos);
 
                         if (portal1Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
