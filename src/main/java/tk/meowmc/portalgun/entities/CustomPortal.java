@@ -1,10 +1,5 @@
 package tk.meowmc.portalgun.entities;
 
-import qouteall.imm_ptl.core.PehkuiInterface;
-import qouteall.q_misc_util.my_util.SignalArged;
-import qouteall.q_misc_util.my_util.SignalBiArged;
-import qouteall.imm_ptl.core.portal.Portal;
-import qouteall.imm_ptl.core.portal.PortalManipulation;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -20,13 +15,19 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
+import qouteall.imm_ptl.core.PehkuiInterface;
+import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.imm_ptl.core.portal.PortalManipulation;
+import qouteall.q_misc_util.my_util.SignalArged;
+import qouteall.q_misc_util.my_util.SignalBiArged;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.Objects;
 import java.util.UUID;
 
-import static tk.meowmc.portalgun.items.PortalGunItem.*;
+import static tk.meowmc.portalgun.items.PortalGunItem.portal1Exists;
+import static tk.meowmc.portalgun.items.PortalGunItem.portal2Exists;
 
 public class CustomPortal extends Portal {
     public static final SignalArged<CustomPortal> clientPortalTickSignal = new SignalArged();
@@ -67,7 +68,7 @@ public class CustomPortal extends Portal {
             entity.setVelocity(this.transformLocalVec(entity.getVelocity()));
         }
 
-        final double maxVelocity = 0.9;
+        final double maxVelocity = 0.96;
         if (entity.getVelocity().length() > maxVelocity) {
             // cannot be too fast
             entity.setVelocity(entity.getVelocity().normalize().multiply(0.78));
@@ -101,10 +102,10 @@ public class CustomPortal extends Portal {
 
             if ((!world.getBlockState(portalUpperPos).isSideSolidFullSquare(world, portalUpperPos, portalDirection)) ||
                     (!world.getBlockState(portalLowerPos).isSideSolidFullSquare(world, portalLowerPos, portalDirection)
-                    ) || (!world.getBlockState(new BlockPos(this.getPos())).isAir()) || (!world.getBlockState(new BlockPos(
+                    ) || (world.getBlockState(new BlockPos(this.getPos())).isOpaque()) || (world.getBlockState(new BlockPos(
                     this.getX() - Math.abs(axisH.getX()),
                     this.getY() + axisH.getY(),
-                    this.getZ() - Math.abs(axisH.getZ()))).isAir())) {
+                    this.getZ() - Math.abs(axisH.getZ()))).isOpaque())) {
                 Portalgun.logString(Level.INFO, "Upper" + portalUpperPos);
                 Portalgun.logString(Level.INFO, "Lower" + portalLowerPos);
 
