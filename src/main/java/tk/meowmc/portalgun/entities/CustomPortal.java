@@ -12,9 +12,11 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
+import qouteall.imm_ptl.core.McHelper;
 import qouteall.imm_ptl.core.PehkuiInterface;
 import qouteall.imm_ptl.core.portal.Portal;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
@@ -58,25 +60,29 @@ public class CustomPortal extends Portal {
 
     @Override
     public void transformVelocity(@NotNull Entity entity) {
-        if (PehkuiInterface.isPehkuiPresent) {
-            if (this.teleportChangesScale) {
-                entity.setVelocity(this.transformLocalVecNonScale(entity.getVelocity()));
+        Vec3d oldVelocity = McHelper.getWorldVelocity(entity);
+        if (PehkuiInterface.invoker.isPehkuiPresent()) {
+            if (teleportChangesScale) {
+                McHelper.setWorldVelocity(entity, transformLocalVecNonScale(oldVelocity));
             } else {
-                entity.setVelocity(this.transformLocalVec(entity.getVelocity()));
+                McHelper.setWorldVelocity(entity, transformLocalVec(oldVelocity));
             }
         } else {
-            entity.setVelocity(this.transformLocalVec(entity.getVelocity()));
+            McHelper.setWorldVelocity(entity, transformLocalVec(oldVelocity));
         }
 
         final double maxVelocity = 0.96;
-        if (entity.getVelocity().length() > maxVelocity) {
+        if (oldVelocity.length() > maxVelocity) {
             // cannot be too fast
-            entity.setVelocity(entity.getVelocity().normalize().multiply(0.78));
+            McHelper.setWorldVelocity(
+                    entity,
+                    McHelper.getWorldVelocity(entity).normalize().multiply(0.78)
+            );
         }
 
         // avoid cannot push minecart out of nether portal
-        if (entity instanceof AbstractMinecartEntity && entity.getVelocity().lengthSquared() < 0.5) {
-            entity.setVelocity(entity.getVelocity().multiply(2));
+        if (entity instanceof AbstractMinecartEntity && oldVelocity.lengthSquared() < 0.5) {
+            McHelper.setWorldVelocity(entity, McHelper.getWorldVelocity(entity).multiply(2));
         }
     }
 
