@@ -10,7 +10,6 @@
   "client": [
     "ClientPlayerEntityMixin",
     "ClientPlayNetworkHandlerMixin",
-    "IPModMainClientMixin",
     "MinecraftClientMixin"
   ],
   "injectors": {
