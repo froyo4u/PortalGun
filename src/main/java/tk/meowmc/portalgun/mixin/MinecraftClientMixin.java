@@ -55,12 +55,12 @@ public abstract class MinecraftClientMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
+    private void onDoAttack(CallbackInfo ci) {
         if (attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
             MinecraftClientMethods.myAttackBlock();
         else if (!player.isHolding(PORTALGUN))
             MinecraftClientMethods.doAttack();
-        cir.cancel();
+        ci.cancel();
     }
 
 }
