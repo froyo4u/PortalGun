@@ -46,17 +46,17 @@ allprojects {
         // Fabric API. This is technically optional, but you probably want it anyway.
         modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-        modImplementation ('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.18-SNAPSHOT'){
+        modImplementation ('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v1.2.5-1.18'){
             exclude(group: "net.fabricmc.fabric-api")
             transitive(false)
         }
-        include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:1.18-SNAPSHOT'
+        include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v1.2.5-1.18'
 
-        modImplementation ('com.github.qouteall.ImmersivePortalsMod:q_misc_util:1.18-SNAPSHOT'){
+        modImplementation ('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v1.2.5-1.18'){
             exclude(group: "net.fabricmc.fabric-api")
             transitive(false)
         }
-        include 'com.github.qouteall.ImmersivePortalsMod:q_misc_util:1.18-SNAPSHOT'
+        include 'com.github.qouteall.ImmersivePortalsMod:q_misc_util:v1.2.5-1.18'
 
         compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
