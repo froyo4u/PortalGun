@@ -74,7 +74,7 @@ public class PortalgunClient implements ClientModInitializer {
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.options.attackKey.isPressed() && !client.player.getItemCooldownManager().isCoolingDown(Portalgun.PORTALGUN)) {
+            if (client.options.keyAttack.isPressed() && !client.player.getItemCooldownManager().isCoolingDown(Portalgun.PORTALGUN)) {
                 RemoteCallables.playAnim();
                 McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
             }
