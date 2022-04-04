@@ -1,6 +1,5 @@
 package tk.meowmc.portalgun.client.renderer;
 
-import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
@@ -8,13 +7,12 @@ import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
-import org.apache.logging.log4j.Level;
 import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.entities.PortalOverlay;
 
 import static net.minecraft.client.render.OverlayTexture.DEFAULT_UV;
-import static tk.meowmc.portalgun.Portalgun.*;
+import static tk.meowmc.portalgun.Portalgun.id;
 
 public class PortalOverlayRenderer extends EntityRenderer<PortalOverlay> {
     private final PortalOverlayModel model;

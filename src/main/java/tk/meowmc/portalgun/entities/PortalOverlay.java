@@ -64,7 +64,7 @@ public class PortalOverlay extends Entity {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 
         buf.writeVarInt(
-                Registry.ENTITY_TYPE.getRawId(this.getType()))
+                        Registry.ENTITY_TYPE.getRawId(this.getType()))
                 .writeUuid(this.getUuid())
                 .writeVarInt(this.getId())
                 .writeDouble(this.getX())

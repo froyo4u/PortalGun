@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import tk.meowmc.portalgun.misc.MinecraftClientMethods;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
@@ -54,12 +55,12 @@ public abstract class MinecraftClientMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onDoAttack(CallbackInfo ci) {
+    private void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
         if (attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
             MinecraftClientMethods.myAttackBlock();
         else if (!player.isHolding(PORTALGUN))
             MinecraftClientMethods.doAttack();
-        ci.cancel();
+        cir.cancel();
     }
 
 }

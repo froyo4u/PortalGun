@@ -60,14 +60,14 @@ allprojects {
 
         compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
-        modImplementation 'software.bernie.geckolib:geckolib-fabric-1.18:3.0.27'
+        modImplementation 'software.bernie.geckolib:geckolib-fabric-1.18:3.0.35'
 
-        modImplementation('com.terraformersmc:modmenu:3.0.1')
+        modImplementation('com.terraformersmc:modmenu:3.1.0')
 
-        modApi("me.shedaniel.cloth:cloth-config-fabric:6.1.48") {
+        modApi("me.shedaniel.cloth:cloth-config-fabric:6.2.57") {
             exclude(group: "net.fabricmc.fabric-api")
         }
-        include("me.shedaniel.cloth:cloth-config-fabric:6.1.48")
+        include("me.shedaniel.cloth:cloth-config-fabric:6.2.57")
 
         // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
         // You may need to force-disable transitiveness on them.
@@ -117,13 +117,7 @@ jar {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            // add all the jars that should be included when publishing to maven
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+            from components.java
         }
     }
 
