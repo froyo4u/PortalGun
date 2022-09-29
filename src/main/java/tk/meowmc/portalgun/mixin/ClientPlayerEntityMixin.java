@@ -5,7 +5,6 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Final;
@@ -21,8 +20,8 @@ public abstract class ClientPlayerEntityMixin extends AbstractClientPlayerEntity
     @Final
     public ClientPlayNetworkHandler networkHandler;
 
-    public ClientPlayerEntityMixin(ClientWorld world, GameProfile profile, PlayerPublicKey playerPublicKey) {
-        super(world, profile, playerPublicKey);
+    public ClientPlayerEntityMixin(ClientWorld world, GameProfile profile) {
+        super(world, profile);
     }
 
     /**

@@ -153,7 +153,7 @@ public class MinecraftClientMethods {
             client.player.world = targetWorld;
             client.world = targetWorld;
             isContextSwitched = true;
-            var4 = client.interactionManager.interactBlock(client.player, hand, blockHitResult);
+            var4 = client.interactionManager.interactBlock(client.player, targetWorld, hand, blockHitResult);
         } finally {
             client.player.world = oldWorld;
             client.world = oldWorld;
