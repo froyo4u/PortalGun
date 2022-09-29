@@ -12,7 +12,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
     @Override
-    public Identifier getModelLocation(PortalGunItem object) {
+    public Identifier getModelResource(PortalGunItem object) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("geo/portalgun_og.geo.json");
         else*/
@@ -20,7 +20,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     }
 
     @Override
-    public Identifier getTextureLocation(PortalGunItem object) {
+    public Identifier getTextureResource(PortalGunItem object) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("textures/item/portal_gun_og.png");
         else*/
@@ -28,7 +28,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     }
 
     @Override
-    public Identifier getAnimationFileLocation(PortalGunItem animatable) {
+    public Identifier getAnimationResource(PortalGunItem animatable) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("animations/portalgun_og.animation.json");
         else*/

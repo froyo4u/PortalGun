@@ -1,0 +1,13 @@
+{
+  "item.portalgun.portal_gun": "Aperture Science Handheld Dual-Portalgerät",
+  "item.portalgun.portalgun_body": "Portal Gerätekörper",
+  "item.portalgun.portalgun_claw": "Portal Geräteklaue",
+  "subtitles.portalgun.portal1_shoot": "Primäres Portal erstellt",
+  "subtitles.portalgun.portal2_shoot": "Sekundäres Portal erstellt",
+  "subtitles.portalgun.portal_open": "Portal geöffnet",
+  "subtitles.portalgun.portal_close": "Portal geschlossen",
+  "key.portalgun.clearportals": "Lösche Portale",
+  "category.portalgun": "Portal Gun",
+  "text.autoconfig.portalgun.option.enabled.portalFunneling": "Portal Schleusen",
+  "text.autoconfig.portalgun.title": "Portal Gun Fabric Optionen"
+}

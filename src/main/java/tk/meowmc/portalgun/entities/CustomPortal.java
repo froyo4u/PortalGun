@@ -22,7 +22,7 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import qouteall.imm_ptl.core.McHelper;
-import qouteall.imm_ptl.core.PehkuiInterface;
+import qouteall.imm_ptl.core.compat.PehkuiInterface;
 import qouteall.imm_ptl.core.mc_utils.IPEntityEventListenableEntity;
 import qouteall.imm_ptl.core.portal.*;
 import qouteall.q_misc_util.Helper;

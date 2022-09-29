@@ -6,8 +6,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityModelLayerRegistry;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -85,8 +85,8 @@ public class PortalgunClient implements ClientModInitializer {
 
         EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER,
                 PortalOverlayModel::getTexturedModelData);
-        EntityRendererRegistry.INSTANCE.register(Portalgun.CUSTOM_PORTAL, PortalEntityRenderer::new);
-        EntityRendererRegistry.INSTANCE.register(Portalgun.PORTAL_OVERLAY, PortalOverlayRenderer::new);
+        EntityRendererRegistry.register(Portalgun.CUSTOM_PORTAL, PortalEntityRenderer::new);
+        EntityRendererRegistry.register(Portalgun.PORTAL_OVERLAY, PortalOverlayRenderer::new);
 
         ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
     }
