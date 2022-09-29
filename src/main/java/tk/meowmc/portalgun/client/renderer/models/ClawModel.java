@@ -8,17 +8,17 @@ import static tk.meowmc.portalgun.Portalgun.id;
 
 public class ClawModel extends AnimatedGeoModel<ClawItem> {
     @Override
-    public Identifier getModelResource(ClawItem object) {
+    public Identifier getModelLocation(ClawItem object) {
         return id("geo/portalgun_claw.geo.json");
     }
 
     @Override
-    public Identifier getTextureResource(ClawItem object) {
+    public Identifier getTextureLocation(ClawItem object) {
         return id("textures/item/portal_gun.png");
     }
 
     @Override
-    public Identifier getAnimationResource(ClawItem animatable) {
+    public Identifier getAnimationFileLocation(ClawItem animatable) {
         return null;
     }
 }
