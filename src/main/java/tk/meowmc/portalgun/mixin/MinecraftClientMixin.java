@@ -34,33 +34,34 @@ public abstract class MinecraftClientMixin {
     @Shadow
     protected abstract void doItemPick();
 
-    @Inject(
-            method = {"handleBlockBreaking"},
-            at = {@At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"
-            )},
-            cancellable = true
-    )
-    private void onHandleBlockBreaking(boolean isKeyPressed, CallbackInfo ci) {
-        if (MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN)) {
-            MinecraftClientMethods.myHandleBlockBreaking(isKeyPressed);
-            ci.cancel();
-        }
+    // TODO cancel block breaking
+//    @Inject(
+//            method = {"handleBlockBreaking"},
+//            at = {@At(
+//                    value = "INVOKE",
+//                    target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"
+//            )},
+//            cancellable = true
+//    )
+//    private void onHandleBlockBreaking(boolean isKeyPressed, CallbackInfo ci) {
+//        if (MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN)) {
+//            MinecraftClientMethods.myHandleBlockBreaking(isKeyPressed);
+//            ci.cancel();
+//        }
+//
+//    }
 
-    }
-
-    @Inject(
-            method = "doAttack",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    private void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
-        if (attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
-            MinecraftClientMethods.myAttackBlock();
-        else if (!player.isHolding(PORTALGUN))
-            MinecraftClientMethods.doAttack();
-        cir.cancel();
-    }
+//    @Inject(
+//            method = "doAttack",
+//            at = @At("HEAD"),
+//            cancellable = true
+//    )
+//    private void onDoAttack(CallbackInfoReturnable<Boolean> cir) {
+//        if (attackCooldown <= 0 && MinecraftClientMethods.isPointingToPortal() && !player.isHolding(PORTALGUN))
+//            MinecraftClientMethods.myAttackBlock();
+//        else if (!player.isHolding(PORTALGUN))
+//            MinecraftClientMethods.doAttack();
+//        cir.cancel();
+//    }
 
 }

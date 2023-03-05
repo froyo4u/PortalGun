@@ -42,38 +42,38 @@ public abstract class EntityMixin implements EntityAttatchments, VelocityTransfe
     @Shadow
     public abstract boolean isSneaking();
 
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
-    public void tick(CallbackInfo ci) {
-        if (PortalGunConfig.get().enabled.portalFunneling) {
-            Vec3d expand = this.getVelocity().multiply(8);
-            Box streachedBB = this.getBoundingBox().stretch(expand);
-
-            List<CustomPortal> globalPortals = this.world.getEntitiesByClass(CustomPortal.class, streachedBB, Portal::isTeleportable);
-
-            for (CustomPortal globalPortal : globalPortals) {
-                if (streachedBB.intersects(globalPortal.getBoundingBox())) {
-                    Vec3d portalFacing = new Vec3d((int) globalPortal.getNormal().getX(), (int) globalPortal.getNormal().getY(), (int) globalPortal.getNormal().getZ());
-                    double offsetX = 0;
-                    double offsetZ = 0;
-                    double offsetY = 0;
-
-                    Box streachedPortalBB = globalPortal.getBoundingBox().stretch(portalFacing.getX() * Math.abs(this.getVelocity().getX()) * 10, portalFacing.getY() * Math.abs(this.getVelocity().getY()) * 10, portalFacing.getZ() * Math.abs(this.getVelocity().getZ()) * 10);
-                    if (streachedPortalBB.intersects(this.getBoundingBox())) {
-                        if (Math.abs(this.getVelocity().y) > Math.abs(this.getVelocity().x) || Math.abs(this.getVelocity().z) > Math.abs(this.getVelocity().x)) {
-                            offsetX = (this.getBoundingBox().getCenter().x - globalPortal.getBoundingBox().getCenter().x) * .05;
-                        }
-                        if (Math.abs(this.getVelocity().y) > Math.abs(this.getVelocity().z) || Math.abs(this.getVelocity().x) > Math.abs(this.getVelocity().z)) {
-                            offsetZ = (this.getBoundingBox().getCenter().z - globalPortal.getBoundingBox().getCenter().z) * .05;
-                        }
-                        if (Math.abs(this.getVelocity().z) > Math.abs(this.getVelocity().y) || Math.abs(this.getVelocity().x) > Math.abs(this.getVelocity().y)) {
-                            offsetY = (this.getBoundingBox().getCenter().y - globalPortal.getBoundingBox().getCenter().y) * .05;
-                        }
-                        if (!this.getBoundingBox().intersects(globalPortal.getBoundingBox()) && !this.isSneaking())
-                            this.setVelocity(this.getVelocity().add(-offsetX, -offsetY, -offsetZ));
-                    }
-                }
-            }
-        }
-    }
+//    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+//    public void tick(CallbackInfo ci) {
+//        if (PortalGunConfig.get().enabled.portalFunneling) {
+//            Vec3d expand = this.getVelocity().multiply(8);
+//            Box streachedBB = this.getBoundingBox().stretch(expand);
+//
+//            List<CustomPortal> globalPortals = this.world.getEntitiesByClass(CustomPortal.class, streachedBB, Portal::isTeleportable);
+//
+//            for (CustomPortal globalPortal : globalPortals) {
+//                if (streachedBB.intersects(globalPortal.getBoundingBox())) {
+//                    Vec3d portalFacing = new Vec3d((int) globalPortal.getNormal().getX(), (int) globalPortal.getNormal().getY(), (int) globalPortal.getNormal().getZ());
+//                    double offsetX = 0;
+//                    double offsetZ = 0;
+//                    double offsetY = 0;
+//
+//                    Box streachedPortalBB = globalPortal.getBoundingBox().stretch(portalFacing.getX() * Math.abs(this.getVelocity().getX()) * 10, portalFacing.getY() * Math.abs(this.getVelocity().getY()) * 10, portalFacing.getZ() * Math.abs(this.getVelocity().getZ()) * 10);
+//                    if (streachedPortalBB.intersects(this.getBoundingBox())) {
+//                        if (Math.abs(this.getVelocity().y) > Math.abs(this.getVelocity().x) || Math.abs(this.getVelocity().z) > Math.abs(this.getVelocity().x)) {
+//                            offsetX = (this.getBoundingBox().getCenter().x - globalPortal.getBoundingBox().getCenter().x) * .05;
+//                        }
+//                        if (Math.abs(this.getVelocity().y) > Math.abs(this.getVelocity().z) || Math.abs(this.getVelocity().x) > Math.abs(this.getVelocity().z)) {
+//                            offsetZ = (this.getBoundingBox().getCenter().z - globalPortal.getBoundingBox().getCenter().z) * .05;
+//                        }
+//                        if (Math.abs(this.getVelocity().z) > Math.abs(this.getVelocity().y) || Math.abs(this.getVelocity().x) > Math.abs(this.getVelocity().y)) {
+//                            offsetY = (this.getBoundingBox().getCenter().y - globalPortal.getBoundingBox().getCenter().y) * .05;
+//                        }
+//                        if (!this.getBoundingBox().intersects(globalPortal.getBoundingBox()) && !this.isSneaking())
+//                            this.setVelocity(this.getVelocity().add(-offsetX, -offsetY, -offsetZ));
+//                    }
+//                }
+//            }
+//        }
+//    }
 
 }

@@ -25,6 +25,7 @@ import qouteall.q_misc_util.api.McRemoteProcedureCall;
 import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.ClawRenderer;
+import tk.meowmc.portalgun.client.renderer.CustomPortalEntityRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalOverlayRenderer;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
@@ -85,7 +86,7 @@ public class PortalgunClient implements ClientModInitializer {
 
         EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER,
                 PortalOverlayModel::getTexturedModelData);
-        EntityRendererRegistry.register(Portalgun.CUSTOM_PORTAL, PortalEntityRenderer::new);
+        EntityRendererRegistry.register(Portalgun.CUSTOM_PORTAL, CustomPortalEntityRenderer::new);
         EntityRendererRegistry.register(Portalgun.PORTAL_OVERLAY, PortalOverlayRenderer::new);
 
         ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
