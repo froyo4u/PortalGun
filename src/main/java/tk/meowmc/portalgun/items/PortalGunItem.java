@@ -1,22 +1,5 @@
 package tk.meowmc.portalgun.items;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.Level;
 import qouteall.imm_ptl.core.IPGlobal;
 import qouteall.imm_ptl.core.McHelper;
@@ -32,12 +15,28 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.entities.CustomPortal;
-import tk.meowmc.portalgun.entities.PortalOverlay;
 import tk.meowmc.portalgun.misc.PortalMethods;
 
-import static net.minecraft.util.hit.HitResult.Type.BLOCK;
-import static net.minecraft.util.hit.HitResult.Type.MISS;
+import static net.minecraft.world.phys.HitResult.Type.BLOCK;
+import static net.minecraft.world.phys.HitResult.Type.MISS;
 import static tk.meowmc.portalgun.misc.PortalMethods.*;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class PortalGunItem extends Item implements IAnimatable {
     public static String controllerName = "portalgunController";
@@ -56,54 +55,54 @@ public class PortalGunItem extends Item implements IAnimatable {
     public CustomPortal newPortal2;
     public PortalOverlay portalOutline1;
     public PortalOverlay portalOutline2;
-    public NbtCompound tag;
-    public NbtCompound portalsTag;
+    public CompoundTag tag;
+    public CompoundTag portalsTag;
     public AnimationFactory factory = new AnimationFactory(this);
 
-    public PortalGunItem(Settings settings) {
+    public PortalGunItem(Properties settings) {
         super(settings);
     }
 
-    public static void removeOldPortals(PlayerEntity user) {
+    public static void removeOldPortals(Player user) {
         PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
         if (gunItem.newPortal1 != null) {
             gunItem.newPortal1.kill();
-            gunItem.portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
+            gunItem.portalsTag.remove("PrimaryPortal" + user.getStringUUID());
             gunItem.newPortal1.myUnsetRemoved();
         }
         if (gunItem.newPortal2 != null) {
             gunItem.newPortal2.kill();
-            gunItem.portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
+            gunItem.portalsTag.remove("SecondaryPortal" + user.getStringUUID());
             gunItem.newPortal2.myUnsetRemoved();
         }
-        gunItem.tag.remove(user.world.getRegistryKey().toString());
+        gunItem.tag.remove(user.level.dimension().toString());
     }
 
     /**
      * Thanks to Fusion Flux for this btw
      */
-    private boolean validPos(World world, Vec3i up, Vec3i right, Vec3d portalPos1) {
-        Vec3d CalculatedAxisW;
-        Vec3d CalculatedAxisH;
-        Vec3d posNormal;
-        CalculatedAxisW = Vec3d.of(right);
-        CalculatedAxisH = Vec3d.of(up).multiply(-1);
+    private boolean validPos(net.minecraft.world.level.Level world, Vec3i up, Vec3i right, Vec3 portalPos1) {
+        Vec3 CalculatedAxisW;
+        Vec3 CalculatedAxisH;
+        Vec3 posNormal;
+        CalculatedAxisW = Vec3.atLowerCornerOf(right);
+        CalculatedAxisH = Vec3.atLowerCornerOf(up).scale(-1);
 
         BlockPos upperPos = new BlockPos(
-                portalPos1.getX() - CalculatedAxisW.crossProduct(CalculatedAxisH).getX(),
-                portalPos1.getY() - CalculatedAxisW.crossProduct(CalculatedAxisH).getY(),
-                portalPos1.getZ() - CalculatedAxisW.crossProduct(CalculatedAxisH).getZ());
+                portalPos1.x() - CalculatedAxisW.cross(CalculatedAxisH).x(),
+                portalPos1.y() - CalculatedAxisW.cross(CalculatedAxisH).y(),
+                portalPos1.z() - CalculatedAxisW.cross(CalculatedAxisH).z());
         BlockPos lowerPos = new BlockPos(
-                portalPos1.getX() - CalculatedAxisW.crossProduct(CalculatedAxisH).getX() - Math.abs(CalculatedAxisH.getX()),
-                portalPos1.getY() - CalculatedAxisW.crossProduct(CalculatedAxisH).getY() + CalculatedAxisH.getY(),
-                portalPos1.getZ() - CalculatedAxisW.crossProduct(CalculatedAxisH).getZ() - Math.abs(CalculatedAxisH.getZ()));
+                portalPos1.x() - CalculatedAxisW.cross(CalculatedAxisH).x() - Math.abs(CalculatedAxisH.x()),
+                portalPos1.y() - CalculatedAxisW.cross(CalculatedAxisH).y() + CalculatedAxisH.y(),
+                portalPos1.z() - CalculatedAxisW.cross(CalculatedAxisH).z() - Math.abs(CalculatedAxisH.z()));
 
-        if (!world.getBlockState(upperPos).isSideSolidFullSquare(world, upperPos, direction) ||
-                (!world.getBlockState(lowerPos).isSideSolidFullSquare(world, lowerPos, direction)
-                ) || world.getBlockState(new BlockPos(portalPos1)).isOpaque() || world.getBlockState(new BlockPos(
-                portalPos1.getX() - Math.abs(CalculatedAxisH.getX()),
-                portalPos1.getY() + CalculatedAxisH.getY(),
-                portalPos1.getZ() - Math.abs(CalculatedAxisH.getZ()))).isOpaque()) {
+        if (!world.getBlockState(upperPos).isFaceSturdy(world, upperPos, direction) ||
+                (!world.getBlockState(lowerPos).isFaceSturdy(world, lowerPos, direction)
+                ) || world.getBlockState(new BlockPos(portalPos1)).canOcclude() || world.getBlockState(new BlockPos(
+                portalPos1.x() - Math.abs(CalculatedAxisH.x()),
+                portalPos1.y() + CalculatedAxisH.y(),
+                portalPos1.z() - Math.abs(CalculatedAxisH.z()))).canOcclude()) {
             Portalgun.logString(Level.WARN, "portalInvalid");
             Portalgun.logString(Level.INFO, "Upper" + upperPos);
             Portalgun.logString(Level.INFO, "Lower" + lowerPos);
@@ -128,16 +127,16 @@ public class PortalGunItem extends Item implements IAnimatable {
     }
 
     @Override
-    public boolean canMine(BlockState state, World world, BlockPos pos, PlayerEntity miner) {
+    public boolean canAttackBlock(BlockState state, net.minecraft.world.level.Level world, BlockPos pos, Player miner) {
         return false;
     }
 
-    public void portal1Spawn(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        tag = itemStack.getOrCreateNbt();
-        portalsTag = tag.getCompound(world.getRegistryKey().toString());
-        user.getItemCooldownManager().set(this, 4);
-        hit = user.raycast(100.0D, 1.0F, false);
+    public void portal1Spawn(net.minecraft.world.level.Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
+        tag = itemStack.getOrCreateTag();
+        portalsTag = tag.getCompound(world.dimension().toString());
+        user.getCooldowns().addCooldown(this, 4);
+        hit = user.pick(100.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
@@ -145,51 +144,51 @@ public class PortalGunItem extends Item implements IAnimatable {
 
 
         if (hit.getType() == BLOCK) {
-            direction = blockHit.getSide();
+            direction = blockHit.getDirection();
 
 
-            dirOut1 = blockHit.getSide().getOpposite().getVector();
+            dirOut1 = blockHit.getDirection().getOpposite().getNormal();
             if (dirOut1.getY() == 0) {
                 dirUp1 = new Vec3i(0, 1, 0);
             } else {
-                dirUp1 = user.getHorizontalFacing().getVector();
+                dirUp1 = user.getDirection().getNormal();
             }
-            dirRight1 = dirUp1.crossProduct(dirOut1);
+            dirRight1 = dirUp1.cross(dirOut1);
 
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - user.getEyeY();
             double distanceZ = blockPos.getZ() - user.getZ();
 
-            Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
+            Vec3 distanceVec = new Vec3(distanceX, distanceY, distanceZ);
 
             double distance = distanceVec.length();
 
             int delay = (int) (0.3 * distance);
 
 
-            if (!world.isClient && !waitPortal) {
+            if (!world.isClientSide && !waitPortal) {
                 world.playSound(null,
                         user.getX(),
                         user.getY(),
                         user.getZ(),
                         Portalgun.PORTAL1_SHOOT_EVENT,
-                        SoundCategory.NEUTRAL,
+                        SoundSource.NEUTRAL,
                         1.0F,
                         1F);
 
                 if (validPos(world, dirUp1, dirRight1, calcPortalPos(blockPos, dirUp1, dirOut1, new Vec3i(-dirRight1.getX(), -dirRight1.getY(), -dirRight1.getZ())))) {
 
-                    if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
-                        newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+                    if (portalsTag.contains("PrimaryPortal" + user.getStringUUID())) {
+                        newPortal1 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryPortal" + user.getStringUUID()));
                         if (newPortal1 == null) {
                             newPortal1 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal1Exists = false;
                         } else
                             portal1Exists = true;
                     }
-                    if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
-                        newPortal2 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
+                    if (portalsTag.contains("SecondaryPortal" + user.getStringUUID())) {
+                        newPortal2 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryPortal" + user.getStringUUID()));
                         if (newPortal2 == null) {
                             newPortal2 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal2Exists = false;
@@ -197,8 +196,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                             portal2Exists = true;
                     }
 
-                    if (portalsTag.contains("PrimaryOutline" + user.getUuidAsString())) {
-                        portalOutline1 = (PortalOverlay) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryOutline" + user.getUuidAsString()));
+                    if (portalsTag.contains("PrimaryOutline" + user.getStringUUID())) {
+                        portalOutline1 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryOutline" + user.getStringUUID()));
 
                         if (portalOutline1 == null) {
                             portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
@@ -206,8 +205,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                         } else
                             outline1Exists = true;
                     }
-                    if (portalsTag.contains("SecondaryOutline" + user.getUuidAsString())) {
-                        portalOutline2 = (PortalOverlay) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryOutline" + user.getUuidAsString()));
+                    if (portalsTag.contains("SecondaryOutline" + user.getStringUUID())) {
+                        portalOutline2 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryOutline" + user.getStringUUID()));
 
                         if (portalOutline2 == null) {
                             portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
@@ -218,11 +217,11 @@ public class PortalGunItem extends Item implements IAnimatable {
 
                     waitPortal = true;
                     IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
-                        Vec3d outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
+                        Vec3 outlinePos = calcOutlinePos(blockPos, dirUp1, dirOut1, dirRight1);
 
                         PortalMethods.portal1Methods(user, hit, world);
 
-                        portalOutline1.refreshPositionAfterTeleport(outlinePos);
+                        portalOutline1.moveTo(outlinePos);
 
                         if (portal2Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal1, newPortal2);
@@ -235,7 +234,7 @@ public class PortalGunItem extends Item implements IAnimatable {
                                     newPortal1.getY(),
                                     newPortal1.getZ(),
                                     Portalgun.PORTAL_OPEN_EVENT,
-                                    SoundCategory.NEUTRAL,
+                                    SoundSource.NEUTRAL,
                                     1.0F,
                                     1F);
                             if (!portal1Exists) {
@@ -248,92 +247,92 @@ public class PortalGunItem extends Item implements IAnimatable {
                             if (portal2Exists)
                                 newPortal2.reloadAndSyncToClient();
 
-                            portalOutline1.refreshPositionAfterTeleport(outlinePos);
+                            portalOutline1.moveTo(outlinePos);
 
                             portal1Exists = true;
                         }
                         waitPortal = false;
                         if (newPortal2 != null)
-                            portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
+                            portalsTag.putUUID("SecondaryPortal" + user.getStringUUID(), newPortal2.getUUID());
                         if (newPortal1 != null)
-                            portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
+                            portalsTag.putUUID("PrimaryPortal" + user.getStringUUID(), newPortal1.getUUID());
 
                         if (portalOutline2 != null)
-                            portalsTag.putUuid("SecondaryOutline" + user.getUuidAsString(), portalOutline2.getUuid());
+                            portalsTag.putUUID("SecondaryOutline" + user.getStringUUID(), portalOutline2.getUUID());
                         if (portalOutline1 != null)
-                            portalsTag.putUuid("PrimaryOutline" + user.getUuidAsString(), portalOutline1.getUuid());
+                            portalsTag.putUUID("PrimaryOutline" + user.getStringUUID(), portalOutline1.getUUID());
 
-                        tag.put(world.getRegistryKey().toString(), portalsTag);
+                        tag.put(world.dimension().toString(), portalsTag);
                     })));
                 }
             }
-            user.incrementStat(Stats.USED.getOrCreateStat(this));
+            user.awardStat(Stats.ITEM_USED.get(this));
         }
     }
 
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
-        tag = itemStack.getOrCreateNbt();
-        portalsTag = tag.getCompound(world.getRegistryKey().toString());
-        user.getItemCooldownManager().set(this, 4);
-        hit = user.raycast(100.0D, 1.0F, false);
+    public InteractionResultHolder<ItemStack> use(net.minecraft.world.level.Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
+        tag = itemStack.getOrCreateTag();
+        portalsTag = tag.getCompound(world.dimension().toString());
+        user.getCooldowns().addCooldown(this, 4);
+        hit = user.pick(100.0D, 1.0F, false);
         blockHit = (BlockHitResult) hit;
         blockPos = blockHit.getBlockPos();
         blockState = world.getBlockState(blockPos);
         animController = GeckoLibUtil.getControllerForStack(this.factory, itemStack, controllerName);
 
         if (hit.getType() == MISS)
-            return TypedActionResult.fail(itemStack);
+            return InteractionResultHolder.fail(itemStack);
         else if (hit.getType() == BLOCK) {
-            direction = blockHit.getSide();
+            direction = blockHit.getDirection();
 
 
-            dirOut2 = blockHit.getSide().getOpposite().getVector();
+            dirOut2 = blockHit.getDirection().getOpposite().getNormal();
             if (dirOut2.getY() == 0) {
                 dirUp2 = new Vec3i(0, 1, 0);
             } else {
-                dirUp2 = user.getHorizontalFacing().getVector();
+                dirUp2 = user.getDirection().getNormal();
             }
-            dirRight2 = dirUp2.crossProduct(dirOut2);
+            dirRight2 = dirUp2.cross(dirOut2);
 
 
             double distanceX = blockPos.getX() - user.getX();
             double distanceY = blockPos.getY() - user.getEyeY();
             double distanceZ = blockPos.getZ() - user.getZ();
 
-            Vec3d distanceVec = new Vec3d(distanceX, distanceY, distanceZ);
+            Vec3 distanceVec = new Vec3(distanceX, distanceY, distanceZ);
 
             double distance = distanceVec.length();
 
             int delay = (int) (0.3 * distance);
 
-            if (world.isClient) {
+            if (world.isClientSide) {
                 animController.markNeedsReload();
                 animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
             }
 
-            if (!world.isClient && !waitPortal) {
+            if (!world.isClientSide && !waitPortal) {
                 world.playSound(null,
                         user.getX(),
                         user.getY(),
                         user.getZ(),
                         Portalgun.PORTAL2_SHOOT_EVENT,
-                        SoundCategory.NEUTRAL,
+                        SoundSource.NEUTRAL,
                         1.0F,
                         1F);
 
                 if (validPos(world, dirUp2, dirRight2, calcPortalPos(blockPos, dirUp2, dirOut2, new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ())))) {
 
-                    if (portalsTag.contains("PrimaryPortal" + user.getUuidAsString())) {
-                        newPortal1 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryPortal" + user.getUuidAsString()));
+                    if (portalsTag.contains("PrimaryPortal" + user.getStringUUID())) {
+                        newPortal1 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryPortal" + user.getStringUUID()));
                         if (newPortal1 == null) {
                             newPortal1 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal1Exists = false;
                         } else
                             portal1Exists = true;
                     }
-                    if (portalsTag.contains("SecondaryPortal" + user.getUuidAsString())) {
-                        newPortal2 = (CustomPortal) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryPortal" + user.getUuidAsString()));
+                    if (portalsTag.contains("SecondaryPortal" + user.getStringUUID())) {
+                        newPortal2 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryPortal" + user.getStringUUID()));
                         if (newPortal2 == null) {
                             newPortal2 = Portalgun.CUSTOM_PORTAL.create(world);
                             portal2Exists = false;
@@ -341,8 +340,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                             portal2Exists = true;
                     }
 
-                    if (portalsTag.contains("PrimaryOutline" + user.getUuidAsString())) {
-                        portalOutline1 = (PortalOverlay) ((ServerWorld) world).getEntity(portalsTag.getUuid("PrimaryOutline" + user.getUuidAsString()));
+                    if (portalsTag.contains("PrimaryOutline" + user.getStringUUID())) {
+                        portalOutline1 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryOutline" + user.getStringUUID()));
 
                         if (portalOutline1 == null) {
                             portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
@@ -350,8 +349,8 @@ public class PortalGunItem extends Item implements IAnimatable {
                         } else
                             outline1Exists = true;
                     }
-                    if (portalsTag.contains("SecondaryOutline" + user.getUuidAsString())) {
-                        portalOutline2 = (PortalOverlay) ((ServerWorld) world).getEntity(portalsTag.getUuid("SecondaryOutline" + user.getUuidAsString()));
+                    if (portalsTag.contains("SecondaryOutline" + user.getStringUUID())) {
+                        portalOutline2 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryOutline" + user.getStringUUID()));
 
                         if (portalOutline2 == null) {
                             portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
@@ -364,11 +363,11 @@ public class PortalGunItem extends Item implements IAnimatable {
                     waitPortal = true;
                     IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
 
-                        Vec3d outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
+                        Vec3 outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
 
                         PortalMethods.portal2Methods(user, hit, world);
 
-                        portalOutline2.refreshPositionAfterTeleport(outlinePos);
+                        portalOutline2.moveTo(outlinePos);
 
                         if (portal1Exists)
                             PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
@@ -381,41 +380,41 @@ public class PortalGunItem extends Item implements IAnimatable {
                                     newPortal2.getY(),
                                     newPortal2.getZ(),
                                     Portalgun.PORTAL_OPEN_EVENT,
-                                    SoundCategory.NEUTRAL,
+                                    SoundSource.NEUTRAL,
                                     1.0F,
                                     1F);
                             if (!portal2Exists) {
-                                world.spawnEntity(newPortal2);
+                                world.addFreshEntity(newPortal2);
                                 if (portalOutline2 != null)
-                                    world.spawnEntity(portalOutline2);
+                                    world.addFreshEntity(portalOutline2);
                             }
                             if (portal2Exists)
                                 newPortal2.reloadAndSyncToClient();
                             if (portal1Exists)
                                 newPortal1.reloadAndSyncToClient();
 
-                            portalOutline2.refreshPositionAfterTeleport(outlinePos);
+                            portalOutline2.moveTo(outlinePos);
 
                             portal2Exists = true;
                         }
                         waitPortal = false;
                         if (newPortal2 != null)
-                            portalsTag.putUuid("SecondaryPortal" + user.getUuidAsString(), newPortal2.getUuid());
+                            portalsTag.putUUID("SecondaryPortal" + user.getStringUUID(), newPortal2.getUUID());
                         if (newPortal1 != null)
-                            portalsTag.putUuid("PrimaryPortal" + user.getUuidAsString(), newPortal1.getUuid());
+                            portalsTag.putUUID("PrimaryPortal" + user.getStringUUID(), newPortal1.getUUID());
 
                         if (portalOutline2 != null)
-                            portalsTag.putUuid("SecondaryOutline" + user.getUuidAsString(), portalOutline2.getUuid());
+                            portalsTag.putUUID("SecondaryOutline" + user.getStringUUID(), portalOutline2.getUUID());
                         if (portalOutline1 != null)
-                            portalsTag.putUuid("PrimaryOutline" + user.getUuidAsString(), portalOutline1.getUuid());
+                            portalsTag.putUUID("PrimaryOutline" + user.getStringUUID(), portalOutline1.getUUID());
 
-                        tag.put(world.getRegistryKey().toString(), portalsTag);
+                        tag.put(world.dimension().toString(), portalsTag);
                     })));
                 }
             }
-            user.incrementStat(Stats.USED.getOrCreateStat(this));
+            user.awardStat(Stats.ITEM_USED.get(this));
         }
 
-        return TypedActionResult.pass(itemStack);
+        return InteractionResultHolder.pass(itemStack);
     }
 }

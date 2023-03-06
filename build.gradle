@@ -44,23 +44,28 @@ loom {
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+//    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+    mappings loom.layered() {
+        officialMojangMappings() {
+            setNameSyntheticMembers(false)
+        }
+        parchment("org.parchmentmc.data:parchment-1.19.3:2022.12.18")
+    }
+
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19') {
+    modImplementation ('com.github.iPortalTeam.ImmersivePortalsMod:imm_ptl_core:v2.4.8-mc1.19.3'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19'
-
-    modImplementation('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19') {
+    modImplementation ('com.github.iPortalTeam.ImmersivePortalsMod:q_misc_util:v2.4.8-mc1.19.3'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    include 'com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19'
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 

@@ -2,23 +2,16 @@ package tk.meowmc.portalgun.entities;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import qouteall.imm_ptl.core.McHelper;
@@ -40,20 +33,20 @@ import static tk.meowmc.portalgun.items.PortalGunItem.portal1Exists;
 import static tk.meowmc.portalgun.items.PortalGunItem.portal2Exists;
 
 public class CustomPortal extends Portal {
-    public static final TrackedData<String> outline = DataTracker.registerData(CustomPortal.class, TrackedDataHandlerRegistry.STRING);
+    public static final EntityDataAccessor<String> outline = SynchedEntityData.defineId(CustomPortal.class, EntityDataSerializers.STRING);
   
     public static EntityType<CustomPortal> entityType;
     
     public int colorInt;
 
-    public CustomPortal(@NotNull EntityType<?> entityType, World world) {
+    public CustomPortal(@NotNull EntityType<?> entityType, net.minecraft.world.level.Level world) {
         super(entityType, world);
     }
     
     @Environment(EnvType.CLIENT)
-    private void acceptDataSync(Vec3d pos, NbtCompound customData) {
-        setPosition(pos);
-        readCustomDataFromNbt(customData);
+    private void acceptDataSync(Vec3 pos, CompoundTag customData) {
+        setPos(pos);
+        readAdditionalSaveData(customData);
     }
 
     @Environment(EnvType.CLIENT)
@@ -61,57 +54,55 @@ public class CustomPortal extends Portal {
     }
 
     @Override
-    protected void initDataTracker() {
-        getDataTracker().startTracking(outline, "null");
+    protected void defineSynchedData() {
+        getEntityData().define(outline, "null");
     }
 
     public String getOutline() {
-        return getDataTracker().get(outline);
+        return getEntityData().get(outline);
     }
 
     public void setOutline(String outline) {
-        getDataTracker().set(CustomPortal.outline, outline);
+        getEntityData().set(CustomPortal.outline, outline);
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (this.animation != null)
-            this.animation = null;
 
-        if (!world.isClient) {
+        if (!level.isClientSide) {
 
             BlockPos portalUpperPos = new BlockPos(
-                    this.getX() - axisW.crossProduct(axisH).getX(),
-                    this.getY() - axisW.crossProduct(axisH).getY(),
-                    this.getZ() - axisW.crossProduct(axisH).getZ());
+                    this.getX() - axisW.cross(axisH).x(),
+                    this.getY() - axisW.cross(axisH).y(),
+                    this.getZ() - axisW.cross(axisH).z());
             BlockPos portalLowerPos = new BlockPos(
-                    this.getX() - axisW.crossProduct(axisH).getX() - Math.abs(axisH.getX()),
-                    this.getY() - axisW.crossProduct(axisH).getY() + axisH.getY(),
-                    this.getZ() - axisW.crossProduct(axisH).getZ() - Math.abs(axisH.getZ()));
+                    this.getX() - axisW.cross(axisH).x() - Math.abs(axisH.x()),
+                    this.getY() - axisW.cross(axisH).y() + axisH.y(),
+                    this.getZ() - axisW.cross(axisH).z() - Math.abs(axisH.z()));
 
-            BlockState portalUpperBlockState = this.world.getBlockState(portalUpperPos);
-            BlockState portalLowerBlockState = this.world.getBlockState(portalLowerPos);
+            BlockState portalUpperBlockState = this.level.getBlockState(portalUpperPos);
+            BlockState portalLowerBlockState = this.level.getBlockState(portalLowerPos);
 
 
-            Direction portalDirection = Direction.fromVector((int) this.getNormal().getX(), (int) this.getNormal().getY(), (int) this.getNormal().getZ());
+            Direction portalDirection = Direction.fromNormal((int) this.getNormal().x(), (int) this.getNormal().y(), (int) this.getNormal().z());
 
-            if ((!world.getBlockState(portalUpperPos).isSideSolidFullSquare(world, portalUpperPos, portalDirection)) ||
-                    (!world.getBlockState(portalLowerPos).isSideSolidFullSquare(world, portalLowerPos, portalDirection)
-                    ) || (world.getBlockState(new BlockPos(this.getPos())).isOpaque()) || (world.getBlockState(new BlockPos(
-                    this.getX() - Math.abs(axisH.getX()),
-                    this.getY() + axisH.getY(),
-                    this.getZ() - Math.abs(axisH.getZ()))).isOpaque())) {
-                Portalgun.logString(Level.INFO, "Upper" + portalUpperPos);
-                Portalgun.logString(Level.INFO, "Lower" + portalLowerPos);
+            if ((!level.getBlockState(portalUpperPos).isFaceSturdy(level, portalUpperPos, portalDirection)) ||
+                    (!level.getBlockState(portalLowerPos).isFaceSturdy(level, portalLowerPos, portalDirection)
+                    ) || (level.getBlockState(new BlockPos(this.position())).canOcclude()) || (level.getBlockState(new BlockPos(
+                    this.getX() - Math.abs(axisH.x()),
+                    this.getY() + axisH.y(),
+                    this.getZ() - Math.abs(axisH.z()))).canOcclude())) {
+//                Portalgun.logString(Level.INFO, "Upper" + portalUpperPos);
+//                Portalgun.logString(Level.INFO, "Lower" + portalLowerPos);
 
                 this.kill();
-                world.playSound(null,
-                        this.getPos().getX(),
-                        this.getPos().getY(),
-                        this.getPos().getZ(),
+                level.playSound(null,
+                        this.position().x(),
+                        this.position().y(),
+                        this.position().z(),
                         Portalgun.PORTAL_CLOSE_EVENT,
-                        SoundCategory.NEUTRAL,
+                        SoundSource.NEUTRAL,
                         1.0F,
                         1F);
 //                if (!this.getOutline().equals("null")) {

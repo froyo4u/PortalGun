@@ -1,6 +1,6 @@
 package tk.meowmc.portalgun.items;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.controller.AnimationController;
@@ -13,7 +13,7 @@ public class ClawItem extends Item implements IAnimatable {
     public static String controllerName = "clawController";
     public AnimationFactory factory = new AnimationFactory(this);
 
-    public ClawItem(Settings settings) {
+    public ClawItem(Properties settings) {
         super(settings);
     }
 

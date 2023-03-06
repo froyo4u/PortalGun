@@ -9,73 +9,45 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import org.lwjgl.glfw.GLFW;
-import qouteall.imm_ptl.core.render.PortalEntityRenderer;
 import qouteall.q_misc_util.api.McRemoteProcedureCall;
 import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.CustomPortalEntityRenderer;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
-import tk.meowmc.portalgun.client.renderer.PortalOverlayRenderer;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.misc.RemoteCallables;
 
 import java.util.UUID;
 
 import static tk.meowmc.portalgun.Portalgun.id;
-import static tk.meowmc.portalgun.network.Packets.PacketID;
+
+import com.mojang.blaze3d.platform.InputConstants;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
-    public static final EntityModelLayer OVERLAY_MODEL_LAYER = new EntityModelLayer(id("portal_overlay"), "main");
-
-    public static void onEntitySpawn(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender sender) {
-        EntityType<?> type = Registry.ENTITY_TYPE.get(buf.readVarInt());
-        UUID entityUUID = buf.readUuid();
-        int entityID = buf.readVarInt();
-        double x = buf.readDouble();
-        double y = buf.readDouble();
-        double z = buf.readDouble();
-        float pitch = (buf.readByte() * 360) / 256.0F;
-        float yaw = (buf.readByte() * 360) / 256.0F;
-        ClientWorld world = MinecraftClient.getInstance().world;
-        Entity entity = type.create(world);
-        client.execute(() -> {
-            if (entity != null) {
-                entity.updatePosition(x, y, z);
-                entity.updateTrackedPosition(x, y, z);
-                entity.pitch = pitch;
-                entity.yaw = yaw;
-                entity.setId(entityID);
-                entity.setUuid(entityUUID);
-                assert world != null;
-                world.addEntity(entityID, entity);
-            }
-        });
-    }
-
+    public static final ModelLayerLocation OVERLAY_MODEL_LAYER = new ModelLayerLocation(id("portal_overlay"), "main");
+    
     @Override
     public void onInitializeClient() {
-        KeyBinding clearPortals = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.portalgun.clearportals", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
+        KeyMapping clearPortals = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.portalgun.clearportals", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (clearPortals.wasPressed()) {
+            while (clearPortals.consumeClick()) {
                 McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortals");
             }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.options.attackKey.isPressed() && !client.player.getItemCooldownManager().isCoolingDown(Portalgun.PORTALGUN)) {
+            if (client.options.keyAttack.isDown() && !client.player.getCooldowns().isOnCooldown(Portalgun.PORTALGUN)) {
                 RemoteCallables.playAnim();
                 McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
             }
@@ -87,8 +59,5 @@ public class PortalgunClient implements ClientModInitializer {
         EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER,
                 PortalOverlayModel::getTexturedModelData);
         EntityRendererRegistry.register(Portalgun.CUSTOM_PORTAL, CustomPortalEntityRenderer::new);
-        EntityRendererRegistry.register(Portalgun.PORTAL_OVERLAY, PortalOverlayRenderer::new);
-
-        ClientPlayNetworking.registerGlobalReceiver(PacketID, PortalgunClient::onEntitySpawn);
     }
 }

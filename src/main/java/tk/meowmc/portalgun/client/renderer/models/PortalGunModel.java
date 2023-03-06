@@ -1,7 +1,7 @@
 package tk.meowmc.portalgun.client.renderer.models;
 
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.items.PortalGunItem;
@@ -12,7 +12,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     PortalGunConfig config = AutoConfig.getConfigHolder(PortalGunConfig.class).getConfig();
 
     @Override
-    public Identifier getModelResource(PortalGunItem object) {
+    public ResourceLocation getModelResource(PortalGunItem object) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("geo/portalgun_og.geo.json");
         else*/
@@ -20,7 +20,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     }
 
     @Override
-    public Identifier getTextureResource(PortalGunItem object) {
+    public ResourceLocation getTextureResource(PortalGunItem object) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("textures/item/portal_gun_og.png");
         else*/
@@ -28,7 +28,7 @@ public class PortalGunModel extends AnimatedGeoModel<PortalGunItem> {
     }
 
     @Override
-    public Identifier getAnimationResource(PortalGunItem animatable) {
+    public ResourceLocation getAnimationResource(PortalGunItem animatable) {
         /*if (config.enabled.enableOldPortalGunModel)
             return id("animations/portalgun_og.animation.json");
         else*/
