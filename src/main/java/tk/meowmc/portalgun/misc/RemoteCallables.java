@@ -81,7 +81,7 @@ public class RemoteCallables {
         PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
         boolean portalGunActive = client.player.isHolding(PORTALGUN);
         ItemStack itemStack = client.player.getItemInHand(InteractionHand.MAIN_HAND);
-        AnimationController animController = GeckoLibUtil.getControllerForStack(gunItem.factory, itemStack, controllerName);
+        AnimationController animController = GeckoLibUtil.getControllerForStack(gunItem.animationFactory, itemStack, controllerName);
         if (!client.player.getCooldowns().isOnCooldown(gunItem) && portalGunActive) {
             animController.markNeedsReload();
             animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));

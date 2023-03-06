@@ -26,10 +26,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
     public void render(CustomPortal entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         matrices.pushPose();
-//        matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(entity.yaw));
-//        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(entity.pitch));
-//        matrices.multiply(Vec3f.NEGATIVE_Z.getDegreesQuaternion(entity.getRoll()));
-        
+        matrices.mulPose(entity.getOrientationRotation().toMcQuaternion());
         
         int color = entity.colorInt * -1;
         
