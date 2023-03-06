@@ -4,94 +4,103 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        mavenLocal()
-        maven {
-            name 'Fabric'
-            url 'https://maven.fabricmc.net/'
-        }
-        maven {
-            name = 'JitPack'
-            url = 'https://jitpack.io'
-        }
-        maven { url 'https://hephaestus.dev/release' }
-        maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
-        maven { url 'https://maven.shedaniel.me' }
-        maven { url 'https://maven.fabricmc.net/io/github/prospector/modmenu' }
-        maven { url 'https://maven.terraformersmc.com/releases/' }
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name 'Fabric'
+        url 'https://maven.fabricmc.net/'
+    }
+    maven {
+        name = 'JitPack'
+        url = 'https://jitpack.io'
+    }
+    maven { url 'https://hephaestus.dev/release' }
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven { url 'https://maven.shedaniel.me' }
+    maven { url 'https://maven.fabricmc.net/io/github/prospector/modmenu' }
+    maven { url 'https://maven.terraformersmc.com/releases/' }
 
-        jcenter()
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://ladysnake.jfrog.io/artifactory/mods'
     }
 
+    jcenter()
+}
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 
-    archivesBaseName = project.archives_base_name
-    version = project.mod_version
-    group = project.maven_group
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
-    loom {
-        accessWidenerPath = file("src/main/resources/portalgun.accesswidener")
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+loom {
+    accessWidenerPath = file("src/main/resources/portalgun.accesswidener")
+}
+
+dependencies {
+    //to change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API. This is technically optional, but you probably want it anyway.
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19') {
+        exclude(group: "net.fabricmc.fabric-api")
+        transitive(false)
     }
+    include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19'
 
+    modImplementation('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19') {
+        exclude(group: "net.fabricmc.fabric-api")
+        transitive(false)
+    }
+    include 'com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19'
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+
+    modImplementation 'software.bernie.geckolib:geckolib-fabric-1.19:3.1.20'
+
+    modImplementation('com.terraformersmc:modmenu:4.0.6')
+
+    modApi("me.shedaniel.cloth:cloth-config-fabric:8.2.88") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    include("me.shedaniel.cloth:cloth-config-fabric:8.2.88")
+
+//    // Replace modImplementation with modApi if you expose components in your own API
+//    modApi "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.0.1"
+//    // Includes Cardinal Components API as a Jar-in-Jar dependency (optional but recommended)
+//    include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.0.1"
+//
+//    modApi "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.0.1"
+//    // Includes Cardinal Components API as a Jar-in-Jar dependency (optional but recommended)
+//    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.0.1"
+}
+
+shadowJar {
     dependencies {
-        //to change the versions see the gradle.properties file
-        minecraft "com.mojang:minecraft:${project.minecraft_version}"
-        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-        // Fabric API. This is technically optional, but you probably want it anyway.
-        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-        modImplementation ('com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19'){
-            exclude(group: "net.fabricmc.fabric-api")
-            transitive(false)
-        }
-        include 'com.github.qouteall.ImmersivePortalsMod:imm_ptl_core:v2.2.4-1.19'
-
-        modImplementation ('com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19'){
-            exclude(group: "net.fabricmc.fabric-api")
-            transitive(false)
-        }
-        include 'com.github.qouteall.ImmersivePortalsMod:q_misc_util:v2.2.4-1.19'
-
-        compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
-
-        modImplementation 'software.bernie.geckolib:geckolib-fabric-1.19:3.1.20'
-
-        modImplementation('com.terraformersmc:modmenu:4.0.6')
-
-        modApi("me.shedaniel.cloth:cloth-config-fabric:8.2.88") {
-            exclude(group: "net.fabricmc.fabric-api")
-        }
-        include("me.shedaniel.cloth:cloth-config-fabric:8.2.88")
-
-        // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-        // You may need to force-disable transitiveness on them.
+        exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
+        exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
     }
+}
+afterEvaluate {
+    remapJar {
+        input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+        archiveName = "${archivesBaseName}-${version}-mc${project.minecraft_version}-fabric.jar"
+    }
+}
+processResources {
+    inputs.property "version", project.version
 
-    shadowJar {
-        dependencies {
-            exclude(dependency("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"))
-            exclude(dependency("net.fabricmc:fabric-loader:${project.loader_version}"))
-        }
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
-    afterEvaluate {
-        remapJar {
-            input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
-            archiveName = "${archivesBaseName}-${version}-mc${project.minecraft_version}-fabric.jar"
-        }
-    }
-    processResources {
-		inputs.property "version", project.version
-		
-		filesMatching("fabric.mod.json") {
-			expand "version": project.version
-		}
-	}
 }
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -128,13 +137,7 @@ publishing {
     }
 }
 
-task additionalCopy(type:Copy){
+task additionalCopy(type: Copy) {
     from file("${project.buildDir}/libs/$archivesBaseName-${version}-mc${project.minecraft_version}-fabric.jar")
     into file("${project.buildDir}/to_upload")
-}
-
-task printClasspath {
-    doLast {
-        configurations.compileClasspath.each { println "\""+ (it.toString().replace("\\","/")) + "\"," }
-    }
 }
