@@ -2,11 +2,20 @@ package tk.meowmc.portalgun.items;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import qouteall.imm_ptl.core.IPGlobal;
 import qouteall.imm_ptl.core.McHelper;
+import qouteall.imm_ptl.core.chunk_loading.ChunkLoader;
+import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
+import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
+import qouteall.q_misc_util.my_util.IntBox;
 import qouteall.q_misc_util.my_util.MyTaskList;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -16,7 +25,9 @@ import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
+import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
 import tk.meowmc.portalgun.misc.PortalMethods;
 
@@ -42,8 +53,13 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class PortalGunItem extends Item implements IAnimatable {
+    private static Logger LOGGER = LogManager.getLogger();
+    
     public static String controllerName = "portalgunController";
     
     public final AnimationFactory animationFactory = new AnimationFactory(this);
@@ -92,7 +108,7 @@ public class PortalGunItem extends Item implements IAnimatable {
         if (hit.getType() == MISS || hit.getType() == ENTITY) {
             return InteractionResultHolder.fail(itemStack);
         }
-    
+        
         BlockPos blockPos = blockHit.getBlockPos();
         BlockState blockState = world.getBlockState(blockPos);
         
@@ -102,115 +118,122 @@ public class PortalGunItem extends Item implements IAnimatable {
         
         Direction rightDir = AARotation.dirCrossProduct(dirUp, blockFacingDir);
         
+        BlockPos regionSize = new BlockPos(
+            rightDir.getNormal()
+                .offset(dirUp.getNormal().multiply(2))
+                .offset(blockFacingDir.getNormal())
+        );
         
-        
-        if (!world.isClientSide && !waitPortal) {
-            world.playSound(null,
-                user.getX(),
-                user.getY(),
-                user.getZ(),
-                Portalgun.PORTAL2_SHOOT_EVENT,
-                SoundSource.NEUTRAL,
-                1.0F,
-                1F);
-            
-            if (validPos(world, dirUp2, dirRight2, calcPortalPos(blockPos, dirUp2, dirOut2, new Vec3i(-dirRight2.getX(), -dirRight2.getY(), -dirRight2.getZ())))) {
-                
-                if (portalsTag.contains("PrimaryPortal" + user.getStringUUID())) {
-                    newPortal1 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryPortal" + user.getStringUUID()));
-                    if (newPortal1 == null) {
-                        newPortal1 = Portalgun.CUSTOM_PORTAL.create(world);
-                        portal1Exists = false;
-                    }
-                    else
-                        portal1Exists = true;
+        IntBox areaForPlacing = IntBox.getBoxByPosAndSignedSize(BlockPos.ZERO, regionSize).stream().map(
+            offset -> {
+                BlockPos testingBasePos = blockPos.subtract(offset);
+                IntBox testingArea = IntBox.getBoxByPosAndSignedSize(testingBasePos, regionSize);
+                if (testingArea.stream().allMatch(p -> world.getBlockState(p).isAir())) {
+                    return testingArea;
                 }
-                if (portalsTag.contains("SecondaryPortal" + user.getStringUUID())) {
-                    newPortal2 = (CustomPortal) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryPortal" + user.getStringUUID()));
-                    if (newPortal2 == null) {
-                        newPortal2 = Portalgun.CUSTOM_PORTAL.create(world);
-                        portal2Exists = false;
-                    }
-                    else
-                        portal2Exists = true;
+                else {
+                    return null;
                 }
-                
-                if (portalsTag.contains("PrimaryOutline" + user.getStringUUID())) {
-                    portalOutline1 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("PrimaryOutline" + user.getStringUUID()));
-                    
-                    if (portalOutline1 == null) {
-                        portalOutline1 = Portalgun.PORTAL_OVERLAY.create(world);
-                        outline1Exists = false;
-                    }
-                    else
-                        outline1Exists = true;
-                }
-                if (portalsTag.contains("SecondaryOutline" + user.getStringUUID())) {
-                    portalOutline2 = (PortalOverlay) ((ServerLevel) world).getEntity(portalsTag.getUUID("SecondaryOutline" + user.getStringUUID()));
-                    
-                    if (portalOutline2 == null) {
-                        portalOutline2 = Portalgun.PORTAL_OVERLAY.create(world);
-                        outline2Exists = false;
-                    }
-                    else
-                        outline2Exists = true;
-                }
-                
-                
-                waitPortal = true;
-                IPGlobal.serverTaskList.addTask(MyTaskList.withDelay(delay, MyTaskList.oneShotTask(() -> {
-                    
-                    Vec3 outlinePos = calcOutlinePos(blockPos, dirUp2, dirOut2, dirRight2);
-                    
-                    PortalMethods.portal2Methods(user, hit, world);
-                    
-                    portalOutline2.moveTo(outlinePos);
-                    
-                    if (portal1Exists)
-                        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal1);
-                    else
-                        PortalManipulation.adjustRotationToConnect(newPortal2, newPortal2);
-                    
-                    {
-                        world.playSound(null,
-                            newPortal2.getX(),
-                            newPortal2.getY(),
-                            newPortal2.getZ(),
-                            Portalgun.PORTAL_OPEN_EVENT,
-                            SoundSource.NEUTRAL,
-                            1.0F,
-                            1F);
-                        if (!portal2Exists) {
-                            world.addFreshEntity(newPortal2);
-                            if (portalOutline2 != null)
-                                world.addFreshEntity(portalOutline2);
-                        }
-                        if (portal2Exists)
-                            newPortal2.reloadAndSyncToClient();
-                        if (portal1Exists)
-                            newPortal1.reloadAndSyncToClient();
-                        
-                        portalOutline2.moveTo(outlinePos);
-                        
-                        portal2Exists = true;
-                    }
-                    waitPortal = false;
-                    if (newPortal2 != null)
-                        portalsTag.putUUID("SecondaryPortal" + user.getStringUUID(), newPortal2.getUUID());
-                    if (newPortal1 != null)
-                        portalsTag.putUUID("PrimaryPortal" + user.getStringUUID(), newPortal1.getUUID());
-                    
-                    if (portalOutline2 != null)
-                        portalsTag.putUUID("SecondaryOutline" + user.getStringUUID(), portalOutline2.getUUID());
-                    if (portalOutline1 != null)
-                        portalsTag.putUUID("PrimaryOutline" + user.getStringUUID(), portalOutline1.getUUID());
-                    
-                    tag.put(world.dimension().toString(), portalsTag);
-                })));
             }
-        }
-        user.awardStat(Stats.ITEM_USED.get(this));
+        ).filter(Objects::nonNull).findFirst().orElse(null);
         
+        if (areaForPlacing == null) {
+            return InteractionResultHolder.fail(itemStack);
+        }
+        
+        PortalGunRecord record = PortalGunRecord.get();
+        
+        Map<PortalGunRecord.PortalGunKind, PortalGunRecord.PortalGunInfo> infoMap =
+            record.data.computeIfAbsent(user.getUUID(), k -> new HashMap<>());
+        
+        PortalGunRecord.PortalGunKind kind = PortalGunRecord.PortalGunKind._2x1;
+        
+        PortalGunRecord.PortalGunInfo portalGunInfo = infoMap.computeIfAbsent(
+            kind, k -> PortalGunRecord.PortalGunInfo.empty()
+        );
+        
+        if (portalGunInfo.portal1() == null && portalGunInfo.portal2() == null) {
+            // should create a new unpaired portal
+            CustomPortal newPortal = PortalManipulation.createOrthodoxPortal(
+                CustomPortal.entityType,
+                (ServerLevel) world,
+                ((ServerLevel) world), // the dest dim doesn't matter as it's invisible and not teleportable
+                blockFacingDir,
+                Helper.getBoxSurface(areaForPlacing.toRealNumberBox(), blockFacingDir.getOpposite()),
+                Vec3.atCenterOf(blockPos).add(0, 10, 0)
+                // the dest pos doesn't matter as it's invisible and not teleportable
+            );
+            newPortal.setIsVisible(false);
+            newPortal.teleportable = false;
+            McHelper.spawnServerEntity(newPortal);
+            infoMap.put(kind,
+                portalGunInfo.withPortal1(
+                    new PortalGunRecord.SidedPortalInfo(
+                        newPortal.getUUID(), world.dimension(), newPortal.getOriginPos(),
+                        newPortal.getOrientationRotation()
+                    )
+                )
+            );
+            record.setDirty();
+        }
+        else if (portalGunInfo.portal1() != null && portalGunInfo.portal2() == null) {
+            // should finish pairing
+            
+            ServerLevel firstPortalWorld = McHelper.getServerWorld(portalGunInfo.portal1().portalDim());
+            
+            // create and spawn the new portal
+            CustomPortal newPortal = PortalManipulation.createOrthodoxPortal(
+                CustomPortal.entityType,
+                (ServerLevel) world,
+                firstPortalWorld,
+                blockFacingDir,
+                Helper.getBoxSurface(areaForPlacing.toRealNumberBox(), blockFacingDir.getOpposite()),
+                portalGunInfo.portal1().portalPos()
+            );
+            newPortal.setOtherSideOrientation(portalGunInfo.portal1().portalOrientation());
+            
+            PortalGunRecord.PortalGunInfo newPortalGunInfo = portalGunInfo.withPortal2(
+                new PortalGunRecord.SidedPortalInfo(
+                    newPortal.getUUID(), world.dimension(), newPortal.getOriginPos(),
+                    newPortal.getOrientationRotation()
+                )
+            );
+            infoMap.put(kind, newPortalGunInfo);
+            record.setDirty();
+            Validate.isTrue(newPortalGunInfo.portal1() != null);
+            Validate.isTrue(newPortalGunInfo.portal2() != null);
+            
+            // make the first portal visible and teleportable
+            // to do that we firstly need to load the chunk
+            ChunkLoader chunkLoader = new ChunkLoader(new DimensionalChunkPos(
+                newPortalGunInfo.portal1().portalDim(),
+                new ChunkPos(new BlockPos(portalGunInfo.portal1().portalPos()))
+            ), 1);
+            chunkLoader.loadChunksAndDo(() -> {
+                Entity entity = firstPortalWorld
+                    .getEntity(newPortalGunInfo.portal1().portalId());
+                if (entity instanceof CustomPortal originalPortal) {
+                    originalPortal.setIsVisible(true);
+                    originalPortal.teleportable = true;
+                    originalPortal.setDestinationDimension(newPortalGunInfo.portal2().portalDim());
+                    originalPortal.setDestination(newPortalGunInfo.portal2().portalPos());
+                    originalPortal.setOtherSideOrientation(newPortalGunInfo.portal2().portalOrientation());
+                    
+                    originalPortal.reloadAndSyncToClient();
+                }
+                else {
+                    LOGGER.error("Cannot find the original portal to link {}", newPortalGunInfo.portal1());
+                }
+            });
+        }
+        else {
+            Validate.isTrue(portalGunInfo.portal1() != null);
+            // already paired, should break pairing
+            infoMap.remove(kind);
+            record.setDirty();
+        }
+        
+        user.awardStat(Stats.ITEM_USED.get(this));
         
         return InteractionResultHolder.pass(itemStack);
     }

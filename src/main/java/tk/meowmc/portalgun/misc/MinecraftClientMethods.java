@@ -1,6 +1,5 @@
 package tk.meowmc.portalgun.misc;
 
-import net.minecraft.util.registry.RegistryKey;
 import qouteall.imm_ptl.core.ClientWorldLoader;
 import qouteall.imm_ptl.core.portal.PortalPlaceholderBlock;
 import tk.meowmc.portalgun.Portalgun;
