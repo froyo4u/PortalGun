@@ -29,10 +29,6 @@ public class Portalgun implements ModInitializer {
     public static final Item PORTALGUN_BODY = new Item(new FabricItemSettings().fireResistant().stacksTo(1).rarity(Rarity.RARE));
     public static final Item PORTALGUN_CLAW = new ClawItem(new FabricItemSettings().fireResistant().stacksTo(1).rarity(Rarity.RARE));
 
-    public static final EntityType<CustomPortal> CUSTOM_PORTAL = FabricEntityTypeBuilder.create(MobCategory.MISC, CustomPortal::new)
-            .dimensions(EntityDimensions.scalable(0F, 0F))
-            .build();
-
     public static final ResourceLocation PORTAL1_SHOOT = new ResourceLocation("portalgun:portal1_shoot");
     public static final ResourceLocation PORTAL2_SHOOT = new ResourceLocation("portalgun:portal2_shoot");
     public static final ResourceLocation PORTAL_OPEN = new ResourceLocation("portalgun:portal_open");
@@ -55,7 +51,7 @@ public class Portalgun implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, id("portalgun_body"), PORTALGUN_BODY);
         Registry.register(BuiltInRegistries.ITEM, id("portalgun_claw"), PORTALGUN_CLAW);
 
-        Registry.register(BuiltInRegistries.ENTITY_TYPE, id("custom_portal"), CUSTOM_PORTAL);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, id("custom_portal"), CustomPortal.entityType);
 
         Registry.register(BuiltInRegistries.SOUND_EVENT, PORTAL1_SHOOT, PORTAL1_SHOOT_EVENT);
         Registry.register(BuiltInRegistries.SOUND_EVENT, PORTAL2_SHOOT, PORTAL2_SHOOT_EVENT);

@@ -28,8 +28,7 @@
   "depends": {
     "fabricloader": ">=0.8.0",
     "fabric": "*",
-    "minecraft": "1.19.x",
-    "geckolib3": "*"
+    "minecraft": "1.19.x"
   },
   "accessWidener": "portalgun.accesswidener"
 }

@@ -9,7 +9,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.util.GeckoLibUtil;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
@@ -81,11 +80,11 @@ public class RemoteCallables {
         PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
         boolean portalGunActive = client.player.isHolding(PORTALGUN);
         ItemStack itemStack = client.player.getItemInHand(InteractionHand.MAIN_HAND);
-        AnimationController animController = GeckoLibUtil.getControllerForStack(gunItem.animationFactory, itemStack, controllerName);
-        if (!client.player.getCooldowns().isOnCooldown(gunItem) && portalGunActive) {
-            animController.markNeedsReload();
-            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
-        }
+//        AnimationController animController = GeckoLibUtil.getControllerForStack(gunItem.animationFactory, itemStack, controllerName);
+//        if (!client.player.getCooldowns().isOnCooldown(gunItem) && portalGunActive) {
+//            animController.markNeedsReload();
+//            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
+//        }
 //        client.missTime = 0;
     }
 

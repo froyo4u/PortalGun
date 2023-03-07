@@ -17,6 +17,9 @@ import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
 import qouteall.q_misc_util.my_util.IntBox;
 import qouteall.q_misc_util.my_util.MyTaskList;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -24,7 +27,6 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
 import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.config.PortalGunConfig;
@@ -90,11 +92,11 @@ public class PortalGunItem extends Item implements IAnimatable {
     
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         ItemStack itemStack = user.getItemInHand(hand);
-        AnimationController animController =
-            GeckoLibUtil.getControllerForStack(this.animationFactory, itemStack, controllerName);
+//        AnimationController animController =
+//            GeckoLibUtil.getControllerForStack(this.animationFactory, itemStack, controllerName);
         if (world.isClientSide()) {
-            animController.markNeedsReload();
-            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
+//            animController.markNeedsReload();
+//            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
             
             return InteractionResultHolder.fail(itemStack);
         }
@@ -109,7 +111,7 @@ public class PortalGunItem extends Item implements IAnimatable {
             return InteractionResultHolder.fail(itemStack);
         }
         
-        BlockPos blockPos = blockHit.getBlockPos();
+        BlockPos blockPos = blockHit.getBlockPos().relative(((BlockHitResult) hit).getDirection());
         BlockState blockState = world.getBlockState(blockPos);
         
         Direction blockFacingDir = blockHit.getDirection();
