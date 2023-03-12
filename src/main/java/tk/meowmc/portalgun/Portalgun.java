@@ -19,6 +19,9 @@ public class Portalgun implements ModInitializer {
     public static final String MODID = "portalgun";
     public static final String KEY = MODID + ":portalgun_portals";
     public static final String MOD_NAME = "PortalGun Mod";
+    
+    public static final double portalOffset = 0.001;
+    public static final double portalOverlayOffset = 0.001;
 
 
     public static final Item PORTALGUN = new PortalGunItem(new FabricItemSettings().fireResistant().stacksTo(1).rarity(Rarity.EPIC));

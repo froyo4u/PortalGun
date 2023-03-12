@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.entities.CustomPortal;
@@ -18,7 +19,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
     
     public CustomPortalEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        model = new PortalOverlayModel<>(context.bakeLayer(PortalgunClient.OVERLAY_MODEL_LAYER));
+        model = new PortalOverlayModel(context.bakeLayer(PortalgunClient.OVERLAY_MODEL_LAYER));
     }
     
     @Override
@@ -26,6 +27,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         matrices.pushPose();
         matrices.mulPose(entity.getOrientationRotation().toMcQuaternion());
+        matrices.translate(0, 0, Portalgun.portalOverlayOffset);
         
         int color = entity.colorInt * -1;
         
@@ -33,7 +35,11 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         int g = (color & 0xFF00) >> 8;
         int b = color & 0xFF;
         
-        this.model.renderToBuffer(matrices, vertexConsumers.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))), light, NO_OVERLAY, r, g, b, 1F);
+        this.model.renderToBuffer(
+            matrices,
+            vertexConsumers.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))),
+            light, NO_OVERLAY, r, g, b, 1F
+        );
         matrices.popPose();
     }
     

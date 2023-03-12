@@ -1,64 +1,101 @@
 package tk.meowmc.portalgun.entities;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.phys.Vec3;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import qouteall.imm_ptl.core.portal.Portal;
-import qouteall.imm_ptl.core.portal.PortalState;
+import tk.meowmc.portalgun.PortalGunRecord;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.UUID;
 
 public class CustomPortal extends Portal {
-    public static final EntityDataAccessor<String> outline = SynchedEntityData.defineId(CustomPortal.class, EntityDataSerializers.STRING);
+    private static final Logger LOGGER = LogManager.getLogger();
     
     public static EntityType<CustomPortal> entityType = FabricEntityTypeBuilder.create(MobCategory.MISC, CustomPortal::new)
         .dimensions(EntityDimensions.scalable(0F, 0F))
         .build();
     
     public int colorInt;
-
+    
+    @Nullable
+    public UUID ownerId;
+    public PortalGunRecord.PortalGunKind kind;
+    
     public CustomPortal(@NotNull EntityType<?> entityType, net.minecraft.world.level.Level world) {
         super(entityType, world);
     }
     
-    @Environment(EnvType.CLIENT)
-    private void acceptDataSync(Vec3 pos, CompoundTag customData) {
-        setPos(pos);
-        readAdditionalSaveData(customData);
-    }
-
-    @Environment(EnvType.CLIENT)
-    private void startAnimationClient(PortalState animationStartState) {
-    }
-
     @Override
-    protected void defineSynchedData() {
-        getEntityData().define(outline, "null");
+    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+        super.readAdditionalSaveData(compoundTag);
+        colorInt = compoundTag.getInt("colorInt");
+        ownerId = compoundTag.hasUUID("ownerId") ? compoundTag.getUUID("ownerId") : null;
+        kind = PortalGunRecord.PortalGunKind.fromString(compoundTag.getString("kind"));
     }
-
-    public String getOutline() {
-        return getEntityData().get(outline);
+    
+    @Override
+    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+        super.addAdditionalSaveData(compoundTag);
+        compoundTag.putInt("colorInt", colorInt);
+        if (ownerId != null) {
+            compoundTag.putUUID("ownerId", ownerId);
+        }
+        compoundTag.putString("kind", kind.name());
     }
-
-    public void setOutline(String outline) {
-        getEntityData().set(CustomPortal.outline, outline);
-    }
-
+    
     @Override
     public void tick() {
         super.tick();
-
+        
         if (!level.isClientSide) {
-            // TODO break portal if necessary
+            updateState();
         }
     }
-
-
+    
+    void updateState() {
+        if (ownerId == null) {
+            LOGGER.error("Portal without owner");
+            kill();
+            return;
+        }
+        
+        PortalGunRecord portalGunRecord = PortalGunRecord.get();
+        Map<PortalGunRecord.PortalGunKind, PortalGunRecord.PortalGunInfo> map1 = portalGunRecord.data.get(ownerId);
+        if (map1 == null) {
+            kill();
+            return;
+        }
+        
+        PortalGunRecord.PortalGunInfo info = map1.get(kind);
+        if (info == null) {
+            kill();
+            return;
+        }
+        
+        UUID currPortalUUID = getUUID();
+        if (info.portal1() != null && info.portal2() != null) {
+            if (!info.portal1().portalId().equals(currPortalUUID) &&
+                !info.portal2().portalId().equals(currPortalUUID)
+            ) {
+                kill();
+                return;
+            }
+            if (!isVisible() && info.portal1().portalId().equals(currPortalUUID)) {
+                setIsVisible(true);
+                teleportable = true;
+                setDestinationDimension(info.portal2().portalDim());
+                setDestination(info.portal2().portalPos());
+                setOtherSideOrientation(info.portal2().portalOrientation());
+                reloadAndSyncToClient();
+            }
+        }
+    }
+    
 }

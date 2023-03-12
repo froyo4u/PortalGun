@@ -20,7 +20,15 @@ import java.util.stream.Collectors;
 
 public class PortalGunRecord extends SavedData {
     public static enum PortalGunKind {
-        _2x1
+        _2x1;
+        
+        // not using valueOf() to avoid exception
+        public static PortalGunKind fromString(String c) {
+            return switch (c) {
+                case "_2x1" -> _2x1;
+                default -> _2x1;
+            };
+        }
     }
     
     public static record SidedPortalInfo(
@@ -56,10 +64,11 @@ public class PortalGunRecord extends SavedData {
     
     public static record PortalGunInfo(
         @Nullable SidedPortalInfo portal1,
-        @Nullable SidedPortalInfo portal2
+        @Nullable SidedPortalInfo portal2,
+        int updateCounter
     ) {
         public static PortalGunInfo empty() {
-            return new PortalGunInfo(null, null);
+            return new PortalGunInfo(null, null, 0);
         }
         
         CompoundTag toTag() {
@@ -73,22 +82,29 @@ public class PortalGunRecord extends SavedData {
                 tag.put("portal2", portal2.toTag());
             }
             
+            tag.putInt("updateCounter", updateCounter);
+            
             return tag;
         }
         
-        static PortalGunInfo fromTag(CompoundTag tag) {
+        public static PortalGunInfo fromTag(CompoundTag tag) {
             return new PortalGunInfo(
                 tag.contains("portal1") ? SidedPortalInfo.fromTag(tag.getCompound("portal1")) : null,
-                tag.contains("portal2") ? SidedPortalInfo.fromTag(tag.getCompound("portal2")) : null
+                tag.contains("portal2") ? SidedPortalInfo.fromTag(tag.getCompound("portal2")) : null,
+                tag.getInt("updateCounter")
             );
         }
         
         public PortalGunInfo withPortal1(SidedPortalInfo portal1) {
-            return new PortalGunInfo(portal1, portal2);
+            return new PortalGunInfo(portal1, portal2, updateCounter);
         }
         
         public PortalGunInfo withPortal2(SidedPortalInfo portal2) {
-            return new PortalGunInfo(portal1, portal2);
+            return new PortalGunInfo(portal1, portal2, updateCounter);
+        }
+        
+        public PortalGunInfo withUpdateCounterIncremented() {
+            return new PortalGunInfo(portal1, portal2, updateCounter + 1);
         }
     }
     

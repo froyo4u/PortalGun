@@ -38,6 +38,7 @@ import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import tk.meowmc.portalgun.PortalGunRecord;
+import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.entities.CustomPortal;
 
@@ -53,9 +54,9 @@ import static net.minecraft.world.phys.HitResult.Type.ENTITY;
 import static net.minecraft.world.phys.HitResult.Type.MISS;
 
 public class PortalGunItem extends Item implements GeoItem {
-    private static Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
     
-    public AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
+    public final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     
     private static final RawAnimation SHOOT_ANIM = RawAnimation.begin().thenPlay("portal_shoot");
     
@@ -63,7 +64,7 @@ public class PortalGunItem extends Item implements GeoItem {
     
     public PortalGunItem(Properties settings) {
         super(settings);
-    
+        
         SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
     
@@ -110,12 +111,6 @@ public class PortalGunItem extends Item implements GeoItem {
         if (world.isClientSide()) {
             return InteractionResultHolder.fail(itemStack);
         }
-    
-        triggerAnim(
-            user,
-            GeoItem.getOrAssignId(user.getItemInHand(hand), ((ServerLevel) world)),
-            "portalGunController", "shoot_anim"
-        );
         
         CompoundTag tag = itemStack.getOrCreateTag();
         CompoundTag portalsTag = tag.getCompound(world.dimension().toString());
@@ -128,25 +123,27 @@ public class PortalGunItem extends Item implements GeoItem {
         }
         
         BlockPos blockPos = blockHit.getBlockPos().relative(((BlockHitResult) hit).getDirection());
-        BlockState blockState = world.getBlockState(blockPos);
         
-        Direction blockFacingDir = blockHit.getDirection();
+        Direction wallFacing = blockHit.getDirection();
         
-        Direction dirUp = getUpDirection(user, blockFacingDir);
+        Direction upDir = getUpDirection(user, wallFacing);
         
-        Direction rightDir = AARotation.dirCrossProduct(dirUp, blockFacingDir);
+        Direction rightDir = AARotation.dirCrossProduct(upDir, wallFacing);
         
         BlockPos regionSize = new BlockPos(
             rightDir.getNormal()
-                .offset(dirUp.getNormal().multiply(2))
-                .offset(blockFacingDir.getNormal())
+                .offset(upDir.getNormal().multiply(2))
+                .offset(wallFacing.getNormal())
         );
         
         IntBox areaForPlacing = IntBox.getBoxByPosAndSignedSize(BlockPos.ZERO, regionSize).stream().map(
             offset -> {
                 BlockPos testingBasePos = blockPos.subtract(offset);
                 IntBox testingArea = IntBox.getBoxByPosAndSignedSize(testingBasePos, regionSize);
-                if (testingArea.stream().allMatch(p -> world.getBlockState(p).isAir())) {
+                boolean boxIsAllAir = testingArea.stream().allMatch(p -> world.getBlockState(p).isAir());
+                boolean wallIsSolid = testingArea.stream().map(p -> p.relative(wallFacing.getOpposite()))
+                    .allMatch(p -> world.getBlockState(p).isSolidRender(world, p));
+                if (boxIsAllAir && wallIsSolid) {
                     return testingArea;
                 }
                 else {
@@ -159,6 +156,12 @@ public class PortalGunItem extends Item implements GeoItem {
             return InteractionResultHolder.fail(itemStack);
         }
         
+        triggerAnim(
+            user,
+            GeoItem.getOrAssignId(user.getItemInHand(hand), ((ServerLevel) world)),
+            "portalGunController", "shoot_anim"
+        );
+        
         PortalGunRecord record = PortalGunRecord.get();
         
         Map<PortalGunRecord.PortalGunKind, PortalGunRecord.PortalGunInfo> infoMap =
@@ -170,20 +173,33 @@ public class PortalGunItem extends Item implements GeoItem {
             kind, k -> PortalGunRecord.PortalGunInfo.empty()
         );
         
+        Vec3 wallFacingVec = Vec3.atLowerCornerOf(wallFacing.getNormal());
+        Vec3 newPortalOrigin = Helper
+            .getBoxSurface(areaForPlacing.toRealNumberBox(), wallFacing.getOpposite())
+            .getCenter()
+            .add(wallFacingVec.scale(Portalgun.portalOffset));
+        
         if (portalGunInfo.portal1() == null && portalGunInfo.portal2() == null) {
             // should create a new unpaired portal
-            CustomPortal newPortal = PortalManipulation.createOrthodoxPortal(
-                CustomPortal.entityType,
-                (ServerLevel) world,
-                ((ServerLevel) world), // the dest dim doesn't matter as it's invisible and not teleportable
-                blockFacingDir,
-                Helper.getBoxSurface(areaForPlacing.toRealNumberBox(), blockFacingDir.getOpposite()),
-                Vec3.atCenterOf(blockPos).add(0, 10, 0)
-                // the dest pos doesn't matter as it's invisible and not teleportable
+            CustomPortal newPortal = CustomPortal.entityType.create(world);
+            Validate.notNull(newPortal);
+            
+            newPortal.setOriginPos(newPortalOrigin);
+            newPortal.setOrientationAndSize(
+                Vec3.atLowerCornerOf(rightDir.getNormal()),
+                Vec3.atLowerCornerOf(upDir.getNormal()),
+                0.9,
+                1.8
             );
+            newPortal.setDestination(newPortalOrigin.add(0, 10, 0));
+            newPortal.setDestinationDimension(world.dimension());
             newPortal.setIsVisible(false);
             newPortal.teleportable = false;
+            newPortal.ownerId = user.getUUID();
+            newPortal.kind = kind;
+            
             McHelper.spawnServerEntity(newPortal);
+            
             infoMap.put(kind,
                 portalGunInfo.withPortal1(
                     new PortalGunRecord.SidedPortalInfo(
@@ -200,49 +216,33 @@ public class PortalGunItem extends Item implements GeoItem {
             ServerLevel firstPortalWorld = McHelper.getServerWorld(portalGunInfo.portal1().portalDim());
             
             // create and spawn the new portal
-            CustomPortal newPortal = PortalManipulation.createOrthodoxPortal(
-                CustomPortal.entityType,
-                (ServerLevel) world,
-                firstPortalWorld,
-                blockFacingDir,
-                Helper.getBoxSurface(areaForPlacing.toRealNumberBox(), blockFacingDir.getOpposite()),
-                portalGunInfo.portal1().portalPos()
+            CustomPortal newPortal = CustomPortal.entityType.create(world);
+            Validate.notNull(newPortal);
+            newPortal.setOriginPos(newPortalOrigin);
+            newPortal.setOrientationAndSize(
+                Vec3.atLowerCornerOf(rightDir.getNormal()),
+                Vec3.atLowerCornerOf(upDir.getNormal()),
+                0.9,
+                1.8
             );
+            newPortal.setDestinationDimension(portalGunInfo.portal1().portalDim());
+            newPortal.setDestination(portalGunInfo.portal1().portalPos());
             newPortal.setOtherSideOrientation(portalGunInfo.portal1().portalOrientation());
-            
-            PortalGunRecord.PortalGunInfo newPortalGunInfo = portalGunInfo.withPortal2(
-                new PortalGunRecord.SidedPortalInfo(
-                    newPortal.getUUID(), world.dimension(), newPortal.getOriginPos(),
-                    newPortal.getOrientationRotation()
+            newPortal.ownerId = user.getUUID();
+            newPortal.kind = kind;
+    
+            McHelper.spawnServerEntity(newPortal);
+    
+            PortalGunRecord.PortalGunInfo newPortalGunInfo = portalGunInfo
+                .withPortal2(
+                    new PortalGunRecord.SidedPortalInfo(
+                        newPortal.getUUID(), world.dimension(), newPortal.getOriginPos(),
+                        newPortal.getOrientationRotation()
+                    )
                 )
-            );
+                .withUpdateCounterIncremented();
             infoMap.put(kind, newPortalGunInfo);
             record.setDirty();
-            Validate.isTrue(newPortalGunInfo.portal1() != null);
-            Validate.isTrue(newPortalGunInfo.portal2() != null);
-            
-            // make the first portal visible and teleportable
-            // to do that we firstly need to load the chunk
-            ChunkLoader chunkLoader = new ChunkLoader(new DimensionalChunkPos(
-                newPortalGunInfo.portal1().portalDim(),
-                new ChunkPos(new BlockPos(portalGunInfo.portal1().portalPos()))
-            ), 1);
-            chunkLoader.loadChunksAndDo(() -> {
-                Entity entity = firstPortalWorld
-                    .getEntity(newPortalGunInfo.portal1().portalId());
-                if (entity instanceof CustomPortal originalPortal) {
-                    originalPortal.setIsVisible(true);
-                    originalPortal.teleportable = true;
-                    originalPortal.setDestinationDimension(newPortalGunInfo.portal2().portalDim());
-                    originalPortal.setDestination(newPortalGunInfo.portal2().portalPos());
-                    originalPortal.setOtherSideOrientation(newPortalGunInfo.portal2().portalOrientation());
-                    
-                    originalPortal.reloadAndSyncToClient();
-                }
-                else {
-                    LOGGER.error("Cannot find the original portal to link {}", newPortalGunInfo.portal1());
-                }
-            });
         }
         else {
             Validate.isTrue(portalGunInfo.portal1() != null);
