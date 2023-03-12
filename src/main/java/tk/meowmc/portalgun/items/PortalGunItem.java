@@ -1,5 +1,7 @@
 package tk.meowmc.portalgun.items;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -17,18 +19,26 @@ import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
 import qouteall.q_misc_util.my_util.IntBox;
 import qouteall.q_misc_util.my_util.MyTaskList;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
+import software.bernie.geckolib.animatable.client.RenderProvider;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.client.renderer.ClawRenderer;
+import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
 import tk.meowmc.portalgun.misc.PortalMethods;
@@ -58,31 +68,55 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class PortalGunItem extends Item implements IAnimatable {
+public class PortalGunItem extends Item implements GeoItem {
     private static Logger LOGGER = LogManager.getLogger();
     
-    public static String controllerName = "portalgunController";
+    public AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     
-    public final AnimationFactory animationFactory = new AnimationFactory(this);
+    private static final RawAnimation SHOOT_ANIM = RawAnimation.begin().thenPlay("portal_shoot");
+    
+    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
     
     public PortalGunItem(Properties settings) {
         super(settings);
+    
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
     
-    private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {
-        return PlayState.CONTINUE;
+    
+    // Utilise our own render hook to define our custom renderer
+    @Override
+    public void createRenderer(Consumer<Object> consumer) {
+        consumer.accept(new RenderProvider() {
+            private final PortalGunRenderer renderer = new PortalGunRenderer();
+            
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return this.renderer;
+            }
+        });
     }
     
     @Override
-    public void registerControllers(AnimationData animationData) {
-        AnimationController controller = new AnimationController(this, controllerName, 1, this::predicate);
-        animationData.addAnimationController(controller);
+    public Supplier<Object> getRenderProvider() {
+        return this.renderProvider;
+    }
+    
+    // Register our animation controllers
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(
+            new AnimationController<>(this, "portalGunController", 1, state -> PlayState.CONTINUE)
+                .triggerableAnim("shoot_anim", SHOOT_ANIM)
+        );
     }
     
     @Override
-    public AnimationFactory getFactory() {
-        return this.animationFactory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
     
     @Override
@@ -92,14 +126,15 @@ public class PortalGunItem extends Item implements IAnimatable {
     
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         ItemStack itemStack = user.getItemInHand(hand);
-//        AnimationController animController =
-//            GeckoLibUtil.getControllerForStack(this.animationFactory, itemStack, controllerName);
         if (world.isClientSide()) {
-//            animController.markNeedsReload();
-//            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
-            
             return InteractionResultHolder.fail(itemStack);
         }
+    
+        triggerAnim(
+            user,
+            GeoItem.getOrAssignId(user.getItemInHand(hand), ((ServerLevel) world)),
+            "portalGunController", "shoot_anim"
+        );
         
         CompoundTag tag = itemStack.getOrCreateTag();
         CompoundTag portalsTag = tag.getCompound(world.dimension().toString());
@@ -260,5 +295,4 @@ public class PortalGunItem extends Item implements IAnimatable {
             ))
             .orElse(Direction.NORTH);
     }
-    
 }
