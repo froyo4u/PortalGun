@@ -13,7 +13,6 @@ import qouteall.q_misc_util.my_util.IntBox;
 import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,14 +23,12 @@ public class CustomPortal extends Portal {
         .dimensions(EntityDimensions.scalable(0F, 0F))
         .build();
     
-    public int colorInt;
+    public PortalGunRecord.PortalDescriptor descriptor;
     
-    @Nullable
-    public UUID ownerId;
-    public PortalGunRecord.PortalGunKind kind;
-    
-    @Nullable
     public IntBox wallBox;
+    
+    public int thisSideUpdateCounter = 0;
+    public int otherSideUpdateCounter = 0;
     
     public CustomPortal(@NotNull EntityType<?> entityType, net.minecraft.world.level.Level world) {
         super(entityType, world);
@@ -40,23 +37,19 @@ public class CustomPortal extends Portal {
     @Override
     protected void readAdditionalSaveData(CompoundTag compoundTag) {
         super.readAdditionalSaveData(compoundTag);
-        colorInt = compoundTag.getInt("colorInt");
-        ownerId = compoundTag.hasUUID("ownerId") ? compoundTag.getUUID("ownerId") : null;
-        kind = PortalGunRecord.PortalGunKind.fromString(compoundTag.getString("kind"));
+        descriptor = PortalGunRecord.PortalDescriptor.fromTag(compoundTag.getCompound("descriptor"));
         wallBox = IntBox.fromTag(compoundTag.getCompound("wallBox"));
+        thisSideUpdateCounter = compoundTag.getInt("thisSideUpdateCounter");
+        otherSideUpdateCounter = compoundTag.getInt("otherSideUpdateCounter");
     }
     
     @Override
     protected void addAdditionalSaveData(CompoundTag compoundTag) {
         super.addAdditionalSaveData(compoundTag);
-        compoundTag.putInt("colorInt", colorInt);
-        if (ownerId != null) {
-            compoundTag.putUUID("ownerId", ownerId);
-        }
-        compoundTag.putString("kind", kind.name());
-        if (wallBox != null) {
-            compoundTag.put("wallBox", wallBox.toTag());
-        }
+        compoundTag.put("descriptor", descriptor.toTag());
+        compoundTag.put("wallBox", wallBox.toTag());
+        compoundTag.putInt("thisSideUpdateCounter", thisSideUpdateCounter);
+        compoundTag.putInt("otherSideUpdateCounter", otherSideUpdateCounter);
     }
     
     @Override
@@ -69,48 +62,44 @@ public class CustomPortal extends Portal {
     }
     
     void updateState() {
-        if (ownerId == null || wallBox == null) {
-            LOGGER.error("Portal without owner");
+        if (descriptor == null || wallBox == null) {
+            LOGGER.error("Portal info abnormal {}", this);
             kill();
             return;
         }
         
-        PortalGunRecord portalGunRecord = PortalGunRecord.get();
-        Map<PortalGunRecord.PortalGunKind, PortalGunRecord.PortalGunInfo> map1 = portalGunRecord.data.get(ownerId);
-        if (map1 == null) {
+        PortalGunRecord record = PortalGunRecord.get();
+        PortalGunRecord.PortalInfo thisSideInfo = record.data.get(descriptor);
+        PortalGunRecord.PortalInfo otherSideInfo = record.data.get(descriptor.getTheOtherSide());
+        if (thisSideInfo == null) {
+            // info is missing
             kill();
             return;
         }
-        
-        PortalGunRecord.PortalGunInfo info = map1.get(kind);
-        if (info == null) {
+        if (thisSideUpdateCounter != thisSideInfo.updateCounter()) {
+            // replaced by new portal
             kill();
             return;
         }
-        
-        boolean wallIntact = wallBox.fastStream().allMatch(p -> PortalGunItem.isBlockSolid(level, p));
-        if (!wallIntact) {
-            map1.remove(kind);
-            kill();
+        if (otherSideInfo == null) {
+            // other side is missing, make this side inactive
+            otherSideUpdateCounter = 0;
+            teleportable = false;
+            setIsVisible(false);
+            setDestination(getOriginPos().add(0, 10, 0));
+            reloadAndSyncToClient();
             return;
         }
-        
-        UUID currPortalUUID = getUUID();
-        if (info.portal1() != null && info.portal2() != null) {
-            if (!info.portal1().portalId().equals(currPortalUUID) &&
-                !info.portal2().portalId().equals(currPortalUUID)
-            ) {
-                kill();
-                return;
-            }
-            if (!isVisible() && info.portal1().portalId().equals(currPortalUUID)) {
-                setIsVisible(true);
-                teleportable = true;
-                setDestinationDimension(info.portal2().portalDim());
-                setDestination(info.portal2().portalPos());
-                setOtherSideOrientation(info.portal2().portalOrientation());
-                reloadAndSyncToClient();
-            }
+        if (otherSideInfo.updateCounter() != otherSideUpdateCounter) {
+            // other side is replaced by new portal, update linking
+            otherSideUpdateCounter = otherSideInfo.updateCounter();
+            teleportable = true;
+            setIsVisible(true);
+            setDestination(otherSideInfo.portalPos());
+            setDestinationDimension(otherSideInfo.portalDim());
+            setOtherSideOrientation(otherSideInfo.portalOrientation());
+            reloadAndSyncToClient();
+            return;
         }
     }
     

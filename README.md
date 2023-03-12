@@ -1,5 +1,7 @@
-Portal Gun mod using Immersive Portals!
+# Portal Gun mod
 
-CurseForge: https://www.curseforge.com/minecraft/mc-mods/portal-gun-fabric
+A Minecraft mod that provides portal gun using [Immersive Portals](https://github.com/iPortalTeam/ImmersivePortalsMod) functionality.
 
-Consider donating on my Patreon: https://www.patreon.com/FroyoCS
+It's a fork of [MeowMC's Portal Gun mod](https://github.com/MeowMC/PortalGun).
+
+

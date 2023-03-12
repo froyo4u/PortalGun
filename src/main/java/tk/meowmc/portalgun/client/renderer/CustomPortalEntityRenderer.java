@@ -6,13 +6,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
-import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.PortalGunMod;
 import tk.meowmc.portalgun.client.PortalgunClient;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.entities.CustomPortal;
 
 import static net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
-import static tk.meowmc.portalgun.Portalgun.id;
+import static tk.meowmc.portalgun.PortalGunMod.id;
 
 public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
     private final PortalOverlayModel model;
@@ -27,9 +27,9 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         matrices.pushPose();
         matrices.mulPose(entity.getOrientationRotation().toMcQuaternion());
-        matrices.translate(0, 0, Portalgun.portalOverlayOffset);
+        matrices.translate(0, 0, PortalGunMod.portalOverlayOffset);
         
-        int color = entity.colorInt * -1;
+        int color = entity.descriptor.side().getColorInt();
         
         int r = (color & 0xFF0000) >> 16;
         int g = (color & 0xFF00) >> 8;
@@ -38,7 +38,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         this.model.renderToBuffer(
             matrices,
             vertexConsumers.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))),
-            light, NO_OVERLAY, r, g, b, 1F
+            light, NO_OVERLAY, r / 255.0f, g / 255.0f, b / 255.0f, 0.8f
         );
         matrices.popPose();
     }

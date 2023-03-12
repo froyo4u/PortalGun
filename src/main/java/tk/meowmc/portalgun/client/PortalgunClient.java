@@ -4,20 +4,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import org.lwjgl.glfw.GLFW;
-import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.client.renderer.CustomPortalEntityRenderer;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.entities.CustomPortal;
-import tk.meowmc.portalgun.misc.RemoteCallables;
 
-import static tk.meowmc.portalgun.Portalgun.id;
+import static tk.meowmc.portalgun.PortalGunMod.id;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {
