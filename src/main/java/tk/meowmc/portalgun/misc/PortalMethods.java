@@ -1,26 +1,7 @@
 package tk.meowmc.portalgun.misc;
 
-import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import qouteall.imm_ptl.core.McHelper;
 import qouteall.imm_ptl.core.portal.GeometryPortalShape;
-import qouteall.imm_ptl.core.portal.PortalExtension;
-import qouteall.imm_ptl.core.portal.PortalManipulation;
-import qouteall.q_misc_util.my_util.DQuaternion;
-import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.config.PortalGunConfig;
 import tk.meowmc.portalgun.entities.CustomPortal;
-import tk.meowmc.portalgun.items.PortalGunItem;
 
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

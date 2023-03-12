@@ -3,17 +3,11 @@ package tk.meowmc.portalgun.misc;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import tk.meowmc.portalgun.Portalgun;
 import tk.meowmc.portalgun.items.PortalGunItem;
 
 import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
-import static tk.meowmc.portalgun.items.PortalGunItem.*;
 
 public class RemoteCallables {
 

@@ -1,11 +1,10 @@
 package tk.meowmc.portalgun.client.renderer.models;
 
+import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 import tk.meowmc.portalgun.items.ClawItem;
 
 import static tk.meowmc.portalgun.Portalgun.id;
-
-import net.minecraft.resources.ResourceLocation;
 
 public class ClawModel extends GeoModel<ClawItem> {
     @Override

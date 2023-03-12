@@ -1,38 +1,23 @@
 package tk.meowmc.portalgun.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import org.lwjgl.glfw.GLFW;
-import qouteall.q_misc_util.api.McRemoteProcedureCall;
-import software.bernie.geckolib.renderer.GeoItemRenderer;
 import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.client.renderer.ClawRenderer;
 import tk.meowmc.portalgun.client.renderer.CustomPortalEntityRenderer;
-import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
 import tk.meowmc.portalgun.client.renderer.models.PortalOverlayModel;
 import tk.meowmc.portalgun.entities.CustomPortal;
 import tk.meowmc.portalgun.misc.RemoteCallables;
 
-import java.util.UUID;
-
 import static tk.meowmc.portalgun.Portalgun.id;
-
-import com.mojang.blaze3d.platform.InputConstants;
 
 @Environment(EnvType.CLIENT)
 public class PortalgunClient implements ClientModInitializer {

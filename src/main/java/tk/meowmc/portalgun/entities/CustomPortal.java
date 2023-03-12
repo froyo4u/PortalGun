@@ -3,35 +3,17 @@ package tk.meowmc.portalgun.entities;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
-import qouteall.imm_ptl.core.McHelper;
-import qouteall.imm_ptl.core.compat.PehkuiInterface;
-import qouteall.imm_ptl.core.mc_utils.IPEntityEventListenableEntity;
-import qouteall.imm_ptl.core.portal.*;
-import qouteall.q_misc_util.Helper;
-import qouteall.q_misc_util.dimension.DimId;
-import qouteall.q_misc_util.my_util.SignalArged;
-import qouteall.q_misc_util.my_util.SignalBiArged;
-import tk.meowmc.portalgun.PortalGunRecord;
-import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.items.PortalGunItem;
-
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.imm_ptl.core.portal.PortalState;
 
 public class CustomPortal extends Portal {
     public static final EntityDataAccessor<String> outline = SynchedEntityData.defineId(CustomPortal.class, EntityDataSerializers.STRING);

@@ -1,11 +1,5 @@
 package tk.meowmc.portalgun.misc;
 
-import qouteall.imm_ptl.core.ClientWorldLoader;
-import qouteall.imm_ptl.core.portal.PortalPlaceholderBlock;
-import tk.meowmc.portalgun.Portalgun;
-
-import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
-
 public class MinecraftClientMethods {
 //    private static final MinecraftClient client = MinecraftClient.getInstance();
 //    public static RegistryKey<World> remotePointedDim;
