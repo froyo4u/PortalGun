@@ -8,11 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -22,9 +20,6 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import qouteall.imm_ptl.core.McHelper;
-import qouteall.imm_ptl.core.chunk_loading.ChunkLoader;
-import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
-import qouteall.imm_ptl.core.portal.PortalManipulation;
 import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
 import qouteall.q_misc_util.my_util.IntBox;
@@ -39,7 +34,7 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.client.renderer.PortalGunRenderer;
+import tk.meowmc.portalgun.client.renderer.PortalGunItemRenderer;
 import tk.meowmc.portalgun.entities.CustomPortal;
 
 import java.util.Arrays;
@@ -73,7 +68,7 @@ public class PortalGunItem extends Item implements GeoItem {
     @Override
     public void createRenderer(Consumer<Object> consumer) {
         consumer.accept(new RenderProvider() {
-            private final PortalGunRenderer renderer = new PortalGunRenderer();
+            private final PortalGunItemRenderer renderer = new PortalGunItemRenderer();
             
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
@@ -142,7 +137,7 @@ public class PortalGunItem extends Item implements GeoItem {
                 IntBox testingArea = IntBox.getBoxByPosAndSignedSize(testingBasePos, regionSize);
                 boolean boxIsAllAir = testingArea.stream().allMatch(p -> world.getBlockState(p).isAir());
                 boolean wallIsSolid = testingArea.stream().map(p -> p.relative(wallFacing.getOpposite()))
-                    .allMatch(p -> world.getBlockState(p).isSolidRender(world, p));
+                    .allMatch(p -> isBlockSolid(world, p));
                 if (boxIsAllAir && wallIsSolid) {
                     return testingArea;
                 }
@@ -178,6 +173,12 @@ public class PortalGunItem extends Item implements GeoItem {
             .getBoxSurface(areaForPlacing.toRealNumberBox(), wallFacing.getOpposite())
             .getCenter()
             .add(wallFacingVec.scale(Portalgun.portalOffset));
+    
+        if (portalGunInfo.portal1() != null && portalGunInfo.portal2() != null) {
+            // already paired, should break pairing
+            infoMap.remove(kind);
+            record.setDirty();
+        }
         
         if (portalGunInfo.portal1() == null && portalGunInfo.portal2() == null) {
             // should create a new unpaired portal
@@ -244,16 +245,14 @@ public class PortalGunItem extends Item implements GeoItem {
             infoMap.put(kind, newPortalGunInfo);
             record.setDirty();
         }
-        else {
-            Validate.isTrue(portalGunInfo.portal1() != null);
-            // already paired, should break pairing
-            infoMap.remove(kind);
-            record.setDirty();
-        }
         
         user.awardStat(Stats.ITEM_USED.get(this));
         
         return InteractionResultHolder.pass(itemStack);
+    }
+    
+    public static boolean isBlockSolid(Level world, BlockPos p) {
+        return world.getBlockState(p).isSolidRender(world, p);
     }
     
     private static Direction getUpDirection(Player user, Direction blockFacingDir) {

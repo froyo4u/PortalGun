@@ -26,24 +26,8 @@ public class PortalgunClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         KeyMapping clearPortals = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.portalgun.clearportals", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "category.portalgun"));
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (clearPortals.consumeClick()) {
-//                McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.removeOldPortals");
-            }
-        });
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.options.keyAttack.isDown() && !client.player.getCooldowns().isOnCooldown(Portalgun.PORTALGUN)) {
-                RemoteCallables.playAnim();
-//                McRemoteProcedureCall.tellServerToInvoke("tk.meowmc.portalgun.misc.RemoteCallables.portal1Place");
-            }
-        });
-
-//        GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN, new PortalGunRenderer());
-//        GeoItemRenderer.registerItemRenderer(Portalgun.PORTALGUN_CLAW, new ClawRenderer());
-
-        EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER,
-                PortalOverlayModel::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(OVERLAY_MODEL_LAYER, PortalOverlayModel::getTexturedModelData);
         EntityRendererRegistry.register(CustomPortal.entityType, CustomPortalEntityRenderer::new);
     }
 }

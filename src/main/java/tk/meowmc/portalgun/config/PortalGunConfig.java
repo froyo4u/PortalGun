@@ -29,7 +29,7 @@ public class PortalGunConfig implements ConfigData {
     public static class Enabled {
         //public final boolean enableOldPortalGunModel = false;
         //public final boolean enableRoundPortals = true;
-        public final boolean portalFunneling = true;
+//        public final boolean portalFunneling = true;
     }
 
 }

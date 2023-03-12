@@ -67,11 +67,11 @@ dependencies {
 //        transitive(false)
 //    }
 
-    modImplementation ('qouteall:imm_ptl_core:2.5.1.1'){
+    modImplementation ('qouteall:imm_ptl_core:2.5.1.2'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    modImplementation ('qouteall:q_misc_util:2.5.1.1'){
+    modImplementation ('qouteall:q_misc_util:2.5.1.2'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }

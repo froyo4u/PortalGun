@@ -9,7 +9,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import qouteall.imm_ptl.core.portal.Portal;
+import qouteall.q_misc_util.my_util.IntBox;
 import tk.meowmc.portalgun.PortalGunRecord;
+import tk.meowmc.portalgun.items.PortalGunItem;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -28,6 +30,9 @@ public class CustomPortal extends Portal {
     public UUID ownerId;
     public PortalGunRecord.PortalGunKind kind;
     
+    @Nullable
+    public IntBox wallBox;
+    
     public CustomPortal(@NotNull EntityType<?> entityType, net.minecraft.world.level.Level world) {
         super(entityType, world);
     }
@@ -38,6 +43,7 @@ public class CustomPortal extends Portal {
         colorInt = compoundTag.getInt("colorInt");
         ownerId = compoundTag.hasUUID("ownerId") ? compoundTag.getUUID("ownerId") : null;
         kind = PortalGunRecord.PortalGunKind.fromString(compoundTag.getString("kind"));
+        wallBox = IntBox.fromTag(compoundTag.getCompound("wallBox"));
     }
     
     @Override
@@ -48,6 +54,9 @@ public class CustomPortal extends Portal {
             compoundTag.putUUID("ownerId", ownerId);
         }
         compoundTag.putString("kind", kind.name());
+        if (wallBox != null) {
+            compoundTag.put("wallBox", wallBox.toTag());
+        }
     }
     
     @Override
@@ -60,7 +69,7 @@ public class CustomPortal extends Portal {
     }
     
     void updateState() {
-        if (ownerId == null) {
+        if (ownerId == null || wallBox == null) {
             LOGGER.error("Portal without owner");
             kill();
             return;
@@ -75,6 +84,13 @@ public class CustomPortal extends Portal {
         
         PortalGunRecord.PortalGunInfo info = map1.get(kind);
         if (info == null) {
+            kill();
+            return;
+        }
+        
+        boolean wallIntact = wallBox.fastStream().allMatch(p -> PortalGunItem.isBlockSolid(level, p));
+        if (!wallIntact) {
+            map1.remove(kind);
             kill();
             return;
         }

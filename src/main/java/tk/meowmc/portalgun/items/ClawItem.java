@@ -10,7 +10,7 @@ import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInst
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.object.PlayState;
-import tk.meowmc.portalgun.client.renderer.ClawRenderer;
+import tk.meowmc.portalgun.client.renderer.ClawItemRenderer;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -31,7 +31,7 @@ public class ClawItem extends Item implements GeoItem {
     @Override
     public void createRenderer(Consumer<Object> consumer) {
         consumer.accept(new RenderProvider() {
-            private final ClawRenderer renderer = new ClawRenderer();
+            private final ClawItemRenderer renderer = new ClawItemRenderer();
             
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
