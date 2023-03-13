@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -121,7 +122,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         player.awardStat(Stats.ITEM_USED.get(this));
         
-        return success ? InteractionResultHolder.success(itemStack) : InteractionResultHolder.pass(itemStack);
+        return success ? InteractionResultHolder.fail(itemStack) : InteractionResultHolder.pass(itemStack);
     }
     
     public InteractionResult onAttack(
@@ -147,7 +148,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         player.awardStat(Stats.ITEM_USED.get(this));
         
-        return success ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        return InteractionResult.FAIL;
     }
     
     // return whether successful
@@ -244,7 +245,7 @@ public class PortalGunItem extends Item implements GeoItem {
         portal.airBox = areaForPlacing;
         portal.thisSideUpdateCounter = thisSideInfo == null ? 0 : thisSideInfo.updateCounter();
         portal.otherSideUpdateCounter = otherSideInfo == null ? 0 : otherSideInfo.updateCounter();
-        PortalManipulation.makePortalRound(portal, 100);
+        PortalManipulation.makePortalRound(portal, 20);
         portal.animation.defaultAnimation.durationTicks = 0; // disable default animation
         
         if (otherSideInfo == null) {
@@ -261,6 +262,13 @@ public class PortalGunItem extends Item implements GeoItem {
             portal.setOtherSideOrientation(otherSideInfo.portalOrientation());
             portal.setIsVisible(true);
             portal.teleportable = true;
+            world.playSound(
+                null,
+                player.getX(), player.getY(), player.getZ(),
+                PortalGunMod.PORTAL_OPEN_EVENT,
+                SoundSource.PLAYERS,
+                1.0F, 1.0F
+            );
         }
         
         portal.thisSideUpdateCounter += 1;
@@ -281,12 +289,22 @@ public class PortalGunItem extends Item implements GeoItem {
             portal.reloadAndSyncToClient();
         }
         
+        world.playSound(
+            null,
+            player.getX(), player.getY(), player.getZ(),
+            side == PortalGunRecord.PortalGunSide.blue ?
+                PortalGunMod.PORTAL1_SHOOT_EVENT : PortalGunMod.PORTAL2_SHOOT_EVENT,
+            SoundSource.PLAYERS,
+            1.0F, 1.0F
+        );
+        
         return true;
     }
     
     private static Direction getUpDirection(Player user, Direction blockFacingDir) {
         return switch (blockFacingDir) {
-            case DOWN, UP -> getHorizontalDirection(user);
+            case DOWN -> getHorizontalDirection(user);
+            case UP -> getHorizontalDirection(user).getOpposite();
             case NORTH, WEST, SOUTH, EAST -> Direction.UP;
         };
     }
@@ -300,7 +318,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         return Arrays.stream(horizontalDirections)
             .min(Comparator.comparingDouble(
-                dir -> Math.abs(dir.getStepX() * x + dir.getStepZ() * z)
+                dir -> dir.getStepX() * x + dir.getStepZ() * z
             ))
             .orElse(Direction.NORTH);
     }

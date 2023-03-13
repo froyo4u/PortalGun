@@ -8,6 +8,7 @@ import net.minecraft.world.entity.MobCategory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import qouteall.imm_ptl.core.McHelper;
 import qouteall.imm_ptl.core.portal.Portal;
 import qouteall.q_misc_util.my_util.IntBox;
 import tk.meowmc.portalgun.PortalGunMod;
@@ -55,10 +56,18 @@ public class CustomPortal extends Portal {
     @Override
     public void tick() {
         super.tick();
-        
+    
         if (!level.isClientSide) {
             updateState();
         }
+    }
+    
+    // disable the interpolation between last tick pos and this tick pos
+    // because the portal should change abruptly
+    @Override
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+        setOldPosAndRot();
     }
     
     void updateState() {
