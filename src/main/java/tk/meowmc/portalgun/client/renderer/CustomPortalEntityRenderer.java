@@ -38,7 +38,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         this.model.renderToBuffer(
             matrices,
             vertexConsumers.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))),
-            light, NO_OVERLAY, r / 255.0f, g / 255.0f, b / 255.0f, 0.8f
+            light, NO_OVERLAY, r / 255.0f, g / 255.0f, b / 255.0f, 1.0f
         );
         matrices.popPose();
     }

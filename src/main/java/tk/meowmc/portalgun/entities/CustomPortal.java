@@ -10,11 +10,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import qouteall.imm_ptl.core.portal.Portal;
 import qouteall.q_misc_util.my_util.IntBox;
+import tk.meowmc.portalgun.PortalGunMod;
 import tk.meowmc.portalgun.PortalGunRecord;
-import tk.meowmc.portalgun.items.PortalGunItem;
-
-import java.util.Map;
-import java.util.UUID;
 
 public class CustomPortal extends Portal {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -26,6 +23,7 @@ public class CustomPortal extends Portal {
     public PortalGunRecord.PortalDescriptor descriptor;
     
     public IntBox wallBox;
+    public IntBox airBox;
     
     public int thisSideUpdateCounter = 0;
     public int otherSideUpdateCounter = 0;
@@ -39,6 +37,7 @@ public class CustomPortal extends Portal {
         super.readAdditionalSaveData(compoundTag);
         descriptor = PortalGunRecord.PortalDescriptor.fromTag(compoundTag.getCompound("descriptor"));
         wallBox = IntBox.fromTag(compoundTag.getCompound("wallBox"));
+        airBox = IntBox.fromTag(compoundTag.getCompound("airBox"));
         thisSideUpdateCounter = compoundTag.getInt("thisSideUpdateCounter");
         otherSideUpdateCounter = compoundTag.getInt("otherSideUpdateCounter");
     }
@@ -48,6 +47,7 @@ public class CustomPortal extends Portal {
         super.addAdditionalSaveData(compoundTag);
         compoundTag.put("descriptor", descriptor.toTag());
         compoundTag.put("wallBox", wallBox.toTag());
+        compoundTag.put("airBox", airBox.toTag());
         compoundTag.putInt("thisSideUpdateCounter", thisSideUpdateCounter);
         compoundTag.putInt("otherSideUpdateCounter", otherSideUpdateCounter);
     }
@@ -81,13 +81,24 @@ public class CustomPortal extends Portal {
             kill();
             return;
         }
+        // check block status
+        boolean wallIntact = wallBox.fastStream().allMatch(p -> PortalGunMod.isBlockSolid(level, p));
+        boolean areaClear = airBox.fastStream().allMatch(p -> level.getBlockState(p).isAir());
+        if (!wallIntact || !areaClear) {
+            kill();
+            record.data.remove(descriptor);
+            record.setDirty();
+            return;
+        }
         if (otherSideInfo == null) {
             // other side is missing, make this side inactive
-            otherSideUpdateCounter = 0;
-            teleportable = false;
-            setIsVisible(false);
-            setDestination(getOriginPos().add(0, 10, 0));
-            reloadAndSyncToClient();
+            if (otherSideUpdateCounter != -1) {
+                otherSideUpdateCounter = -1;
+                teleportable = false;
+                setIsVisible(false);
+                setDestination(getOriginPos().add(0, 10, 0));
+                reloadAndSyncToClient();
+            }
             return;
         }
         if (otherSideInfo.updateCounter() != otherSideUpdateCounter) {

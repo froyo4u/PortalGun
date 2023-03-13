@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,9 +45,6 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static net.minecraft.world.phys.HitResult.Type.ENTITY;
-import static net.minecraft.world.phys.HitResult.Type.MISS;
 
 public class PortalGunItem extends Item implements GeoItem {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -180,7 +178,7 @@ public class PortalGunItem extends Item implements GeoItem {
                 IntBox testingArea = IntBox.getBoxByPosAndSignedSize(testingBasePos, regionSize);
                 boolean boxIsAllAir = testingArea.stream().allMatch(p -> world.getBlockState(p).isAir());
                 boolean wallIsSolid = testingArea.stream().map(p -> p.relative(wallFacing.getOpposite()))
-                    .allMatch(p -> isBlockSolid(world, p));
+                    .allMatch(p -> PortalGunMod.isBlockSolid(world, p));
                 if (boxIsAllAir && wallIsSolid) {
                     return testingArea;
                 }
@@ -218,53 +216,72 @@ public class PortalGunItem extends Item implements GeoItem {
             .getCenter()
             .add(wallFacingVec.scale(PortalGunMod.portalOffset));
         
-        CustomPortal newPortal = CustomPortal.entityType.create(world);
-        Validate.notNull(newPortal);
+        CustomPortal portal = null;
+        boolean isExistingPortal = false;
         
-        newPortal.setOriginPos(newPortalOrigin);
-        newPortal.setOrientationAndSize(
+        if (thisSideInfo != null) {
+            Entity entity = McHelper.getServerWorld(thisSideInfo.portalDim()).getEntity(thisSideInfo.portalId());
+            if (entity instanceof CustomPortal customPortal) {
+                portal = customPortal;
+                isExistingPortal = true;
+            }
+        }
+        
+        if (portal == null) {
+            portal = CustomPortal.entityType.create(world);
+            Validate.notNull(portal);
+        }
+        
+        portal.setOriginPos(newPortalOrigin);
+        portal.setOrientationAndSize(
             Vec3.atLowerCornerOf(rightDir.getNormal()),
             Vec3.atLowerCornerOf(upDir.getNormal()),
             kind.getWidth(),
             kind.getHeight()
         );
-        newPortal.descriptor = descriptor;
-        newPortal.wallBox = areaForPlacing.getMoved(wallFacing.getOpposite().getNormal());
-        newPortal.thisSideUpdateCounter = thisSideInfo == null ? 0 : thisSideInfo.updateCounter();
-        newPortal.otherSideUpdateCounter = otherSideInfo == null ? 0 : otherSideInfo.updateCounter();
-        PortalManipulation.makePortalRound(newPortal, 100);
+        portal.descriptor = descriptor;
+        portal.wallBox = areaForPlacing.getMoved(wallFacing.getOpposite().getNormal());
+        portal.airBox = areaForPlacing;
+        portal.thisSideUpdateCounter = thisSideInfo == null ? 0 : thisSideInfo.updateCounter();
+        portal.otherSideUpdateCounter = otherSideInfo == null ? 0 : otherSideInfo.updateCounter();
+        PortalManipulation.makePortalRound(portal, 100);
+        portal.animation.defaultAnimation.durationTicks = 0; // disable default animation
         
         if (otherSideInfo == null) {
-            // spawn an unpaired portal. it's invisible and not teleportable
-            newPortal.setDestinationDimension(world.dimension());
-            newPortal.setDestination(newPortalOrigin.add(0, 10, 0));
-            newPortal.setIsVisible(false);
-            newPortal.teleportable = false;
+            // it's unpaired, invisible and not teleportable
+            portal.setDestinationDimension(world.dimension());
+            portal.setDestination(newPortalOrigin.add(0, 10, 0));
+            portal.setIsVisible(false);
+            portal.teleportable = false;
         }
         else {
-            // spawn an linked portal
-            newPortal.setDestinationDimension(otherSideInfo.portalDim());
-            newPortal.setDestination(otherSideInfo.portalPos());
-            newPortal.setOtherSideOrientation(otherSideInfo.portalOrientation());
+            // it's linked portal
+            portal.setDestinationDimension(otherSideInfo.portalDim());
+            portal.setDestination(otherSideInfo.portalPos());
+            portal.setOtherSideOrientation(otherSideInfo.portalOrientation());
+            portal.setIsVisible(true);
+            portal.teleportable = true;
         }
-        McHelper.spawnServerEntity(newPortal);
         
-        newPortal.thisSideUpdateCounter += 1;
+        portal.thisSideUpdateCounter += 1;
         thisSideInfo = new PortalGunRecord.PortalInfo(
-            newPortal.getUUID(),
+            portal.getUUID(),
             world.dimension(),
             newPortalOrigin,
-            newPortal.getOrientationRotation(),
-            newPortal.thisSideUpdateCounter
+            portal.getOrientationRotation(),
+            portal.thisSideUpdateCounter
         );
         record.data.put(descriptor, thisSideInfo);
         record.setDirty();
         
+        if (!isExistingPortal) {
+            McHelper.spawnServerEntity(portal);
+        }
+        else {
+            portal.reloadAndSyncToClient();
+        }
+        
         return true;
-    }
-    
-    public static boolean isBlockSolid(Level world, BlockPos p) {
-        return world.getBlockState(p).isSolidRender(world, p);
     }
     
     private static Direction getUpDirection(Player user, Direction blockFacingDir) {

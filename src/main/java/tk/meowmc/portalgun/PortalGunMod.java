@@ -3,6 +3,7 @@ package tk.meowmc.portalgun;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +12,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import tk.meowmc.portalgun.config.PortalGunConfig;
@@ -45,6 +47,10 @@ public class PortalGunMod implements ModInitializer {
     
     public static ResourceLocation id(String path) {
         return new ResourceLocation(MODID, path);
+    }
+    
+    public static boolean isBlockSolid(Level world, BlockPos p) {
+        return world.getBlockState(p).isSolidRender(world, p);
     }
     
     @Override
