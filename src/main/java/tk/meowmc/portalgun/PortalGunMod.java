@@ -50,6 +50,8 @@ public class PortalGunMod implements ModInitializer {
     }
     
     public static boolean isBlockSolid(Level world, BlockPos p) {
+//        return true;
+//        return !world.getBlockState(p).isAir();
         return world.getBlockState(p).isSolidRender(world, p);
     }
     

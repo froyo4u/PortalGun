@@ -2,9 +2,11 @@ package tk.meowmc.portalgun.entities;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +58,7 @@ public class CustomPortal extends Portal {
     @Override
     public void tick() {
         super.tick();
-    
+        
         if (!level.isClientSide) {
             updateState();
         }
@@ -85,18 +87,23 @@ public class CustomPortal extends Portal {
             kill();
             return;
         }
-        if (thisSideUpdateCounter != thisSideInfo.updateCounter()) {
+        if (thisSideUpdateCounter != thisSideInfo.updateCounter() || !thisSideInfo.portalId().equals(getUUID())) {
             // replaced by new portal
             kill();
             return;
         }
         // check block status
-        boolean wallIntact = wallBox.fastStream().allMatch(p -> PortalGunMod.isBlockSolid(level, p));
-        boolean areaClear = airBox.fastStream().allMatch(p -> level.getBlockState(p).isAir());
-        if (!wallIntact || !areaClear) {
+        if (!isWallValid(level, wallBox) || !isAreaClear(level, airBox)) {
             kill();
             record.data.remove(descriptor);
             record.setDirty();
+            level.playSound(
+                null,
+                getX(), getY(), getZ(),
+                PortalGunMod.PORTAL_CLOSE_EVENT,
+                SoundSource.PLAYERS,
+                1.0F, 1.0F
+            );
             return;
         }
         if (otherSideInfo == null) {
@@ -112,6 +119,15 @@ public class CustomPortal extends Portal {
         }
         if (otherSideInfo.updateCounter() != otherSideUpdateCounter) {
             // other side is replaced by new portal, update linking
+            if (!isVisible()) {
+                level.playSound(
+                    null,
+                    getX(), getY(), getZ(),
+                    PortalGunMod.PORTAL_OPEN_EVENT,
+                    SoundSource.PLAYERS,
+                    1.0F, 1.0F
+                );
+            }
             otherSideUpdateCounter = otherSideInfo.updateCounter();
             teleportable = true;
             setIsVisible(true);
@@ -121,6 +137,14 @@ public class CustomPortal extends Portal {
             reloadAndSyncToClient();
             return;
         }
+    }
+    
+    public static boolean isAreaClear(Level world, IntBox airBox1) {
+        return airBox1.fastStream().allMatch(p -> world.getBlockState(p).isAir());
+    }
+    
+    public static boolean isWallValid(Level world, IntBox wallBox1) {
+        return wallBox1.fastStream().allMatch(p -> PortalGunMod.isBlockSolid(world, p));
     }
     
 }

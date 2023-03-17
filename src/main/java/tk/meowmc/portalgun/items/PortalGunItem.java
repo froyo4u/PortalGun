@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import qouteall.imm_ptl.core.McHelper;
+import qouteall.imm_ptl.core.compat.GravityChangerInterface;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
 import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
@@ -41,6 +43,7 @@ import tk.meowmc.portalgun.PortalGunMod;
 import tk.meowmc.portalgun.client.renderer.PortalGunItemRenderer;
 import tk.meowmc.portalgun.entities.CustomPortal;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
@@ -148,7 +151,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         player.awardStat(Stats.ITEM_USED.get(this));
         
-        return InteractionResult.FAIL;
+        return InteractionResult.SUCCESS;
     }
     
     // return whether successful
@@ -159,39 +162,29 @@ public class PortalGunItem extends Item implements GeoItem {
         BlockHitResult blockHit,
         PortalGunRecord.PortalGunSide side
     ) {
+        world.playSound(
+            null,
+            player.getX(), player.getY(), player.getZ(),
+            side == PortalGunRecord.PortalGunSide.blue ?
+                PortalGunMod.PORTAL1_SHOOT_EVENT : PortalGunMod.PORTAL2_SHOOT_EVENT,
+            SoundSource.PLAYERS,
+            1.0F, 1.0F
+        );
+        
+        PortalGunRecord.PortalGunKind kind = PortalGunRecord.PortalGunKind._2x1;
+        
         BlockPos blockPos = blockHit.getBlockPos().relative(blockHit.getDirection());
         
         Direction wallFacing = blockHit.getDirection();
         
-        Direction upDir = getUpDirection(player, wallFacing);
+        PortalPlacement placement = findPortalPlacement(player, world, kind, blockPos, wallFacing);
         
-        Direction rightDir = AARotation.dirCrossProduct(upDir, wallFacing);
-        
-        BlockPos regionSize = new BlockPos(
-            rightDir.getNormal()
-                .offset(upDir.getNormal().multiply(2))
-                .offset(wallFacing.getNormal())
-        );
-        
-        IntBox areaForPlacing = IntBox.getBoxByPosAndSignedSize(BlockPos.ZERO, regionSize).stream().map(
-            offset -> {
-                BlockPos testingBasePos = blockPos.subtract(offset);
-                IntBox testingArea = IntBox.getBoxByPosAndSignedSize(testingBasePos, regionSize);
-                boolean boxIsAllAir = testingArea.stream().allMatch(p -> world.getBlockState(p).isAir());
-                boolean wallIsSolid = testingArea.stream().map(p -> p.relative(wallFacing.getOpposite()))
-                    .allMatch(p -> PortalGunMod.isBlockSolid(world, p));
-                if (boxIsAllAir && wallIsSolid) {
-                    return testingArea;
-                }
-                else {
-                    return null;
-                }
-            }
-        ).filter(Objects::nonNull).findFirst().orElse(null);
-        
-        if (areaForPlacing == null) {
+        if (placement == null) {
             return false;
         }
+    
+        Direction rightDir = placement.rotation.transformedX;
+        Direction upDir = placement.rotation.transformedY;
         
         triggerAnim(
             player,
@@ -200,8 +193,6 @@ public class PortalGunItem extends Item implements GeoItem {
         );
         
         PortalGunRecord record = PortalGunRecord.get();
-        
-        PortalGunRecord.PortalGunKind kind = PortalGunRecord.PortalGunKind._2x1;
         
         PortalGunRecord.PortalDescriptor descriptor =
             new PortalGunRecord.PortalDescriptor(player.getUUID(), kind, side);
@@ -213,7 +204,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         Vec3 wallFacingVec = Vec3.atLowerCornerOf(wallFacing.getNormal());
         Vec3 newPortalOrigin = Helper
-            .getBoxSurface(areaForPlacing.toRealNumberBox(), wallFacing.getOpposite())
+            .getBoxSurface(placement.areaBox.toRealNumberBox(), wallFacing.getOpposite())
             .getCenter()
             .add(wallFacingVec.scale(PortalGunMod.portalOffset));
         
@@ -237,12 +228,12 @@ public class PortalGunItem extends Item implements GeoItem {
         portal.setOrientationAndSize(
             Vec3.atLowerCornerOf(rightDir.getNormal()),
             Vec3.atLowerCornerOf(upDir.getNormal()),
-            kind.getWidth(),
-            kind.getHeight()
+            kind.getWidth() * 0.9,
+            kind.getHeight() * 0.9
         );
         portal.descriptor = descriptor;
-        portal.wallBox = areaForPlacing.getMoved(wallFacing.getOpposite().getNormal());
-        portal.airBox = areaForPlacing;
+        portal.wallBox = placement.wallBox;
+        portal.airBox = placement.areaBox;
         portal.thisSideUpdateCounter = thisSideInfo == null ? 0 : thisSideInfo.updateCounter();
         portal.otherSideUpdateCounter = otherSideInfo == null ? 0 : otherSideInfo.updateCounter();
         PortalManipulation.makePortalRound(portal, 20);
@@ -289,37 +280,55 @@ public class PortalGunItem extends Item implements GeoItem {
             portal.reloadAndSyncToClient();
         }
         
-        world.playSound(
-            null,
-            player.getX(), player.getY(), player.getZ(),
-            side == PortalGunRecord.PortalGunSide.blue ?
-                PortalGunMod.PORTAL1_SHOOT_EVENT : PortalGunMod.PORTAL2_SHOOT_EVENT,
-            SoundSource.PLAYERS,
-            1.0F, 1.0F
-        );
-        
         return true;
     }
     
-    private static Direction getUpDirection(Player user, Direction blockFacingDir) {
-        return switch (blockFacingDir) {
-            case DOWN -> getHorizontalDirection(user);
-            case UP -> getHorizontalDirection(user).getOpposite();
-            case NORTH, WEST, SOUTH, EAST -> Direction.UP;
-        };
+    private static record PortalPlacement(
+        AARotation rotation,
+        IntBox areaBox,
+        IntBox wallBox
+    ) {
     }
     
-    private static Direction getHorizontalDirection(Player user) {
-        Vec3 viewVector = user.getViewVector(1);
-        double x = viewVector.x;
-        double z = viewVector.z;
+    @Nullable
+    private static PortalPlacement findPortalPlacement(
+        ServerPlayer player,
+        ServerLevel world,
+        PortalGunRecord.PortalGunKind kind,
+        BlockPos interactingAirPos,
+        Direction wallFacing
+    ) {
+        Direction playerGravity = GravityChangerInterface.invoker.getGravityDirection(player);
         
-        Direction[] horizontalDirections = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+        Vec3 viewVector = player.getViewVector(1);
+        Vec3 viewVectorLocal = GravityChangerInterface.invoker.transformWorldToPlayer(playerGravity, viewVector);
         
-        return Arrays.stream(horizontalDirections)
-            .min(Comparator.comparingDouble(
-                dir -> dir.getStepX() * x + dir.getStepZ() * z
-            ))
-            .orElse(Direction.NORTH);
+        Direction wallFacingLocal = GravityChangerInterface.invoker.transformDirWorldToPlayer(playerGravity, wallFacing);
+        
+        Direction[] upDirCandidates = Helper.getAnotherFourDirections(wallFacingLocal.getAxis());
+        
+        Arrays.sort(upDirCandidates, Comparator.comparingDouble((Direction dir) -> {
+            if (dir == Direction.UP) {
+                // the local up direction has the highest priority
+                return 1;
+            }
+            // horizontal dot product
+            return dir.getNormal().getX() * viewVectorLocal.x + dir.getNormal().getZ() * viewVectorLocal.z;
+        }).reversed());
+        
+        BlockPos portalAreaSize = new BlockPos(kind.getWidth(), kind.getHeight(), 1);
+        
+        for (Direction upDir : upDirCandidates) {
+            AARotation rot = AARotation.getAARotationFromYZ(upDir, wallFacing);
+            BlockPos transformedSize = rot.transform(portalAreaSize);
+            IntBox portalArea = IntBox.getBoxByPosAndSignedSize(interactingAirPos, transformedSize);
+            IntBox wallArea = portalArea.getMoved(wallFacing.getOpposite().getNormal());
+            
+            if (CustomPortal.isAreaClear(world, portalArea) && CustomPortal.isWallValid(world, wallArea)) {
+                return new PortalPlacement(rot, portalArea, wallArea);
+            }
+        }
+        
+        return null;
     }
 }

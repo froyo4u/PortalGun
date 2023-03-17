@@ -33,15 +33,15 @@ public class PortalGunRecord extends SavedData {
             };
         }
         
-        public double getWidth() {
+        public int getWidth() {
             return switch (this) {
-                case _2x1 -> 0.9;
+                case _2x1 -> 1;
             };
         }
         
-        public double getHeight() {
+        public int getHeight() {
             return switch (this) {
-                case _2x1 -> 1.8;
+                case _2x1 -> 2;
             };
         }
     }
