@@ -3,12 +3,14 @@ package tk.meowmc.portalgun;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -70,12 +72,18 @@ public class PortalGunMod implements ModInitializer {
         
         PortalGunConfig.register();
         
+        // disable block breaking hand swinging
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-            ItemStack itemInHand = player.getItemInHand(hand);
-            if (itemInHand.getItem() == PORTAL_GUN) {
-                return PORTAL_GUN.onAttack(player, world, hand, pos, direction);
+            ItemStack stack = player.getItemInHand(hand);
+            if (stack.getItem() == PORTAL_GUN) {
+                return InteractionResult.FAIL;
             }
             return InteractionResult.PASS;
+        });
+    
+        // add into creative inventory
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES).register(entries -> {
+            entries.accept(PORTAL_GUN);
         });
     }
     

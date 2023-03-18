@@ -31,6 +31,15 @@ repositories {
         url = "https://maven.parchmentmc.org"
     }
 
+    // for sodium
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+
     jcenter()
 }
 
@@ -72,15 +81,15 @@ dependencies {
 //        transitive(false)
 //    }
 
-    modImplementation ('qouteall:imm_ptl_core:2.5.1.6'){
+    modImplementation ('qouteall:imm_ptl_core:2.5.1.7'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    modImplementation ('qouteall:q_misc_util:2.5.1.6'){
+    modImplementation ('qouteall:q_misc_util:2.5.1.7'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
-    modRuntimeOnly ('qouteall:imm_ptl_19:2.5.1.6'){
+    modRuntimeOnly ('qouteall:imm_ptl_19:2.5.1.7'){
         exclude(group: "net.fabricmc.fabric-api")
         transitive(false)
     }
@@ -97,14 +106,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-//    // Replace modImplementation with modApi if you expose components in your own API
-//    modApi "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.0.1"
-//    // Includes Cardinal Components API as a Jar-in-Jar dependency (optional but recommended)
-//    include "dev.onyxstudios.cardinal-components-api:cardinal-components-base:5.0.1"
-//
-//    modApi "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.0.1"
-//    // Includes Cardinal Components API as a Jar-in-Jar dependency (optional but recommended)
-//    include "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:5.0.1"
+    modImplementation "maven.modrinth:sodium:mc1.19.3-0.4.9"
 }
 
 shadowJar {

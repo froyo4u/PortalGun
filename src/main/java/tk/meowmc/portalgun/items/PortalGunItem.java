@@ -14,7 +14,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -23,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import qouteall.imm_ptl.core.IPGlobal;
 import qouteall.imm_ptl.core.McHelper;
 import qouteall.imm_ptl.core.compat.GravityChangerInterface;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
@@ -46,7 +46,7 @@ import tk.meowmc.portalgun.entities.CustomPortal;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Objects;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -110,48 +110,42 @@ public class PortalGunItem extends Item implements GeoItem {
             return InteractionResultHolder.fail(itemStack);
         }
         
-        player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
-        
-        HitResult hit = player.pick(100.0D, 1.0F, false);
-        
-        if (!(hit instanceof BlockHitResult blockHit)) {
-            return InteractionResultHolder.fail(itemStack);
-        }
-        
         boolean success = interact(
-            (ServerPlayer) player, (ServerLevel) world, hand, blockHit,
+            (ServerPlayer) player, (ServerLevel) world, hand,
             PortalGunRecord.PortalGunSide.orange
         );
         
-        player.awardStat(Stats.ITEM_USED.get(this));
-        
-        return success ? InteractionResultHolder.fail(itemStack) : InteractionResultHolder.pass(itemStack);
+        if (success) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+            
+            // always fail to cancel hand swing
+            return InteractionResultHolder.fail(itemStack);
+        }
+        else {
+            return InteractionResultHolder.fail(itemStack);
+        }
     }
     
     public InteractionResult onAttack(
-        Player player, Level world, InteractionHand hand, BlockPos pos, Direction direction
+        Player player, Level world, InteractionHand hand
     ) {
         if (world.isClientSide()) {
             return InteractionResult.PASS;
         }
         
-        ItemStack itemStack = player.getItemInHand(hand);
-        player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
-        
-        HitResult hit = player.pick(100.0D, 1.0F, false);
-        
-        if (!(hit instanceof BlockHitResult blockHit)) {
-            return InteractionResult.FAIL;
-        }
-        
         boolean success = interact(
-            (ServerPlayer) player, (ServerLevel) world, hand, blockHit,
+            (ServerPlayer) player, (ServerLevel) world, hand,
             PortalGunRecord.PortalGunSide.blue
         );
         
-        player.awardStat(Stats.ITEM_USED.get(this));
-        
-        return InteractionResult.SUCCESS;
+        if (success) {
+            player.awardStat(Stats.ITEM_USED.get(this));
+            
+            return InteractionResult.SUCCESS;
+        }
+        else {
+            return InteractionResult.FAIL;
+        }
     }
     
     // return whether successful
@@ -159,9 +153,17 @@ public class PortalGunItem extends Item implements GeoItem {
         ServerPlayer player,
         ServerLevel world,
         InteractionHand hand,
-        BlockHitResult blockHit,
         PortalGunRecord.PortalGunSide side
     ) {
+        ItemStack itemStack = player.getItemInHand(hand);
+        player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
+        
+        HitResult hit = player.pick(100.0D, 1.0F, false);
+        
+        if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() == HitResult.Type.MISS) {
+            return false;
+        }
+        
         world.playSound(
             null,
             player.getX(), player.getY(), player.getZ(),
@@ -182,7 +184,7 @@ public class PortalGunItem extends Item implements GeoItem {
         if (placement == null) {
             return false;
         }
-    
+        
         Direction rightDir = placement.rotation.transformedX;
         Direction upDir = placement.rotation.transformedY;
         
@@ -247,7 +249,7 @@ public class PortalGunItem extends Item implements GeoItem {
             portal.teleportable = false;
         }
         else {
-            // it's linked portal
+            // it's linked
             portal.setDestinationDimension(otherSideInfo.portalDim());
             portal.setDestination(otherSideInfo.portalPos());
             portal.setOtherSideOrientation(otherSideInfo.portalOrientation());
@@ -324,11 +326,26 @@ public class PortalGunItem extends Item implements GeoItem {
             IntBox portalArea = IntBox.getBoxByPosAndSignedSize(interactingAirPos, transformedSize);
             IntBox wallArea = portalArea.getMoved(wallFacing.getOpposite().getNormal());
             
-            if (CustomPortal.isAreaClear(world, portalArea) && CustomPortal.isWallValid(world, wallArea)) {
+            if (CustomPortal.isAreaClear(world, portalArea) &&
+                CustomPortal.isWallValid(world, wallArea) &&
+                !portalExistsInArea(world, wallArea, wallFacing)
+            ) {
                 return new PortalPlacement(rot, portalArea, wallArea);
             }
         }
         
         return null;
+    }
+    
+    private static boolean portalExistsInArea(Level world, IntBox wallArea, Direction wallFacing) {
+        List<CustomPortal> portals = McHelper.findEntitiesByBox(
+            CustomPortal.class,
+            world,
+            wallArea.toRealNumberBox().inflate(0.1),
+            IPGlobal.maxNormalPortalRadius,
+            p -> p.getApproximateFacingDirection() == wallFacing
+                && IntBox.getIntersect(p.wallBox, wallArea) != null
+        );
+        return !portals.isEmpty();
     }
 }
