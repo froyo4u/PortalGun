@@ -1,5 +1,5 @@
 {
-  "item.portalgun.portal_gun": "Переносное устройство создания порталов",
+  "item.portalgun.portal_gun_desc": "Переносное устройство создания порталов",
   "item.portalgun.portalgun_body": "Корпус Портальной Пушки",
   "item.portalgun.portalgun_claw": "Клешня Портальной Пушки",
   "subtitles.portalgun.portal1_shoot": "Выстрел основного портала",
@@ -8,5 +8,7 @@
   "subtitles.portalgun.portal_close": "Портал закрылся",
   "key.portalgun.clearportals": "Удалить порталы",
   "category.portalgun": "Portal Gun (Портальная пушка)",
-  "text.autoconfig.portalgun.option.enabled.enableRoundPortals": "Включить круглые порталы"
+  "item.portalgun.portal_gun": "Portal Gun",
+  "text.autoconfig.portalgun.option.enabled.portalFunneling": "Portal Funneling",
+  "text.autoconfig.portalgun.title": "Portal Gun Fabric Options"
 }

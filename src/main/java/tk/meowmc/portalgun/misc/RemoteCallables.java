@@ -4,7 +4,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import tk.meowmc.portalgun.PortalGunMod;
-import tk.meowmc.portalgun.items.PortalGunItem;
 
 public class RemoteCallables {
     public static void onClientLeftClickPortalGun(

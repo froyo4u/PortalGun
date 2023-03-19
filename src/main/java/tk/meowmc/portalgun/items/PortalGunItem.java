@@ -1,8 +1,10 @@
 package tk.meowmc.portalgun.items;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -38,8 +41,8 @@ import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
-import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.PortalGunMod;
+import tk.meowmc.portalgun.PortalGunRecord;
 import tk.meowmc.portalgun.client.renderer.PortalGunItemRenderer;
 import tk.meowmc.portalgun.entities.CustomPortal;
 
@@ -104,6 +107,7 @@ public class PortalGunItem extends Item implements GeoItem {
         return false;
     }
     
+    @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
         if (world.isClientSide()) {
@@ -118,12 +122,19 @@ public class PortalGunItem extends Item implements GeoItem {
         if (success) {
             player.awardStat(Stats.ITEM_USED.get(this));
             
-            // always fail to cancel hand swing
+            // always fail, to cancel hand swing
             return InteractionResultHolder.fail(itemStack);
         }
         else {
             return InteractionResultHolder.fail(itemStack);
         }
+    }
+    
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
+        super.appendHoverText(stack, world, tooltip, context);
+        
+        tooltip.add(Component.translatable("item.portalgun.portal_gun_desc").withStyle(ChatFormatting.GOLD));
     }
     
     public InteractionResult onAttack(

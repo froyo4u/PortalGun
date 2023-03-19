@@ -2,9 +2,6 @@ package tk.meowmc.portalgun.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import qouteall.q_misc_util.api.McRemoteProcedureCall;
 import tk.meowmc.portalgun.PortalGunMod;
-import tk.meowmc.portalgun.items.PortalGunItem;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {

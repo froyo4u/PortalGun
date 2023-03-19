@@ -28,9 +28,8 @@
   "depends": {
     "fabricloader": ">=0.8.0",
     "fabric": "*",
-    "minecraft": "1.19.x",
-    "immersive_portals_core": "*",
+    "minecraft": "1.19.3",
+    "immersive_portals": ">2.5.1",
     "geckolib": "*"
-  },
-  "accessWidener": "portalgun.accesswidener"
+  }
 }
