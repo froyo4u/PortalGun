@@ -138,6 +138,19 @@ jar {
     }
 }
 
+afterEvaluate {
+    remapJar {
+        archiveFileName = "${archivesBaseName}-${project.mod_version}-mc${project.minecraft_version}-fabric.jar"
+    }
+}
+
+task additionalCopy(type: Copy) {
+    dependsOn(remapJar)
+    from file("${project.buildDir}/libs/$archivesBaseName-${version}-mc${project.minecraft_version}-fabric.jar")
+    into file("${project.buildDir}/to_upload")
+    rename { n -> "$archivesBaseName-${version}-mc${project.minecraft_version}-fabric.jar" }
+}
+
 // configure the maven publication
 publishing {
     publications {

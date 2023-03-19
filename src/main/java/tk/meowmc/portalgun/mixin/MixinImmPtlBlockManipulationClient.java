@@ -12,7 +12,7 @@ import qouteall.imm_ptl.core.block_manipulation.BlockManipulationClient;
 import qouteall.q_misc_util.api.McRemoteProcedureCall;
 import tk.meowmc.portalgun.PortalGunMod;
 
-@Mixin(BlockManipulationClient.class)
+@Mixin(value = BlockManipulationClient.class, remap = false)
 public class MixinImmPtlBlockManipulationClient {
     
     /**
@@ -21,7 +21,8 @@ public class MixinImmPtlBlockManipulationClient {
     @Inject(
         method = "myAttackBlock",
         at = @At("HEAD"),
-        cancellable = true
+        cancellable = true,
+        remap = false
     )
     private static void onMyAttackBlock(CallbackInfoReturnable<Boolean> cir) {
         ItemStack mainHandItem = Minecraft.getInstance().player.getMainHandItem();
