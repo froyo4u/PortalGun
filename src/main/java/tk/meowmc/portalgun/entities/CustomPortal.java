@@ -6,7 +6,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -92,7 +91,7 @@ public class CustomPortal extends Portal {
             return;
         }
         // check block status
-        if (!isWallValid(level, wallBox) || !isAreaClear(level, airBox)) {
+        if (!PortalGunMod.isWallValid(level, wallBox) || !PortalGunMod.isAreaClear(level, airBox)) {
             kill();
             record.data.remove(descriptor);
             record.setDirty();
@@ -136,14 +135,6 @@ public class CustomPortal extends Portal {
             reloadAndSyncToClient();
             return;
         }
-    }
-    
-    public static boolean isAreaClear(Level world, IntBox airBox1) {
-        return airBox1.fastStream().allMatch(p -> world.getBlockState(p).isAir());
-    }
-    
-    public static boolean isWallValid(Level world, IntBox wallBox1) {
-        return wallBox1.fastStream().allMatch(p -> PortalGunMod.isBlockSolid(world, p));
     }
     
 }

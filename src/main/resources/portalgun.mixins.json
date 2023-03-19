@@ -5,10 +5,10 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "MixinLivingEntity"
-
   ],
   "client": [
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinImmPtlBlockManipulationClient",
   ],
   "injectors": {
     "defaultRequire": 1

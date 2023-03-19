@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -28,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import qouteall.imm_ptl.core.IPGlobal;
 import qouteall.imm_ptl.core.McHelper;
 import qouteall.imm_ptl.core.compat.GravityChangerInterface;
+import qouteall.imm_ptl.core.portal.Portal;
 import qouteall.imm_ptl.core.portal.PortalManipulation;
 import qouteall.q_misc_util.Helper;
 import qouteall.q_misc_util.my_util.AARotation;
@@ -115,7 +117,7 @@ public class PortalGunItem extends Item implements GeoItem {
         }
         
         boolean success = interact(
-            (ServerPlayer) player, (ServerLevel) world, hand,
+            (ServerPlayer) player, hand,
             PortalGunRecord.PortalGunSide.orange
         );
         
@@ -145,7 +147,7 @@ public class PortalGunItem extends Item implements GeoItem {
         }
         
         boolean success = interact(
-            (ServerPlayer) player, (ServerLevel) world, hand,
+            (ServerPlayer) player, hand,
             PortalGunRecord.PortalGunSide.blue
         );
         
@@ -162,20 +164,29 @@ public class PortalGunItem extends Item implements GeoItem {
     // return whether successful
     public boolean interact(
         ServerPlayer player,
-        ServerLevel world,
         InteractionHand hand,
         PortalGunRecord.PortalGunSide side
     ) {
         ItemStack itemStack = player.getItemInHand(hand);
         player.getCooldowns().addCooldown(this, COOLDOWN_TICKS);
         
-        HitResult hit = player.pick(100.0D, 1.0F, false);
+        PortalGunMod.PortalAwareRaytraceResult raytraceResult = PortalGunMod.portalAwareRayTrace(player, 100);
         
-        if (!(hit instanceof BlockHitResult blockHit) || blockHit.getType() == HitResult.Type.MISS) {
+        if (raytraceResult == null) {
             return false;
         }
         
-        world.playSound(
+        BlockHitResult blockHit = raytraceResult.hitResult();
+        ServerLevel world = ((ServerLevel) raytraceResult.world());
+        Direction wallFacing = blockHit.getDirection();
+    
+        if (!checkAction(player, world)) {
+            return false;
+        }
+        
+        Validate.isTrue(blockHit.getType() == HitResult.Type.BLOCK);
+        
+        player.level.playSound(
             null,
             player.getX(), player.getY(), player.getZ(),
             side == PortalGunRecord.PortalGunSide.blue ?
@@ -186,11 +197,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         PortalGunRecord.PortalGunKind kind = PortalGunRecord.PortalGunKind._2x1;
         
-        BlockPos blockPos = blockHit.getBlockPos().relative(blockHit.getDirection());
-        
-        Direction wallFacing = blockHit.getDirection();
-        
-        PortalPlacement placement = findPortalPlacement(player, world, kind, blockPos, wallFacing);
+        PortalPlacement placement = findPortalPlacement(player, kind, raytraceResult);
         
         if (placement == null) {
             return false;
@@ -201,7 +208,7 @@ public class PortalGunItem extends Item implements GeoItem {
         
         triggerAnim(
             player,
-            GeoItem.getOrAssignId(player.getItemInHand(hand), ((ServerLevel) world)),
+            GeoItem.getOrAssignId(player.getItemInHand(hand), ((ServerLevel) player.level)),
             "portalGunController", "shoot_anim"
         );
         
@@ -225,7 +232,7 @@ public class PortalGunItem extends Item implements GeoItem {
         boolean isExistingPortal = false;
         
         if (thisSideInfo != null) {
-            Entity entity = McHelper.getServerWorld(thisSideInfo.portalDim()).getEntity(thisSideInfo.portalId());
+            Entity entity = world.getEntity(thisSideInfo.portalId());
             if (entity instanceof CustomPortal customPortal) {
                 portal = customPortal;
                 isExistingPortal = true;
@@ -250,7 +257,7 @@ public class PortalGunItem extends Item implements GeoItem {
         portal.thisSideUpdateCounter = thisSideInfo == null ? 0 : thisSideInfo.updateCounter();
         portal.otherSideUpdateCounter = otherSideInfo == null ? 0 : otherSideInfo.updateCounter();
         PortalManipulation.makePortalRound(portal, 20);
-        portal.animation.defaultAnimation.durationTicks = 0; // disable default animation
+        portal.disableDefaultAnimation();
         
         if (otherSideInfo == null) {
             // it's unpaired, invisible and not teleportable
@@ -266,7 +273,7 @@ public class PortalGunItem extends Item implements GeoItem {
             portal.setOtherSideOrientation(otherSideInfo.portalOrientation());
             portal.setIsVisible(true);
             portal.teleportable = true;
-            world.playSound(
+            player.level.playSound(
                 null,
                 player.getX(), player.getY(), player.getZ(),
                 PortalGunMod.PORTAL_OPEN_EVENT,
@@ -296,6 +303,26 @@ public class PortalGunItem extends Item implements GeoItem {
         return true;
     }
     
+    private static boolean checkAction(ServerPlayer player, ServerLevel world) {
+        // NOTE ImmPtl does not initialize ender dragon information immediately when
+        // opening end portal. This make `hasPreviouslyKilledDragon` return true if no player entered the end before.
+        // Is this a vanilla bug?
+        // This should be fixed in later ImmPtl versions.
+        if (world.dimension() == Level.END) {
+            EndDragonFight endDragonFight = world.dragonFight();
+            if (endDragonFight != null) {
+                if (!endDragonFight.hasPreviouslyKilledDragon()) {
+                    player.displayClientMessage(
+                        Component.literal("Using portal gun in end before killing any ender dragon is not allowed"),
+                        true
+                    );
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
     private static record PortalPlacement(
         AARotation rotation,
         IntBox areaBox,
@@ -306,17 +333,32 @@ public class PortalGunItem extends Item implements GeoItem {
     @Nullable
     private static PortalPlacement findPortalPlacement(
         ServerPlayer player,
-        ServerLevel world,
         PortalGunRecord.PortalGunKind kind,
-        BlockPos interactingAirPos,
-        Direction wallFacing
+        PortalGunMod.PortalAwareRaytraceResult raytraceResult
     ) {
+        BlockHitResult blockHit = raytraceResult.hitResult();
+        ServerLevel world = ((ServerLevel) raytraceResult.world());
+        BlockPos interactingAirPos = blockHit.getBlockPos().relative(blockHit.getDirection());
+        Direction wallFacing = blockHit.getDirection();
+        
         Direction playerGravity = GravityChangerInterface.invoker.getGravityDirection(player);
-        
+        Direction transformedGravity = raytraceResult.portalsPassingThrough().stream().reduce(
+            playerGravity,
+            (gravity, portal) -> portal.getTeleportedGravityDirection(gravity),
+            (g1, g2) -> {throw new RuntimeException();}
+        );
         Vec3 viewVector = player.getViewVector(1);
-        Vec3 viewVectorLocal = GravityChangerInterface.invoker.transformWorldToPlayer(playerGravity, viewVector);
+        Vec3 transformedViewVector = raytraceResult.portalsPassingThrough().stream().reduce(
+            viewVector,
+            (v, portal) -> portal.transformLocalVec(v),
+            (v1, v2) -> {throw new RuntimeException();}
+        );
         
-        Direction wallFacingLocal = GravityChangerInterface.invoker.transformDirWorldToPlayer(playerGravity, wallFacing);
+        Vec3 viewVectorLocal = GravityChangerInterface.invoker
+            .transformWorldToPlayer(transformedGravity, transformedViewVector);
+        
+        Direction wallFacingLocal = GravityChangerInterface.invoker
+            .transformDirWorldToPlayer(transformedGravity, wallFacing);
         
         Direction[] upDirCandidates = Helper.getAnotherFourDirections(wallFacingLocal.getAxis());
         
@@ -337,8 +379,8 @@ public class PortalGunItem extends Item implements GeoItem {
             IntBox portalArea = IntBox.getBoxByPosAndSignedSize(interactingAirPos, transformedSize);
             IntBox wallArea = portalArea.getMoved(wallFacing.getOpposite().getNormal());
             
-            if (CustomPortal.isAreaClear(world, portalArea) &&
-                CustomPortal.isWallValid(world, wallArea) &&
+            if (PortalGunMod.isAreaClear(world, portalArea) &&
+                PortalGunMod.isWallValid(world, wallArea) &&
                 !portalExistsInArea(world, wallArea, wallFacing)
             ) {
                 return new PortalPlacement(rot, portalArea, wallArea);
