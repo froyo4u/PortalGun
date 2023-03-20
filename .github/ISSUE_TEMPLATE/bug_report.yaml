@@ -7,7 +7,7 @@ body:
   - type: dropdown
     id: only_immptl_and_portalgun
     attributes:
-      label: According to your testing, does the issue occur with ONLY MiniScaled mod and Immersive Portals mod and Farbic API?
+      label: According to your testing, does the issue occur with ONLY Portal Gun mod and Immersive Portals mod and Farbic API?
       options:
         - "Yes"
         - "No"
