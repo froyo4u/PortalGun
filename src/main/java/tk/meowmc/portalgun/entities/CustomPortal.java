@@ -82,6 +82,7 @@ public class CustomPortal extends Portal {
         PortalGunRecord.PortalInfo otherSideInfo = record.data.get(descriptor.getTheOtherSide());
         if (thisSideInfo == null) {
             // info is missing
+            playClosingSound();
             kill();
             return;
         }
@@ -95,13 +96,7 @@ public class CustomPortal extends Portal {
             kill();
             record.data.remove(descriptor);
             record.setDirty();
-            level.playSound(
-                null,
-                getX(), getY(), getZ(),
-                PortalGunMod.PORTAL_CLOSE_EVENT,
-                SoundSource.PLAYERS,
-                1.0F, 1.0F
-            );
+            playClosingSound();
             return;
         }
         if (otherSideInfo == null) {
@@ -135,6 +130,16 @@ public class CustomPortal extends Portal {
             reloadAndSyncToClient();
             return;
         }
+    }
+    
+    private void playClosingSound() {
+        level.playSound(
+            null,
+            getX(), getY(), getZ(),
+            PortalGunMod.PORTAL_CLOSE_EVENT,
+            SoundSource.PLAYERS,
+            1.0F, 1.0F
+        );
     }
     
 }
