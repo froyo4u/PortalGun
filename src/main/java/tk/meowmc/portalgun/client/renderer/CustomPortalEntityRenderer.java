@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import qouteall.imm_ptl.core.CHelper;
 import qouteall.q_misc_util.my_util.DQuaternion;
 import tk.meowmc.portalgun.PortalGunMod;
 import tk.meowmc.portalgun.client.PortalgunClient;
@@ -28,6 +29,12 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
     @Override
     public void render(CustomPortal entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
+        
+        // don't render overlay from back side
+        if (!entity.isInFrontOfPortal(CHelper.getCurrentCameraPos())) {
+            return;
+        }
+        
         matrices.pushPose();
         // It's a small hack to get rid of Minecraft's lighting system and make it always bright.
         // MC use the normal with some global light direction to calculate the facing light (not block light).
@@ -45,7 +52,7 @@ public class CustomPortalEntityRenderer extends EntityRenderer<CustomPortal> {
         int r = (color & 0xFF0000) >> 16;
         int g = (color & 0xFF00) >> 8;
         int b = color & 0xFF;
-    
+        
         this.model.renderToBuffer(
             matrices,
             vertexConsumers.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity))),
