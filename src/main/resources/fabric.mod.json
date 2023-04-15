@@ -3,8 +3,8 @@
   "id": "portalgun",
   "version": "${version}",
   "name": "Portal Gun",
-  "description": "A Portal Gun mod using Immersive Portals",
-  "authors": [],
+  "description": "A Portal Gun mod using Immersive Portals. (A fork of MeowMC's Portal Gun mod.)",
+  "authors": ["MeowMC" ,"qouteall"],
   "contact": {
     "Github": "https://github.com/MeowMC/PortalGun"
   },
@@ -16,7 +16,7 @@
       "tk.meowmc.portalgun.client.PortalgunClient"
     ],
     "main": [
-      "tk.meowmc.portalgun.Portalgun"
+      "tk.meowmc.portalgun.PortalGunMod"
     ],
     "modmenu": [
       "tk.meowmc.portalgun.config.ModMenuIntegration"
@@ -28,8 +28,8 @@
   "depends": {
     "fabricloader": ">=0.8.0",
     "fabric": "*",
-    "minecraft": "1.19.x",
-    "geckolib3": "*"
-  },
-  "accessWidener": "portalgun.accesswidener"
+    "minecraft": "1.19.3",
+    "immersive_portals": ">2.5.1",
+    "geckolib": "*"
+  }
 }

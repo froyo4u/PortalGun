@@ -5,9 +5,9 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
-import tk.meowmc.portalgun.Portalgun;
+import tk.meowmc.portalgun.PortalGunMod;
 
-@Config(name = Portalgun.MODID)
+@Config(name = PortalGunMod.MODID)
 public class PortalGunConfig implements ConfigData {
     @ConfigEntry.Gui.TransitiveObject
     @ConfigEntry.Category("enabled")
@@ -29,7 +29,7 @@ public class PortalGunConfig implements ConfigData {
     public static class Enabled {
         //public final boolean enableOldPortalGunModel = false;
         //public final boolean enableRoundPortals = true;
-        public final boolean portalFunneling = true;
+//        public final boolean portalFunneling = true;
     }
 
 }

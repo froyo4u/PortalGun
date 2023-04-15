@@ -1,96 +1,44 @@
 package tk.meowmc.portalgun.misc;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Hand;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.util.GeckoLibUtil;
-import tk.meowmc.portalgun.Portalgun;
-import tk.meowmc.portalgun.items.PortalGunItem;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import tk.meowmc.portalgun.PortalGunMod;
+import tk.meowmc.portalgun.PortalGunRecord;
 
-import static tk.meowmc.portalgun.Portalgun.PORTALGUN;
-import static tk.meowmc.portalgun.items.PortalGunItem.*;
+import java.util.Map;
 
 public class RemoteCallables {
-
-    public static void removeOldPortals(ServerPlayerEntity user) {
-        PortalGunItem gunItem = (PortalGunItem) Portalgun.PORTALGUN;
-
-        if (gunItem.newPortal1 != null) {
-            gunItem.newPortal1.kill();
-            user.world.playSound(null,
-                    gunItem.newPortal1.getX(),
-                    gunItem.newPortal1.getY(),
-                    gunItem.newPortal1.getZ(),
-                    Portalgun.PORTAL_CLOSE_EVENT,
-                    SoundCategory.NEUTRAL,
-                    1.0F,
-                    1F);
-            gunItem.portalsTag.remove("PrimaryPortal" + user.getUuidAsString());
-            gunItem.newPortal1 = null;
-            portal1Exists = false;
+    public static void onClientLeftClickPortalGun(
+        ServerPlayer player
+    ) {
+        ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (itemInHand.getItem() == PortalGunMod.PORTAL_GUN) {
+            PortalGunMod.PORTAL_GUN.onAttack(player, player.level, InteractionHand.MAIN_HAND);
         }
-        if (gunItem.newPortal2 != null) {
-            gunItem.newPortal2.kill();
-            user.world.playSound(null,
-                    gunItem.newPortal2.getX(),
-                    gunItem.newPortal2.getY(),
-                    gunItem.newPortal2.getZ(),
-                    Portalgun.PORTAL_CLOSE_EVENT,
-                    SoundCategory.NEUTRAL,
-                    1.0F,
-                    1F);
-            gunItem.portalsTag.remove("SecondaryPortal" + user.getUuidAsString());
-            gunItem.newPortal2 = null;
-            portal2Exists = false;
-        }
-
-        if (gunItem.portalOutline1 != null) {
-            gunItem.portalOutline1.kill();
-            gunItem.portalsTag.remove("PrimaryOutline" + user.getUuidAsString());
-            gunItem.portalOutline1 = null;
-            outline1Exists = false;
-        }
-        if (gunItem.portalOutline2 != null) {
-            gunItem.portalOutline2.kill();
-            gunItem.portalsTag.remove("SecondaryOutline" + user.getUuidAsString());
-            gunItem.portalOutline2 = null;
-            outline2Exists = false;
-        }
-        resetWaits(user);
-        gunItem.tag.remove(user.world.getRegistryKey().toString());
-    }
-
-    public static void portal1Place(ServerPlayerEntity user) {
-        PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
-        boolean portalGunActive = user.isHolding(PORTALGUN);
-        if (!user.getItemCooldownManager().isCoolingDown(gunItem) && portalGunActive) {
-            gunItem.portal1Spawn(user.world, user, user.getActiveHand());
+        else {
+            PortalGunMod.LOGGER.error("Invalid left click packet");
         }
     }
-
-    @Environment(EnvType.CLIENT)
-    public static void playAnim() {
-        MinecraftClient client = MinecraftClient.getInstance();
-
-        PortalGunItem gunItem = (PortalGunItem) PORTALGUN;
-        boolean portalGunActive = client.player.isHolding(PORTALGUN);
-        ItemStack itemStack = client.player.getStackInHand(Hand.MAIN_HAND);
-        AnimationController animController = GeckoLibUtil.getControllerForStack(gunItem.factory, itemStack, controllerName);
-        if (!client.player.getItemCooldownManager().isCoolingDown(gunItem) && portalGunActive) {
-            animController.markNeedsReload();
-            animController.setAnimation(new AnimationBuilder().addAnimation("portal_shoot", false));
-        }
-        client.attackCooldown = 0;
+    
+    public static void onClientClearPortalGun(
+        ServerPlayer player
+    ) {
+        PortalGunRecord record = PortalGunRecord.get();
+        PortalGunRecord.PortalDescriptor orangeDescriptor =
+            new PortalGunRecord.PortalDescriptor(
+                player.getUUID(),
+                PortalGunRecord.PortalGunKind._2x1,
+                PortalGunRecord.PortalGunSide.orange
+            );
+        PortalGunRecord.PortalDescriptor blueDescriptor =
+            new PortalGunRecord.PortalDescriptor(
+                player.getUUID(),
+                PortalGunRecord.PortalGunKind._2x1,
+                PortalGunRecord.PortalGunSide.blue
+            );
+        record.data.remove(orangeDescriptor);
+        record.data.remove(blueDescriptor);
+        record.setDirty();
     }
-
-    public static void resetWaits(ServerPlayerEntity user) {
-        waitPortal = false;
-    }
-
 }
